@@ -19,9 +19,7 @@
  * under the License.
  */
 
-#include "typedb/common/exception.hpp"
-
-#include <iostream>
+#include "typedb/common/TypeDBDriverException.hpp"
 
 namespace TypeDB {
 

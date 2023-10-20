@@ -19,8 +19,11 @@
  * under the License.
  */
 
+#include <iostream>
+
 #include "gtest/gtest.h"
 #include "typedb/connection/TypeDBDriver.hpp"
+#include "typedb/common/TypeDBDriverException.hpp"
 
 using namespace TypeDB;
 
@@ -28,6 +31,12 @@ TEST(TestConceptAPI, TestData) {
     TypeDB::TypeDBDriver driver("127.0.0.1:1729");
     EXPECT_FALSE(TypeDBNative::check_error());
     driver.databaseManager.create("hello_from_cpp");
+
+    try {
+        driver.databaseManager.create("hello_from_cpp");
+    } catch (TypeDBDriverException e) {
+        std::cout << "Caught exception with message: " << e.message() << std::endl ;
+    }
 }
 
 int main(int argc, char** argv) {
