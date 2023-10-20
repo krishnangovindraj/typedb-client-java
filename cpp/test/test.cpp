@@ -19,15 +19,18 @@
  * under the License.
  */
 
-#include ""
+#include "gtest/gtest.h"
+#include "typedb/connection/TypeDBDriver.hpp"
 
+using namespace TypeDB;
 
  TEST(TestConceptAPI, TestData) {
-     TypeDBDriver driver = TypeDBDriver();
-     DatabaseManager &db = driver.databases();
+     TypeDB::TypeDBDriver driver("127.0.0.1:1729");
+     EXPECT_FALSE(TypeDBNative::check_error());
+     EXPECT_TRUE(driver.databaseManager.dbg__create("hello_from_cpp"));
  }
 
-int main() {
+int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

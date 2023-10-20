@@ -20,6 +20,8 @@
  */
 #pragma once
 
+#include <string>
+
 #include "typedb/common/native.hpp"
 
 namespace TypeDB {
@@ -31,6 +33,8 @@ class DatabaseManager {
      DatabaseManager(TypeDBNative::Connection*);
      DatabaseManager(const DatabaseManager&) = delete;
      ~DatabaseManager();
+
+     bool dbg__create(const std::string& name) const;
 
 };
 

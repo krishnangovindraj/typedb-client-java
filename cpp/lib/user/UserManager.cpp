@@ -31,4 +31,8 @@ UserManager::UserManager(const TypeDBNative::Connection* connectionNative) {
     userManagerNative = connectionNative ? TypeDBNative::user_manager_new(connectionNative) : nullptr;
 }
 
+UserManager::~UserManager() {
+    user_manager_drop(userManagerNative);
+}
+
 }

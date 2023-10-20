@@ -25,4 +25,14 @@ namespace TypeDB {
 DatabaseManager::DatabaseManager(TypeDBNative::Connection* connectionNative) {
     databaseManagerNative = connectionNative ? TypeDBNative::database_manager_new(connectionNative) : nullptr;
 }
+
+DatabaseManager::~DatabaseManager() {
+    TypeDBNative::database_manager_drop(databaseManagerNative);
+}
+
+bool DatabaseManager::dbg__create(const std::string& name) const {
+    TypeDBNative::databases_create(databaseManagerNative, name.c_str());
+    return TypeDBNative::check_error();
+}
+
 }

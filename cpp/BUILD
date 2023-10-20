@@ -21,15 +21,14 @@
 load("@vaticle_dependencies//tool/checkstyle:rules.bzl", "checkstyle_test")
 
 cc_library(
-    name = "typedb_driver_cpp",
+    name = "typedb-driver-cpp",
     srcs = glob([
         "lib/native.hpp",
         "lib/*/*.cpp",
         "lib/*/*.hpp",  # Private includes
     ]),
-    copts = ["-Ibazel-out/darwin_arm64-fastbuild/bin/c"],
     hdrs = glob(["include/typedb/**/*"]), # exported public includes
-    includes = ["include"],
+    strip_include_prefix = "include",
     deps = [
         "//c:typedb_driver_clib",
         "//c:typedb_driver_clib_headers"
@@ -40,12 +39,13 @@ cc_test(
     name = "test-cpp-driver",
     srcs = ["test/test.cpp"],
     deps = [
-        ":typedb_driver_cpp",
+        ":typedb-driver-cpp",
 
         # External
         "@gtest//:gtest",
         "@gtest//:gtest_main"
     ],
+    env = {"RUST_BACKTRACE": "full"},
 )
 
 checkstyle_test(
