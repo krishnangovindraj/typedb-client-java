@@ -34,7 +34,7 @@ class DatabaseManager {
      DatabaseManager(const DatabaseManager&) = delete;
      ~DatabaseManager();
 
-     bool dbg__create(const std::string& name) const;
+     void create(const std::string& name) const;
 
 };
 

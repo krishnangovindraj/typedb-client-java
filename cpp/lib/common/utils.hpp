@@ -19,18 +19,21 @@
  * under the License.
  */
 
-#include "gtest/gtest.h"
-#include "typedb/connection/TypeDBDriver.hpp"
+#include "typedb/common/exception.hpp"
 
-using namespace TypeDB;
+namespace TypeDB {
 
-TEST(TestConceptAPI, TestData) {
-    TypeDB::TypeDBDriver driver("127.0.0.1:1729");
-    EXPECT_FALSE(TypeDBNative::check_error());
-    driver.databaseManager.create("hello_from_cpp");
+void check_and_throw() {
+    if (TypeDBNative::check_error()) {
+        TypeDBNative::Error* error = TypeDBNative::get_last_error();
+        char* errcode = TypeDBNative::error_code(error);
+        char* errmsg = TypeDBNative::error_message(error);
+        TypeDBDriverException exception(errcode, errmsg);
+        free(errmsg);
+        free(errcode);
+        TypeDBNative::error_drop(error);
+        throw exception;
+    }
 }
 
-int main(int argc, char** argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
 }

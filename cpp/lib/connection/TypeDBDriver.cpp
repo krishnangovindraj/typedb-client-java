@@ -27,10 +27,10 @@ namespace TypeDB {
 
 TypeDBDriver::TypeDBDriver(const std::string& coreAddress) : TypeDBDriver(TypeDBNative::connection_open_core(coreAddress.c_str())) { }
 
-TypeDBDriver::TypeDBDriver(TypeDBNative::Connection* conn)
+TypeDBDriver::TypeDBDriver(TypeDBNative::Connection* conn) noexcept
     : connectionNative(conn),
-      databaseManager(connectionNative),
-      userManager(connectionNative) {}
+      databaseManager(this->connectionNative),
+      userManager(this->connectionNative) {}
 
 TypeDBDriver::~TypeDBDriver() {
     // TODO: connection_close is called before the databaseManager & UserManager are destructed. Should we wrap it in an object to enforce the order?

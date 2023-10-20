@@ -18,19 +18,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+#pragma once
 
-#include "gtest/gtest.h"
-#include "typedb/connection/TypeDBDriver.hpp"
+#include <stdexcept>
+#include <string>
 
-using namespace TypeDB;
+#include "typedb/common/native.hpp"
 
-TEST(TestConceptAPI, TestData) {
-    TypeDB::TypeDBDriver driver("127.0.0.1:1729");
-    EXPECT_FALSE(TypeDBNative::check_error());
-    driver.databaseManager.create("hello_from_cpp");
-}
+namespace TypeDB {
 
-int main(int argc, char** argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+class TypeDBDriverException : public std::runtime_error {
+    const std::string errCode;
+    const std::string errMsg;
+
+   public:
+    TypeDBDriverException(const char* code, const char* message);
+    const std::string& code();
+    const std::string& message();
+    const char* what() const noexcept override;
+};
+
 }

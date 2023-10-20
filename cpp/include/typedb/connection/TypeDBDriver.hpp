@@ -42,7 +42,7 @@ class TypeDBDriver {
     const UserManager userManager;
 
    private:
-    TypeDBDriver(TypeDBNative::Connection* conn);
+    TypeDBDriver(TypeDBNative::Connection* conn) noexcept;
 
    public:
     TypeDBDriver(const std::string &coreAddress);
