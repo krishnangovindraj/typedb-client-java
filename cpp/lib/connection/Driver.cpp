@@ -18,35 +18,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#pragma once
 
-#include "typedb/common/native.hpp"
-#include "typedb/connection/DatabaseManager.hpp"
-#include "typedb/user/UserManager.hpp"
+#include "typedb/connection/Driver.hpp"
 
-#include <string>
+using namespace TypeDB;
 
 namespace TypeDB {
 
-class TypeDBDriver {
-   public:
-    static TypeDBDriver connect_to_core(const std::string&);
+TypeDBDriver::Driver(const std::string& coreAddress) : Driver(TypeDBNative::connection_open_core(coreAddress.c_str())) { }
 
-   private:
-    TypeDBNative::Connection* connectionNative;
-    TypeDBNative::DatabaseManager* databaseManagerNative;
-    TypeDBNative::UserManager* userManagerNative;
+TypeDBDriver::Driver(TypeDBNative::Connection* conn) noexcept
+    : connectionNative(conn),
+      databaseManager(this->connectionNative),
+      userManager(this->connectionNative) {}
 
-   public:
-    const DatabaseManager databaseManager;
-    const UserManager userManager;
+TypeDBDriver::~Driver() {
+    // TODO: connection_close is called before the databaseManager & UserManager are destructed. Should we wrap it in an object to enforce the order?
+    TypeDBNative::connection_close(connectionNative);
+}
 
-   private:
-    TypeDBDriver(TypeDBNative::Connection* conn) noexcept;
-
-   public:
-    TypeDBDriver(const std::string &coreAddress);
-    TypeDBDriver(const TypeDBDriver&) = delete;
-    ~TypeDBDriver();
-};
 }

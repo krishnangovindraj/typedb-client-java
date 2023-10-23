@@ -22,7 +22,7 @@
 #include <iostream>
 
 #include "gtest/gtest.h"
-#include "typedb/connection/TypeDBDriver.hpp"
+#include "typedb/connection/Driver.hpp"
 #include "typedb/common/TypeDBDriverException.hpp"
 
 using namespace TypeDB;

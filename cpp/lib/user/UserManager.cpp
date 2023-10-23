@@ -21,7 +21,7 @@
 
 
 
-#include "typedb/connection/TypeDBDriver.hpp"
+#include "typedb/connection/Driver.hpp"
 
 using namespace TypeDB;
 
