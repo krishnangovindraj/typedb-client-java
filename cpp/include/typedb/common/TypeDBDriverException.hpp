@@ -23,8 +23,6 @@
 #include <stdexcept>
 #include <string>
 
-#include "typedb/common/native.hpp"
-
 namespace TypeDB {
 
 class TypeDBDriverException : public std::runtime_error {

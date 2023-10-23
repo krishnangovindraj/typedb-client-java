@@ -20,16 +20,38 @@
  */
 #pragma once
 
-// Including these triggers the guards, Skipping them when we do the include in the TypeDBNative namespace
+#include <memory>
+#include <utility>
+
+// Including these triggers the guards, Skipping them when we do the include in the _native namespace
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 
-namespace TypeDBNative {
+namespace TypeDB {
+
+namespace _native {
 
 extern "C" {
 #include "c/typedb_driver.h"
 }
+
+}
+
+template <typename T> class NativeWrapper {
+   protected:
+    std::unique_ptr<T> nativePtr;
+
+   public:
+    NativeWrapper(NativeWrapper<T>&& from) {
+        nativePtr = std::move(from);
+    }
+
+    NativeWrapper& operator=(NativeWrapper<T>&& from) {
+        nativePtr = std::move(from);
+    }
+
+};
 
 }

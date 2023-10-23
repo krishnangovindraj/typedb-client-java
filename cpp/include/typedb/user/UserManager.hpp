@@ -26,10 +26,10 @@ namespace TypeDB {
 
 class UserManager {
     private:
-     TypeDBNative::UserManager* userManagerNative;
+     _native::UserManager* userManagerNative;
 
     public:
-     UserManager(const TypeDBNative::Connection*);
+     UserManager(const _native::Connection*);
      UserManager(const UserManager&) = delete;
      ~UserManager();
 };

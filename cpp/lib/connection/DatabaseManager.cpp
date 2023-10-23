@@ -24,16 +24,16 @@
 
 namespace TypeDB {
 
-DatabaseManager::DatabaseManager(TypeDBNative::Connection* connectionNative) {
-    databaseManagerNative = connectionNative ? TypeDBNative::database_manager_new(connectionNative) : nullptr;
+DatabaseManager::DatabaseManager(_native::Connection* connectionNative) {
+    databaseManagerNative = connectionNative ? _native::database_manager_new(connectionNative) : nullptr;
 }
 
 DatabaseManager::~DatabaseManager() {
-    TypeDBNative::database_manager_drop(databaseManagerNative);
+    _native::database_manager_drop(databaseManagerNative);
 }
 
 void DatabaseManager::create(const std::string& name) const {
-    TypeDBNative::databases_create(databaseManagerNative, name.c_str());
+    _native::databases_create(databaseManagerNative, name.c_str());
     check_and_throw();
 }
 

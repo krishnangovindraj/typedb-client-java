@@ -23,7 +23,6 @@ load("@vaticle_dependencies//tool/checkstyle:rules.bzl", "checkstyle_test")
 cc_library(
     name = "typedb-driver-cpp",
     srcs = glob([
-        "lib/native.hpp",
         "lib/*/*.cpp",
         "lib/*/*.hpp",  # Private includes
     ]),

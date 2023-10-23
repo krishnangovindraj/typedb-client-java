@@ -23,14 +23,15 @@
 #include <string>
 
 #include "typedb/common/native.hpp"
+#include "typedb/database/Database.hpp"
 
 namespace TypeDB {
 
 class DatabaseManager {
     private:
-    TypeDBNative::DatabaseManager* databaseManagerNative;
+    _native::DatabaseManager* databaseManagerNative;
     public:
-     DatabaseManager(TypeDBNative::Connection*);
+     DatabaseManager(_native::Connection*);
      DatabaseManager(const DatabaseManager&) = delete;
      ~DatabaseManager();
 

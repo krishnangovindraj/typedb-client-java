@@ -18,21 +18,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+#pragma once
 
-
-
-#include "typedb/connection/Driver.hpp"
-
-using namespace TypeDB;
+#include "typedb/common/native.hpp"
 
 namespace TypeDB {
 
-UserManager::UserManager(const _native::Connection* connectionNative) {
-    userManagerNative = connectionNative ? _native::user_manager_new(connectionNative) : nullptr;
-}
-
-UserManager::~UserManager() {
-    user_manager_drop(userManagerNative);
-}
+class Database {
+};
 
 }

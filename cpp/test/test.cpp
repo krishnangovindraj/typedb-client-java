@@ -27,16 +27,66 @@
 
 using namespace TypeDB;
 
-TEST(TestConceptAPI, TestData) {
-    TypeDB::TypeDBDriver driver("127.0.0.1:1729");
-    EXPECT_FALSE(TypeDBNative::check_error());
-    driver.databaseManager.create("hello_from_cpp");
+ TEST(TestConceptAPI, TestData) {
+     TypeDB::Driver driver("127.0.0.1:1729");
+     EXPECT_FALSE(_native::check_error());
+     driver.databaseManager.create("hello_from_cpp");
 
-    try {
-        driver.databaseManager.create("hello_from_cpp");
-    } catch (TypeDBDriverException e) {
-        std::cout << "Caught exception with message: " << e.message() << std::endl ;
+     try {
+         driver.databaseManager.create("hello_from_cpp");
+     } catch (TypeDBDriverException e) {
+         std::cout << "Caught exception with message: " << e.message() << std::endl ;
+     }
+ }
+
+
+class MoveMe {
+   public:
+    char* c;
+    int x;
+    
+    MoveMe(char* ac, int ax) {
+        c = ac;
+        x = ax;
+    }  
+
+    MoveMe(MoveMe& other) = delete;
+
+    MoveMe(MoveMe&& from) {
+        c = from.c;
+        from.c = nullptr;
+        x = from.x + 1;
     }
+
+    ~MoveMe() {
+        std::cout << "MoveMe destructor called at " << c << "::" << x << std::endl;
+    }
+
+    MoveMe& operator=(MoveMe&& from) {
+        c = from.c;
+        from.c = nullptr;
+        x = from.x + 1;
+        return *this;
+    }
+
+};
+
+// std::unique_ptr<int> z() {
+//     std::unique_ptr<int> x(new int);
+//     *x = 5;
+//     return std::move(x);
+// }
+
+
+TEST(LearnMove, LearnMove) {
+    // std::unique_ptr<int> y = z;
+    // std::cout << *y << std::endl;
+    char cstr[] = "moo";
+    MoveMe m1(cstr, 1);
+    MoveMe m2 = std::move(m1);
+    std::cout << ((m1.c) ? m1.c : "null") << "::" << m1.x << std::endl;
+    std::cout << ((m2.c) ? m2.c : "null") << "::" << m2.x << std::endl;
+
 }
 
 int main(int argc, char** argv) {

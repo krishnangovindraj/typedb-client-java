@@ -24,14 +24,14 @@
 namespace TypeDB {
 
 void check_and_throw() {
-    if (TypeDBNative::check_error()) {
-        TypeDBNative::Error* error = TypeDBNative::get_last_error();
-        char* errcode = TypeDBNative::error_code(error);
-        char* errmsg = TypeDBNative::error_message(error);
+    if (_native::check_error()) {
+        _native::Error* error = _native::get_last_error();
+        char* errcode = _native::error_code(error);
+        char* errmsg = _native::error_message(error);
         TypeDBDriverException exception(errcode, errmsg);
         free(errmsg);
         free(errcode);
-        TypeDBNative::error_drop(error);
+        _native::error_drop(error);
         throw exception;
     }
 }
