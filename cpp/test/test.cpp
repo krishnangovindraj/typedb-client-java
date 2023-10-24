@@ -30,72 +30,26 @@
 
 using namespace TypeDB;
 
- TEST(TestConceptAPI, TestData) {
-     TypeDB::Driver driver("127.0.0.1:1729");
-     EXPECT_FALSE(_native::check_error());
-     driver.databaseManager.create("hello_from_cpp");
-     Driver d2(std::move(driver));
 
-     try {
-         driver.databaseManager.create("hello_from_cpp");
-     } catch (TypeDBDriverException e) {
-         std::cout << "Caught exception with message: " << e.message() << std::endl ;
-     }
- }
-
-
-
- 
-
-
-class MoveMe {
-   public:
-    char* c;
-    int x;
-    
-    MoveMe(char* ac, int ax) {
-        c = ac;
-        x = ax;
-    }  
-
-    MoveMe(MoveMe& other) = delete;
-
-    MoveMe(MoveMe&& from) {
-        *this = std::move(from);
+void delete_if_exists(const TypeDB::Driver& driver, const std::string& name) {
+    if (driver.databaseManager.contains(name)) {
+        driver.databaseManager.get(name).drop();
     }
-
-    ~MoveMe() {
-        std::cout << "MoveMe destructor called at " << NULLSAFE(c) << "::" << x << std::endl;
-    }
-
-    MoveMe& operator=(MoveMe&& from) {
-        c = from.c;
-        from.c = nullptr;
-        x = from.x + 1;
-        return *this;
-    }
-
-};
-
-// std::unique_ptr<int> z() {
-//     std::unique_ptr<int> x(new int);
-//     *x = 5;
-//     return std::move(x);
-// }
-MoveMe testLearnMove() {
-    char cstr[] = "moo";
-    MoveMe m1(cstr, 1);
-    MoveMe m2 = std::move(m1);
-    std::cout << NULLSAFE(m1.c) << "::" << m1.x << std::endl;
-    std::cout << NULLSAFE(m2.c) << "::" << m2.x << std::endl;
-    return m2;
 }
 
-TEST(LearnMove, LearnMove) {
-    // std::unique_ptr<int> y = z;
-    // std::cout << *y << std::endl;
-    MoveMe m3 = testLearnMove();
-    std::cout << NULLSAFE(m3.c) << "::" << m3.x << std::endl;
+TEST(TestConceptAPI, TestData) {
+    std::string dbName = "hello_from_cpp";
+    TypeDB::Driver driver("127.0.0.1:1729");
+    delete_if_exists(driver, dbName);
+    EXPECT_FALSE(_native::check_error());
+    driver.databaseManager.create(dbName);
+    
+    try {
+        driver.databaseManager.create(dbName);
+        FAIL(); // "Exception not thrown"
+    } catch (TypeDBDriverException e) {
+        std::cout << "Caught exception with message: " << e.message() << std::endl ;
+    }
 }
 
 int main(int argc, char** argv) {

@@ -25,6 +25,15 @@
 namespace TypeDB {
 
 class Database {
+    NativePointer<_native::Database> databaseNative;
+    
+   public:
+    Database(_native::Database*) noexcept;
+    Database(Database&&) noexcept;
+
+    Database& operator=(Database&&);
+
+    void drop();
 };
 
 }

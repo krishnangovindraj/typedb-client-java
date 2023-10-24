@@ -22,6 +22,8 @@
 #include "typedb/connection/DatabaseManager.hpp"
 #include "typedb/common/TypeDBDriverException.hpp"
 
+#include <iostream>
+
 namespace TypeDB {
 
 DatabaseManager::DatabaseManager(_native::Connection* connectionNative) {    
@@ -42,6 +44,15 @@ DatabaseManager& DatabaseManager::operator=(DatabaseManager&& from) {
 void DatabaseManager::create(const std::string& name) const {
     _native::databases_create(databaseManagerNative.get(), name.c_str());
     TypeDBDriverException::check_and_throw();
+}
+
+bool DatabaseManager::contains(const std::string& name) const {
+    return _native::databases_contains(databaseManagerNative.get(), name.c_str());
+}
+
+Database DatabaseManager::get(const std::string& name) const {
+    std::cout << "Database manager get called" << std::endl;
+    return Database(_native::databases_get(databaseManagerNative.get(), name.c_str())); // No std::move for copy-elision
 }
 
 }

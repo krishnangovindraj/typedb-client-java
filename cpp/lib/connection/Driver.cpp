@@ -34,17 +34,17 @@ Driver::Driver(_native::Connection* conn) noexcept
       databaseManager(this->connectionNative.get()),
       userManager(this->connectionNative.get()) {}
 
-Driver::Driver(Driver&& from) 
-  : connectionNative(std::move(from.connectionNative)),
-  databaseManager(std::move(from.databaseManager)),
-  userManager(std::move(from.userManager)) {}
+Driver::Driver(Driver&& from)
+    : connectionNative(std::move(from.connectionNative)),
+      databaseManager(std::move(from.databaseManager)),
+      userManager(std::move(from.userManager)) {}
 
 Driver& Driver::operator=(Driver&& from) {
-  connectionNative = std::move(from.connectionNative);
-  from.connectionNative = nullptr;
-  databaseManager = std::move(from.databaseManager);
-  userManager = std::move(from.userManager);
-  return *this;
+    connectionNative = std::move(from.connectionNative);
+    from.connectionNative = nullptr;
+    databaseManager = std::move(from.databaseManager);
+    userManager = std::move(from.userManager);
+return *this;
 }
 
 }

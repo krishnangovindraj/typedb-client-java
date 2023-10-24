@@ -42,6 +42,8 @@ class DatabaseManager {
      DatabaseManager& operator=(DatabaseManager&&);
 
      void create(const std::string&) const;
+     bool contains(const std::string&) const;
+     Database get(const std::string&) const;
 
 };
 

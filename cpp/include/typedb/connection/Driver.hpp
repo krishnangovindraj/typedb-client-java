@@ -39,7 +39,7 @@ class Driver {
     UserManager userManager;
 
     Driver(const std::string &coreAddress);
-    Driver(const Driver&) = delete; // Use move instead.
+    Driver(const Driver&) = delete;
     Driver(Driver&& from);
 
     Driver& operator=(Driver&& from);

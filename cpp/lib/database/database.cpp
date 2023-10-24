@@ -18,27 +18,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#pragma once
 
-#include <memory>
-#include <utility>
+#include "typedb/database/Database.hpp"
 
-// Including these triggers the guards, Skipping them when we do the include in the _native namespace
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <functional>
+#include <iostream>
+
+using namespace TypeDB;
 
 namespace TypeDB {
 
-namespace _native {
+Database::Database(_native::Database* db) noexcept
+    : databaseNative(db, _native::database_close) {}
 
-extern "C" {
-#include "c/typedb_driver.h"
+Database::Database(Database&& from) noexcept {
+    *this = std::move(from);
 }
 
+Database& Database::operator=(Database&& from) {
+  databaseNative = std::move(from.databaseNative);
+  return *this;
 }
 
-template <typename T> using NativePointer = std::unique_ptr< T, std::function<void(T*)> >;
+void Database::drop() {
+    _native::database_delete(databaseNative.get());
+    databaseNative.release(); // Dangling pointer. Release avoids invoking the deleter (database_close)
+}
+
 }
