@@ -28,6 +28,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <functional>
 
 namespace TypeDB {
 
@@ -39,19 +40,7 @@ extern "C" {
 
 }
 
-template <typename T> class NativeWrapper {
-   protected:
-    std::unique_ptr<T> nativePtr;
+template <typename T> using NativePointer = std::unique_ptr< T, std::function<void(T*)> >;
 
-   public:
-    NativeWrapper(NativeWrapper<T>&& from) {
-        nativePtr = std::move(from);
-    }
-
-    NativeWrapper& operator=(NativeWrapper<T>&& from) {
-        nativePtr = std::move(from);
-    }
-
-};
 
 }

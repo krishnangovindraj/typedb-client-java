@@ -22,8 +22,11 @@
 #include <iostream>
 
 #include "gtest/gtest.h"
+
 #include "typedb/connection/Driver.hpp"
 #include "typedb/common/TypeDBDriverException.hpp"
+
+#define NULLSAFE(X) ((X) ? (X) : "null")
 
 using namespace TypeDB;
 
@@ -31,6 +34,7 @@ using namespace TypeDB;
      TypeDB::Driver driver("127.0.0.1:1729");
      EXPECT_FALSE(_native::check_error());
      driver.databaseManager.create("hello_from_cpp");
+     Driver d2(std::move(driver));
 
      try {
          driver.databaseManager.create("hello_from_cpp");
@@ -38,6 +42,10 @@ using namespace TypeDB;
          std::cout << "Caught exception with message: " << e.message() << std::endl ;
      }
  }
+
+
+
+ 
 
 
 class MoveMe {
@@ -53,13 +61,11 @@ class MoveMe {
     MoveMe(MoveMe& other) = delete;
 
     MoveMe(MoveMe&& from) {
-        c = from.c;
-        from.c = nullptr;
-        x = from.x + 1;
+        *this = std::move(from);
     }
 
     ~MoveMe() {
-        std::cout << "MoveMe destructor called at " << c << "::" << x << std::endl;
+        std::cout << "MoveMe destructor called at " << NULLSAFE(c) << "::" << x << std::endl;
     }
 
     MoveMe& operator=(MoveMe&& from) {
@@ -76,17 +82,20 @@ class MoveMe {
 //     *x = 5;
 //     return std::move(x);
 // }
-
+MoveMe testLearnMove() {
+    char cstr[] = "moo";
+    MoveMe m1(cstr, 1);
+    MoveMe m2 = std::move(m1);
+    std::cout << NULLSAFE(m1.c) << "::" << m1.x << std::endl;
+    std::cout << NULLSAFE(m2.c) << "::" << m2.x << std::endl;
+    return m2;
+}
 
 TEST(LearnMove, LearnMove) {
     // std::unique_ptr<int> y = z;
     // std::cout << *y << std::endl;
-    char cstr[] = "moo";
-    MoveMe m1(cstr, 1);
-    MoveMe m2 = std::move(m1);
-    std::cout << ((m1.c) ? m1.c : "null") << "::" << m1.x << std::endl;
-    std::cout << ((m2.c) ? m2.c : "null") << "::" << m2.x << std::endl;
-
+    MoveMe m3 = testLearnMove();
+    std::cout << NULLSAFE(m3.c) << "::" << m3.x << std::endl;
 }
 
 int main(int argc, char** argv) {

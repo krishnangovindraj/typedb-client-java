@@ -20,6 +20,7 @@
  */
 
 #include "typedb/common/TypeDBDriverException.hpp"
+#include "typedb/common/native.hpp"
 
 namespace TypeDB {
 
@@ -38,6 +39,20 @@ const std::string& TypeDBDriverException::message() {
 
 const char* TypeDBDriverException::what() const noexcept {
     return errMsg.c_str();
+}
+
+
+void TypeDBDriverException::check_and_throw() {
+    if (_native::check_error()) {
+        _native::Error* error = _native::get_last_error();
+        char* errcode = _native::error_code(error);
+        char* errmsg = _native::error_message(error);
+        TypeDBDriverException exception(errcode, errmsg);
+        free(errmsg);
+        free(errcode);
+        _native::error_drop(error);
+        throw exception;
+    }
 }
 
 }

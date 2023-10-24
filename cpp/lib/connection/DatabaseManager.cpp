@@ -20,21 +20,28 @@
  */
 
 #include "typedb/connection/DatabaseManager.hpp"
-#include "../common/utils.hpp"
+#include "typedb/common/TypeDBDriverException.hpp"
 
 namespace TypeDB {
 
-DatabaseManager::DatabaseManager(_native::Connection* connectionNative) {
-    databaseManagerNative = connectionNative ? _native::database_manager_new(connectionNative) : nullptr;
+DatabaseManager::DatabaseManager(_native::Connection* connectionNative) {    
+    databaseManagerNative = connectionNative ? 
+        NativePointer<_native::DatabaseManager>(_native::database_manager_new(connectionNative), _native::database_manager_drop) :
+        NativePointer<_native::DatabaseManager>(nullptr);
 }
 
-DatabaseManager::~DatabaseManager() {
-    _native::database_manager_drop(databaseManagerNative);
+DatabaseManager::DatabaseManager(DatabaseManager&& from) noexcept {
+    *this = std::move(from);
+}
+
+DatabaseManager& DatabaseManager::operator=(DatabaseManager&& from) {
+    databaseManagerNative = std::move(from.databaseManagerNative);
+    return *this;
 }
 
 void DatabaseManager::create(const std::string& name) const {
-    _native::databases_create(databaseManagerNative, name.c_str());
-    check_and_throw();
+    _native::databases_create(databaseManagerNative.get(), name.c_str());
+    TypeDBDriverException::check_and_throw();
 }
 
 }

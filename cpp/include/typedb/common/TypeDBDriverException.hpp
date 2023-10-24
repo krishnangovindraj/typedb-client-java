@@ -23,6 +23,8 @@
 #include <stdexcept>
 #include <string>
 
+#include "typedb/common/native.hpp"
+
 namespace TypeDB {
 
 class TypeDBDriverException : public std::runtime_error {
@@ -34,6 +36,8 @@ class TypeDBDriverException : public std::runtime_error {
     const std::string& code();
     const std::string& message();
     const char* what() const noexcept override;
+
+    static void check_and_throw();
 };
 
 }

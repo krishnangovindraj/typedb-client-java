@@ -28,11 +28,19 @@ using namespace TypeDB;
 namespace TypeDB {
 
 UserManager::UserManager(const _native::Connection* connectionNative) {
-    userManagerNative = connectionNative ? _native::user_manager_new(connectionNative) : nullptr;
+    userManagerNative =  connectionNative ? 
+    NativePointer<_native::UserManager>(_native::user_manager_new(connectionNative), _native::user_manager_drop) : 
+    NativePointer<_native::UserManager>(nullptr);
+    
 }
 
-UserManager::~UserManager() {
-    user_manager_drop(userManagerNative);
+UserManager::UserManager(UserManager&& from) noexcept {
+    *this = std::move(from);
+}
+
+UserManager& UserManager::operator=(UserManager&& from) {
+    userManagerNative = std::move(from.userManagerNative);
+    return *this;
 }
 
 }

@@ -28,20 +28,20 @@
 
 namespace TypeDB {
 
-class Driver { // : NativeWrapper<_native::Connection> {
+class Driver {
 
    private:
-    TypeDB::_native::Connection* connectionNative;
-    TypeDB::_native::DatabaseManager* databaseManagerNative;
-    TypeDB::_native::UserManager* userManagerNative;
+    NativePointer<_native::Connection> connectionNative;
     Driver(TypeDB::_native::Connection* conn) noexcept;
 
    public:
-    const DatabaseManager databaseManager;
-    const UserManager userManager;
+    DatabaseManager databaseManager;
+    UserManager userManager;
 
     Driver(const std::string &coreAddress);
-    Driver(const Driver&) = delete;
-    ~Driver();
+    Driver(const Driver&) = delete; // Use move instead.
+    Driver(Driver&& from);
+
+    Driver& operator=(Driver&& from);
 };
 }

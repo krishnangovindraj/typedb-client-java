@@ -27,15 +27,21 @@
 
 namespace TypeDB {
 
+
 class DatabaseManager {
     private:
-    _native::DatabaseManager* databaseManagerNative;
+    
+    NativePointer<_native::DatabaseManager> databaseManagerNative;
+    
+
     public:
      DatabaseManager(_native::Connection*);
      DatabaseManager(const DatabaseManager&) = delete;
-     ~DatabaseManager();
+     DatabaseManager(DatabaseManager&&) noexcept;
+     
+     DatabaseManager& operator=(DatabaseManager&&);
 
-     void create(const std::string& name) const;
+     void create(const std::string&) const;
 
 };
 

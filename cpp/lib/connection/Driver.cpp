@@ -21,6 +21,8 @@
 
 #include "typedb/connection/Driver.hpp"
 
+#include <iostream>
+
 using namespace TypeDB;
 
 namespace TypeDB {
@@ -28,13 +30,21 @@ namespace TypeDB {
 Driver::Driver(const std::string& coreAddress) : Driver(_native::connection_open_core(coreAddress.c_str())) { }
 
 Driver::Driver(_native::Connection* conn) noexcept
-    : connectionNative(conn),
-      databaseManager(this->connectionNative),
-      userManager(this->connectionNative) {}
+    : connectionNative(conn, _native::connection_close),
+      databaseManager(this->connectionNative.get()),
+      userManager(this->connectionNative.get()) {}
 
-Driver::~Driver() {
-    // TODO: connection_close is called before the databaseManager & UserManager are destructed. Should we wrap it in an object to enforce the order?
-    _native::connection_close(connectionNative);
+Driver::Driver(Driver&& from) 
+  : connectionNative(std::move(from.connectionNative)),
+  databaseManager(std::move(from.databaseManager)),
+  userManager(std::move(from.userManager)) {}
+
+Driver& Driver::operator=(Driver&& from) {
+  connectionNative = std::move(from.connectionNative);
+  from.connectionNative = nullptr;
+  databaseManager = std::move(from.databaseManager);
+  userManager = std::move(from.userManager);
+  return *this;
 }
 
 }
