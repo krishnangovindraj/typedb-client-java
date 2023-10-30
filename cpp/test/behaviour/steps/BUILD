@@ -18,9 +18,16 @@
 # specific language governing permissions and limitations
 # under the License.
 
-cc_import(
-  name = "cucumber-cpp",
-  hdrs = glob(["cucumber-cpp/**/*"]),
-  static_library = "libcucumber-cpp.a",
-  visibility = ["//visibility:public"],
+cc_library(
+    name = "core-steps",
+    deps = [
+        "//cpp:typedb-driver-cpp"
+        "//cpp:test/cucumber:cucumber-cpp",
+        # External
+        "@gtest//:gtest",
+        "@gtest//:gtest_main"    
+    ],
+    srcs = glob(["core.cpp", "common/*.cpp"]),
+    hdrs = glob(["include/*.hpp"]),
+    strip_include_prefix = "include",
 )
