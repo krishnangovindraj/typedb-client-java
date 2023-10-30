@@ -33,8 +33,6 @@ using pickle_step = cucumber::messages::pickle_step;
 
 class DriverBase {
    private:
-    std::vector<std::pair<const std::regex*, void*>> stepIndex;
-
    public:
 
     void loadFeature(const std::string& path);
@@ -44,17 +42,34 @@ class DriverBase {
     virtual void registerTest(const std::string& featureName, const pickle& scenario) = 0;
 };
 
+
 template <typename CTX>
 class Driver : public DriverBase {
    private:
     CTX ctx;
-    const StepCollection<CTX> steps;
+    std::vector<const StepDefinition<CTX>> steps;
 
    public:
-    Driver(StepCollection<CTX> steps) : steps(steps) {}
+    Driver(std::initializer_list<StepCollection<CTX>> stepLists) {
+        int totalSteps = 0;
+        for (const StepCollection<CTX> stepVec: stepLists) {
+            totalSteps += stepVec.size();
+        }
+
+        steps.reserve(totalSteps);
+        for (const StepCollection<CTX> stepVec: stepLists) {
+            for (const cucumber_bdd::StepDefinition<CTX> stepDef: stepVec) {
+                steps.push_back(StepDefinition<CTX>{stepDef.regex, stepDef.impl}); // TODO: Avoid deep copy?
+            }
+        }
+        assert(steps.size() == totalSteps);
+        std::cerr << "Found a total of " << steps.size() << " steps\n";
+    }
     
     void registerTest(const std::string& featureName, const pickle& scenario) override {
         std::vector<ResolvedStep<CTX>> resolvedSteps;
+        resolvedSteps.reserve(scenario.steps.size());
+        std::cerr << "Resolving steps\n";
         for (pickle_step step : scenario.steps) {
             resolvedSteps.push_back(ResolvedStep<CTX>{step, resolveStep(step)});
         }
@@ -66,13 +81,14 @@ class Driver : public DriverBase {
         );
     }
 
-     const StepDefinition<CTX>* resolveStep(pickle_step& step) {
-        for (const StepDefinition<CTX>* s = steps.steps ; s < (steps.steps + steps.nSteps); s++)  {
-            if ( std::regex_match(step.text, s->regex) ) {
-                return s;
+     const StepDefinition<CTX>* resolveStep(pickle_step& toResolve) {
+        for (int i = 0; i < steps.size(); i++)  {
+            if ( std::regex_match(toResolve.text, steps[i].regex) ) {
+                return &steps[i];
             }
         }
-        throw std::runtime_error("Unmatched step: " + step.text);
+        std::cerr << "one step done\n";
+        throw std::runtime_error("Unmatched step: " + toResolve.text);
     } 
 };
 

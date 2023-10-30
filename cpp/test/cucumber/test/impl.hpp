@@ -33,6 +33,6 @@ struct Context {
     std::vector<std::string> moves[3]; // index by
 };
 
-extern cucumber_bdd::StepDefinition<Context> steps[3];
+extern cucumber_bdd::StepCollection<Context> steps;
 
 }

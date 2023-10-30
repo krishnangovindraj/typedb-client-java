@@ -75,7 +75,7 @@ void check_winner(Context& context, const cucumber::messages::pickle_step& step,
 
 }
 
-cucumber_bdd::StepDefinition<Context> steps[] = {
+cucumber_bdd::StepCollection<Context> steps = {
     {  std::regex("Nobody has made a move"), nobody_moved },
     {  std::regex("([A-Za-z]+) plays (rock|paper|scissors)"), record_move },
     {  std::regex("([A-Za-z]+) wins"), check_winner },

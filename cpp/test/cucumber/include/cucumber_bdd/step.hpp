@@ -34,11 +34,9 @@ namespace cucumber_bdd {
         void (*impl)(CTX& context, const cucumber::messages::pickle_step& step, const std::smatch& matches); // TODO: template void*
     };
 
+
     template <typename CTX>
-    struct StepCollection {
-        const StepDefinition<CTX>* steps;
-        const size_t nSteps;
-    };
+    using StepCollection = const std::vector<StepDefinition<CTX>>;
 
     template <typename CTX>
     struct ResolvedStep {

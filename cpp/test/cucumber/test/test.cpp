@@ -28,11 +28,12 @@
 
 #define ARRAY_LENGTH(ARR) (sizeof((ARR))/sizeof((ARR)[0]))
 
+using namespace cucumber_bdd;
+
 int main(int argc, char** argv) {
-    
     ::testing::InitGoogleTest(&argc, argv);
-    cucumber_bdd::StepCollection<RockPaperScissors::Context> steps{RockPaperScissors::steps, ARRAY_LENGTH(RockPaperScissors::steps)};
-    cucumber_bdd::Driver<RockPaperScissors::Context> driver(steps);
+    Driver<RockPaperScissors::Context> driver({RockPaperScissors::steps});
     driver.loadFeature("cpp/test/cucumber/test/test.feature");
     return driver.runAllTests();
+    return 0;
 }
