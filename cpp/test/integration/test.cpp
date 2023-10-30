@@ -43,7 +43,7 @@ TEST(TestConceptAPI, TestData) {
     delete_if_exists(driver, dbName);
     EXPECT_FALSE(_native::check_error());
     driver.databaseManager.create(dbName);
-    
+
     try {
         driver.databaseManager.create(dbName);
         FAIL(); // "Exception not thrown"

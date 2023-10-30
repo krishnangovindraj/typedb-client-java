@@ -18,46 +18,35 @@
 # specific language governing permissions and limitations
 # under the License.
 
-load("@vaticle_dependencies//tool/checkstyle:rules.bzl", "checkstyle_test")
+# Tells us how to interpret the jar
+
 
 cc_library(
-    name = "typedb-driver-cpp",
-    srcs = glob([
-        "lib/*/*.cpp",
-        "lib/*/*.hpp",  # Private includes
-    ]),
-    hdrs = glob(["include/typedb/**/*"]), # exported public includes
-    strip_include_prefix = "include",
-    deps = [
-        "//c:typedb_driver_clib",
-        "//c:typedb_driver_clib_headers"
+  name = "cucumber-cpp",
+  visibility = ["//visibility:public"],
+  srcs = glob(["lib/**/*.cpp", "lib/**/*.hpp"]),
+  hdrs = glob(["include/cucumber_bdd/*.hpp"]),
+  deps = [
+    "@gherkin_cpp//:gherkin-lib",
+    "@gtest//:gtest",
     ],
+  copts = ["-Iexternal/gherkin_cpp/include -Iinclude  -std=c++17"],
+  strip_include_prefix = "include",
+#  additional_linker_inputs = ["@gherkin_cpp//:gherkin-lib"], # Need it for runtime if using .so
 )
 
 cc_test(
-    name = "test-cpp-driver",
-    srcs = ["test/integration/test.cpp"],
+    name = "test-cucumber-lib",
+    srcs = glob(["test/*.cpp", "test/*.hpp"]),
     deps = [
-        ":typedb-driver-cpp",
+        ":cucumber-cpp",
 
         # External
+        "@gherkin_cpp//:gherkin-lib",
+
         "@gtest//:gtest",
         "@gtest//:gtest_main"
     ],
-    copts = ["-std=c++17"],
-    env = {"RUST_BACKTRACE": "full"},
-)
-
-cc_binary(
-    name = "test-behaviour-cucumber-server",
-    srcs = glob(["test/features/step_definitions/**/*.cpp"]),
-    deps = ["@cucumber_cpp//:cucumber-cpp"],
-)
-
-checkstyle_test(
-    name = "checkstyle",
-    size = "small",
-    include = glob(["*/*"]),
-    exclude = ["README.md"],
-    license_type = "apache-header",
+    data = ["test/test.feature"],
+    copts = ["-Iexternal/gherkin_cpp/include -Iinclude  -std=c++17"],
 )

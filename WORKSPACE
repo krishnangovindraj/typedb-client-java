@@ -265,3 +265,9 @@ load("@vaticle_bazel_distribution//common:rules.bzl", "workspace_refs")
 workspace_refs(
     name = "vaticle_typedb_driver_workspace_refs"
 )
+
+new_local_repository(
+    name = "gherkin_cpp",
+    path = "/Users/krishnangovindraj/code/dependency_libraries/dist/gherkin",
+    build_file = "cpp/test/cucumber/gherkin.bzl"
+)
