@@ -19,22 +19,27 @@
  * under the License.
  */
 
-#include "common.hpp"
+#pragma once
+
+#include "cucumber_bdd/step.hpp"
+#include "cucumber_bdd/driver.hpp"
+#include "cucumber_bdd/caserun.hpp"
+
+#include "typedb/connection/Driver.hpp"
+
+// #define BDD_STEP(REGEX, IMPL) (StepDefinition<TypeDB::BDD::Context>{(REGEX), [](Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches){IMPL}})
 
 namespace TypeDB::BDD {
-
-cucumber_bdd::StepCollection<TypeDB::BDD::Context> connectionSteps = {
-    {std::regex("typedb starts"), &unimplemented},
     
-    {std::regex("connection opens with default authentication"), &unimplemented},
-    {std::regex("connection opens with authentication: (\\w), (\\w)"), &unimplemented},
-    {std::regex("connection opens with authentication: (\\w), (\\w); throws exception"), &unimplemented},
+    struct Context { 
+        // TypeDB::Driver driver;
+    };
 
-    {std::regex("connection has been opened"), &unimplemented},
-    {std::regex("connection does not have any database"), &unimplemented},
+    void noop(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches);
+    void unimplemented(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches);
 
-    {std::regex("typedb stops"), &unimplemented},
-    {std::regex("connection closes"), &unimplemented},
-};
+    extern cucumber_bdd::StepCollection<Context> connectionSteps;
+    extern cucumber_bdd::StepCollection<Context> databaseSteps;
+    extern cucumber_bdd::StepCollection<Context> sessionSteps;
 
 }

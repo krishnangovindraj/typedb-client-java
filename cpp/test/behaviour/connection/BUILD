@@ -18,11 +18,14 @@
 # specific language governing permissions and limitations
 # under the License.
 
+load("@vaticle_dependencies//tool/checkstyle:rules.bzl", "checkstyle_test")
+
 # TODO: Create typedb_behaviour_cpp_test rule
 cc_test(
     name = "database-test",
     deps = ["//cpp/test/behaviour/steps:core-steps"],
     data = ["@vaticle_typedb_behaviour//connection:database.feature"],
+    args = ["$(location @vaticle_typedb_behaviour//connection:database.feature)"]
 )
 
 checkstyle_test(

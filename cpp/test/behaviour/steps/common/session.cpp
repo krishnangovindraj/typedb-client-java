@@ -19,22 +19,15 @@
  * under the License.
  */
 
+
 #include "common.hpp"
 
 namespace TypeDB::BDD {
-
-cucumber_bdd::StepCollection<TypeDB::BDD::Context> connectionSteps = {
-    {std::regex("typedb starts"), &unimplemented},
     
-    {std::regex("connection opens with default authentication"), &unimplemented},
-    {std::regex("connection opens with authentication: (\\w), (\\w)"), &unimplemented},
-    {std::regex("connection opens with authentication: (\\w), (\\w); throws exception"), &unimplemented},
+cucumber_bdd::StepCollection<Context> sessionSteps = { 
+    {std::regex("connection open session for database: (\\w+)"), &unimplemented},
+    
 
-    {std::regex("connection has been opened"), &unimplemented},
-    {std::regex("connection does not have any database"), &unimplemented},
-
-    {std::regex("typedb stops"), &unimplemented},
-    {std::regex("connection closes"), &unimplemented},
 };
 
 }

@@ -19,11 +19,20 @@
  * under the License.
  */
 
-#include "cucumber-cpp/cucumber_bdd/step.hpp"
+#include <iostream>
+#include "gtest/gtest.h"
 
-namespace TypeDB::BDD {
-    
+#include "common.hpp"
 
+int main(int argc, char** argv) {
+    if (argc != 2) {
+        std::cout << "Expected the path to the feature file as argument" << std::endl;
+        return 1;
+    }
 
-
+    ::testing::InitGoogleTest(&argc, argv);
+    cucumber_bdd::Driver<TypeDB::BDD::Context> driver({TypeDB::BDD::connectionSteps, TypeDB::BDD::databaseSteps});
+    driver.loadFeature(argv[1]);
+    return driver.runAllTests();
+    return 0;
 }

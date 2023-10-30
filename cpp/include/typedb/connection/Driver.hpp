@@ -20,6 +20,7 @@
  */
 #pragma once
 
+
 #include "typedb/common/native.hpp"
 #include "typedb/connection/DatabaseManager.hpp"
 #include "typedb/user/UserManager.hpp"

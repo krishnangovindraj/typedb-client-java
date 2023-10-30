@@ -69,7 +69,6 @@ class Driver : public DriverBase {
     void registerTest(const std::string& featureName, const pickle& scenario) override {
         std::vector<ResolvedStep<CTX>> resolvedSteps;
         resolvedSteps.reserve(scenario.steps.size());
-        std::cerr << "Resolving steps\n";
         for (pickle_step step : scenario.steps) {
             resolvedSteps.push_back(ResolvedStep<CTX>{step, resolveStep(step)});
         }
@@ -87,7 +86,6 @@ class Driver : public DriverBase {
                 return &steps[i];
             }
         }
-        std::cerr << "one step done\n";
         throw std::runtime_error("Unmatched step: " + toResolve.text);
     } 
 };

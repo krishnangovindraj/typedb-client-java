@@ -21,13 +21,18 @@
 cc_library(
     name = "core-steps",
     deps = [
-        "//cpp:typedb-driver-cpp"
-        "//cpp:test/cucumber:cucumber-cpp",
+        "//cpp:typedb-driver-cpp",
+        "//cpp/test/cucumber:cucumber-cpp",
+
         # External
+        "@gherkin_cpp//:gherkin-lib",
         "@gtest//:gtest",
-        "@gtest//:gtest_main"    
+        "@gtest//:gtest_main",
+
     ],
+    copts = ["-Iexternal/gherkin_cpp/include -std=c++17"],
     srcs = glob(["core.cpp", "common/*.cpp"]),
     hdrs = glob(["include/*.hpp"]),
     strip_include_prefix = "include",
+    visibility = ["//cpp/test/behaviour:__subpackages__"],
 )

@@ -23,16 +23,16 @@
 
 cc_library(
   name = "cucumber-cpp",
-  visibility = ["//visibility:public"],
   srcs = glob(["lib/**/*.cpp", "lib/**/*.hpp"]),
   hdrs = glob(["include/cucumber_bdd/*.hpp"]),
   deps = [
     "@gherkin_cpp//:gherkin-lib",
     "@gtest//:gtest",
     ],
-  copts = ["-Iexternal/gherkin_cpp/include -Iinclude  -std=c++17"],
+    copts = ["-Iexternal/gherkin_cpp/include  -std=c++17"],
   strip_include_prefix = "include",
 #  additional_linker_inputs = ["@gherkin_cpp//:gherkin-lib"], # Need it for runtime if using .so
+  visibility = ["//visibility:public"],
 )
 
 cc_test(

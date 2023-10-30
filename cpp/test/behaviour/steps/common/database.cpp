@@ -18,3 +18,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
+
+#include "common.hpp"
+
+namespace TypeDB::BDD {
+    
+cucumber_bdd::StepCollection<Context> databaseSteps = { 
+    
+    {std::regex("connection create database: (\\w+)"), &unimplemented},
+    {std::regex("connection has database: (\\w+)"), &unimplemented},
+    {std::regex("connection does not have database: (\\w+)"), &unimplemented},
+    {std::regex("connection delete database: (\\w+)"), &unimplemented},
+
+    {std::regex("connection delete database; throws exception: (\\w+)"), &unimplemented},
+
+    {std::regex("connection create databases:"), &unimplemented},
+    {std::regex("connection has databases:"), &unimplemented},
+    {std::regex("connection does not have databases:"), &unimplemented},
+    {std::regex("connection delete databases:"), &unimplemented},
+
+    {std::regex("connection create databases in parallel:"), &unimplemented},
+    {std::regex("connection delete databases in parallel:"), &unimplemented},
+};
+
+}

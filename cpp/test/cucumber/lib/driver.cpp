@@ -42,6 +42,14 @@
 
 namespace cucumber_bdd {
 
+
+bool skipScenario(const cucumber::messages::pickle& scenario) {
+    for (auto tag: scenario.tags) {
+        if (tag.name == "@ignore") return true;
+    }
+    return false;
+}
+
 void DriverBase::loadFeature(const std::string& path) {
     std::string featureContents = gherkin::slurp(path);
     gherkin::parser parser;
@@ -50,11 +58,17 @@ void DriverBase::loadFeature(const std::string& path) {
     
     if (doc.feature.has_value()) {
         for (cucumber::messages::pickle scenario : compiler.compile(doc, path)) {
-            registerTest(doc.feature.value().name, scenario);
+            if (skipScenario(scenario)) {
+                DEBUGONLY(std::cout << "Skipping scenario: " << scenario.name << std::endl)
+            } else {
+                DEBUGONLY(std::cout << "Registering scenario: " << scenario.name << std::endl)
+                registerTest(doc.feature.value().name, scenario);
+            }
         }
     }
     DEBUGONLY(std::cout << "All tests registered." << std::endl);
 }
+
 
 int DriverBase::runAllTests() {
     return RUN_ALL_TESTS();

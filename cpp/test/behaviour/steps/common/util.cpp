@@ -19,22 +19,17 @@
  * under the License.
  */
 
+#include <exception>
+
 #include "common.hpp"
 
 namespace TypeDB::BDD {
+    void noop(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches) {
+        // no-op
+    }
 
-cucumber_bdd::StepCollection<TypeDB::BDD::Context> connectionSteps = {
-    {std::regex("typedb starts"), &unimplemented},
-    
-    {std::regex("connection opens with default authentication"), &unimplemented},
-    {std::regex("connection opens with authentication: (\\w), (\\w)"), &unimplemented},
-    {std::regex("connection opens with authentication: (\\w), (\\w); throws exception"), &unimplemented},
-
-    {std::regex("connection has been opened"), &unimplemented},
-    {std::regex("connection does not have any database"), &unimplemented},
-
-    {std::regex("typedb stops"), &unimplemented},
-    {std::regex("connection closes"), &unimplemented},
-};
-
+    void unimplemented(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches) {
+        std::cerr << "This step is unimplemented: " + step.text << std::endl;
+        // throw std::runtime_error("This step is unimplemented: " + step.text);
+    }
 }
