@@ -23,7 +23,7 @@
 
 #include "cucumber_bdd/step.hpp"
 #include "cucumber_bdd/driver.hpp"
-#include "cucumber_bdd/caserun.hpp"
+#include "cucumber_bdd/testrun.hpp"
 
 #include "typedb/connection/Driver.hpp"
 

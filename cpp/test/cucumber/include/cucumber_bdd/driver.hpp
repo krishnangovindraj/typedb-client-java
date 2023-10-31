@@ -24,7 +24,7 @@
 #include <cucumber/messages/envelope.hpp>
 
 #include "cucumber_bdd/step.hpp"
-#include "cucumber_bdd/caserun.hpp"
+#include "cucumber_bdd/testrun.hpp"
 
 namespace cucumber_bdd {
 
@@ -76,7 +76,7 @@ class Driver : public DriverBase {
             featureName.c_str(), scenario.name.c_str(), 
             nullptr, nullptr,
             __FILE__, __LINE__,
-            CaseRunFactory<CTX>{resolvedSteps}
+            TestRunFactory<CTX>{resolvedSteps}
         );
     }
 

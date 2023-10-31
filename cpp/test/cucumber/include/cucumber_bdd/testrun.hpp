@@ -43,13 +43,13 @@ using Scenario = std::vector<ResolvedStep<CTX>>;
 #endif
 
 template <typename CTX>
-class CaseRun : public testing::Test {
+class TestRun : public testing::Test {
    private:
     CTX ctx;
     const Scenario<CTX>* scenario;
 
    public:
-    CaseRun(const Scenario<CTX>* scenario) 
+    TestRun(const Scenario<CTX>* scenario) 
     : scenario(scenario)
      { }
 
@@ -67,11 +67,11 @@ class CaseRun : public testing::Test {
 };
 
 template <typename CTX>
-struct CaseRunFactory {
+struct TestRunFactory {
     const Scenario<CTX> resolvedSteps;
     
-    CaseRun<CTX>* operator()() {
-        return new CaseRun<CTX>(&resolvedSteps);
+    TestRun<CTX>* operator()() {
+        return new TestRun<CTX>(&resolvedSteps);
     }
 };
 
