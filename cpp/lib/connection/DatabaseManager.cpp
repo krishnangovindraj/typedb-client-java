@@ -26,6 +26,12 @@
 
 namespace TypeDB {
 
+// DatabaseIterator
+template <> std::function<void(_native::DatabaseIterator*)> DatabaseIterator::fn_nativeIterDrop = &_native::database_iterator_drop;
+template <> std::function<_native::Database*(_native::DatabaseIterator*)> DatabaseIterator::fn_nativeIterNext = &_native::database_iterator_next;
+template <> std::function<void(_native::Database*)> DatabaseIterator::fn_nativeElementDrop = &_native::database_close;
+
+
 DatabaseManager::DatabaseManager(_native::Connection* connectionNative) {    
     databaseManagerNative = connectionNative ? 
         NativePointer<_native::DatabaseManager>(_native::database_manager_new(connectionNative), _native::database_manager_drop) :
@@ -58,33 +64,6 @@ Database DatabaseManager::get(const std::string& name) const {
 
 DatabaseIterator DatabaseManager::all() const {
     return DatabaseIterator(_native::databases_all(databaseManagerNative.get()));
-}
-
-DatabaseIterator::DatabaseIterator(_native::DatabaseIterator* nativeIterator) {
-    databaseIteratorNative = nativeIterator ? 
-        NativePointer<_native::DatabaseIterator>(nativeIterator, _native::database_iterator_drop) :
-        NativePointer<_native::DatabaseIterator>(nullptr);
-}
-
-bool DatabaseIterator::hasNext() {
-    if (pNext.get() == nullptr && databaseIteratorNative != nullptr) {
-        _native::Database* p = _native::database_iterator_next(databaseIteratorNative.get());
-        if (p != nullptr) {
-            pNext = NativePointer<_native::Database>(p, &_native::database_close);
-        } else {
-            pNext = NativePointer<_native::Database>(nullptr);
-            databaseIteratorNative.reset();
-        }
-    }
-    return pNext.get() != nullptr;
-}
-
-Database DatabaseIterator::next() {
-    if (hasNext()) {
-        return Database(pNext.release());
-    } else {
-        throw std::out_of_range("next() was called on iterator which does not have a next element.");
-    }
 }
 
 }

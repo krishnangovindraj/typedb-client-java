@@ -24,11 +24,18 @@
 #include <memory>
 
 #include "typedb/common/native.hpp"
+#include "typedb/common/iterator.hpp"
 #include "typedb/database/Database.hpp"
 
 namespace TypeDB {
 
-class DatabaseIterator;
+using DatabaseIterator = TypeDBIterator<
+    _native::DatabaseIterator, _native::Database, TypeDB::Database
+>;
+
+template <> std::function<void(_native::DatabaseIterator*)> DatabaseIterator::fn_nativeIterDrop;
+template <> std::function<_native::Database*(_native::DatabaseIterator*)> DatabaseIterator::fn_nativeIterNext;
+template <> std::function<void(_native::Database*)> DatabaseIterator::fn_nativeElementDrop;
 
 class DatabaseManager {
    private:
@@ -45,17 +52,6 @@ class DatabaseManager {
     bool contains(const std::string&) const;
     Database get(const std::string&) const;
     DatabaseIterator all() const;
-};
-
-class DatabaseIterator : public std::iterator<std::input_iterator_tag,Database> {
-    // Start with the java style iterator. Can implement std::iterator style functions later.
-   private: 
-    NativePointer<_native::DatabaseIterator> databaseIteratorNative;
-    NativePointer<_native::Database> pNext;
-   public:
-    DatabaseIterator(_native::DatabaseIterator* nativeIterator);
-    bool hasNext();
-    Database next();
 };
 
 }

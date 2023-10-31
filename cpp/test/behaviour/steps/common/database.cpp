@@ -31,10 +31,21 @@ void createDatabase() {
 
 cucumber_bdd::StepCollection<Context> databaseSteps = { 
     
-    {std::regex("connection create database: (\\w+)"), &unimplemented},
-    {std::regex("connection has database: (\\w+)"), &unimplemented},
-    {std::regex("connection does not have database: (\\w+)"), &unimplemented},
-    {std::regex("connection delete database: (\\w+)"), &unimplemented},
+    BDD_STEP("connection create database: (\\w+)", {
+        context.driver->databases.create(matches[1]);
+    }),
+
+    BDD_STEP("connection has database: (\\w+)", {
+        ASSERT_TRUE(context.driver->databases.contains(matches[1]));
+    }),
+
+    BDD_STEP("connection does not have database: (\\w+)", {
+        ASSERT_FALSE(context.driver->databases.contains(matches[1]));
+    }),
+
+    BDD_STEP("connection delete database: (\\w+)", {
+        context.driver->databases.get(matches[1]).drop();
+    }),
 
     {std::regex("connection delete database; throws exception: (\\w+)"), &unimplemented},
 

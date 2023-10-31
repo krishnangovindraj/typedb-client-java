@@ -26,7 +26,7 @@ namespace TypeDB::BDD {
 const std::string DEFAULT_CORE_ADDRESS = "127.0.0.1:1729";
 
 cucumber_bdd::StepCollection<TypeDB::BDD::Context> connectionSteps = {
-    {std::regex("typedb starts"), &noop},
+    BDD_NOOP("typedb starts"),
     
     BDD_STEP("connection opens with default authentication", {
         context.driver = std::make_unique<TypeDB::Driver>(DEFAULT_CORE_ADDRESS);
@@ -44,8 +44,9 @@ cucumber_bdd::StepCollection<TypeDB::BDD::Context> connectionSteps = {
         ASSERT_FALSE(context.driver->databases.all().hasNext());
     }),
 
-    {std::regex("typedb stops"), &unimplemented},
-    {std::regex("connection closes"), &unimplemented},
+    BDD_UNIMPLEMENTED("connection closes"),
+
+    BDD_NOOP("typedb stops"),
 };
 
 }
