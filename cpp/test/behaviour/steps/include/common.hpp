@@ -21,8 +21,8 @@
 
 #pragma once
 
-#include "cucumber_bdd/step.hpp"
 #include "cucumber_bdd/driver.hpp"
+#include "cucumber_bdd/step.hpp"
 #include "cucumber_bdd/testrun.hpp"
 
 #include "typedb/connection/Driver.hpp"
@@ -41,14 +41,13 @@ namespace TypeDB::BDD {
         void beforeScenario(const Context& context, const cucumber_bdd::Scenario<Context>* scenario) const override;
         void afterScenario(const Context& context, const cucumber_bdd::Scenario<Context>* scenario) const override;
     };
-    
-    extern const TestHooks testHooks;
 
-    void noop(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches);
-    void unimplemented(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches);
+    extern const TestHooks testHooks;
 
     extern cucumber_bdd::StepCollection<Context> connectionSteps;
     extern cucumber_bdd::StepCollection<Context> databaseSteps;
     extern cucumber_bdd::StepCollection<Context> sessionSteps;
 
+    void noop(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches);
+    void unimplemented(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches);
 }

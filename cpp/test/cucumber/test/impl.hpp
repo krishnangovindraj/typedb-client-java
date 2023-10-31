@@ -34,5 +34,4 @@ struct Context {
 };
 
 extern cucumber_bdd::StepCollection<Context> steps;
-
 }

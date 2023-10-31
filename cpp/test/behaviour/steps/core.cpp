@@ -26,7 +26,6 @@ namespace TypeDB::BDD {
 const std::string DEFAULT_CORE_ADDRESS = "127.0.0.1:1729";
 
 void TestHooks::beforeScenario(const Context& context, const cucumber_bdd::Scenario<Context>* scenario) const {
-    
 }
 
 void TestHooks::afterScenario(const Context& context, const cucumber_bdd::Scenario<Context>* scenario) const {

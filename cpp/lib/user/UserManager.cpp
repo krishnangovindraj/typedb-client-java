@@ -28,10 +28,9 @@ using namespace TypeDB;
 namespace TypeDB {
 
 UserManager::UserManager(const _native::Connection* connectionNative) {
-    userManagerNative =  connectionNative ? 
-    NativePointer<_native::UserManager>(_native::user_manager_new(connectionNative), _native::user_manager_drop) : 
-    NativePointer<_native::UserManager>(nullptr);
-    
+    userManagerNative = connectionNative ?
+        NativePointer<_native::UserManager>(_native::user_manager_new(connectionNative), _native::user_manager_drop) :
+        NativePointer<_native::UserManager>(nullptr);
 }
 
 UserManager::UserManager(UserManager&& from) noexcept {

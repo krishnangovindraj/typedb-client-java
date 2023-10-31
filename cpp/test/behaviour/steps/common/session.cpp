@@ -19,15 +19,12 @@
  * under the License.
  */
 
-
 #include "common.hpp"
 
 namespace TypeDB::BDD {
     
 cucumber_bdd::StepCollection<Context> sessionSteps = { 
     {std::regex("connection open session for database: (\\w+)"), &unimplemented},
-    
-
 };
 
 }

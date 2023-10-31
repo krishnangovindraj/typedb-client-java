@@ -53,11 +53,13 @@ class TestHooks {
 template <typename CTX>
 class TestRun : public testing::Test {
    private:
+   
     CTX ctx;
     const Scenario<CTX>* scenario;
     const TestHooks<CTX>* hooks;
 
    public:
+
     TestRun(const Scenario<CTX>* scenario, const TestHooks<CTX>* hooks = nullptr) 
     : scenario(scenario),
       hooks(hooks)
@@ -70,7 +72,6 @@ class TestRun : public testing::Test {
     void TearDown() override {
         if (hooks != nullptr) hooks->afterScenario(ctx, scenario);
     }
-
 
     void TestBody() override {
         DEBUGONLY(std::cout << "Running scenario: " << testing::UnitTest::GetInstance()->current_test_info()->name() << std::endl);

@@ -55,4 +55,4 @@ void TypeDBDriverException::check_and_throw() {
     }
 }
 
-}
+}  // namespace TypeDB

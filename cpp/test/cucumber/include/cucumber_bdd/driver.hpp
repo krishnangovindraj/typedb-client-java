@@ -34,22 +34,21 @@ using pickle_step = cucumber::messages::pickle_step;
 class DriverBase {
 
    public:
-
     void loadFeature(const std::string& path);
-
     int runAllTests();
 
     virtual void registerTest(const std::string& featureName, const pickle& scenario) = 0;
 };
 
-
 template <typename CTX>
 class Driver : public DriverBase {
    private:
+
     const TestHooks<CTX>* hooks;
     std::vector<const StepDefinition<CTX>> steps;
 
    public:
+
     Driver(std::initializer_list<StepCollection<CTX>> stepLists, const TestHooks<CTX>* hooks = nullptr) : hooks(hooks) {
         int totalSteps = 0;
         for (const StepCollection<CTX> stepVec: stepLists) {
@@ -88,9 +87,6 @@ class Driver : public DriverBase {
         }
         throw std::runtime_error("Unmatched step: " + toResolve.text);
     }
-
-
-
 };
 
 }

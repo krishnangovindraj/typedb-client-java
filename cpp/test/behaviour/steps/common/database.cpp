@@ -19,7 +19,6 @@
  * under the License.
  */
 
-
 #include "common.hpp"
 
 namespace TypeDB::BDD {

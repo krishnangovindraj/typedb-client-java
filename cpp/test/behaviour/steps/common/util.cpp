@@ -24,12 +24,14 @@
 #include "common.hpp"
 
 namespace TypeDB::BDD {
-    void noop(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches) {
-        // no-op
-    }
 
-    void unimplemented(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches) {
-        std::cerr << "This step is unimplemented: " + step.text << std::endl;
-        // throw std::runtime_error("This step is unimplemented: " + step.text);
-    }
+void noop(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches) {
+    // no-op
+}
+
+void unimplemented(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches) {
+    std::cerr << "This step is unimplemented: " + step.text << std::endl;
+    // throw std::runtime_error("This step is unimplemented: " + step.text);
+}
+
 }
