@@ -26,8 +26,6 @@
 
 #include "gtest/gtest.h"
 
-#define ARRAY_LENGTH(ARR) (sizeof((ARR))/sizeof((ARR)[0]))
-
 using namespace cucumber_bdd;
 
 int main(int argc, char** argv) {

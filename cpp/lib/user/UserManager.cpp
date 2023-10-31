@@ -19,8 +19,6 @@
  * under the License.
  */
 
-
-
 #include "typedb/connection/Driver.hpp"
 
 using namespace TypeDB;
@@ -42,4 +40,4 @@ UserManager& UserManager::operator=(UserManager&& from) {
     return *this;
 }
 
-}
+}  // namespace TypeDB

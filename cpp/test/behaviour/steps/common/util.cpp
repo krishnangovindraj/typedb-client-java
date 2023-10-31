@@ -34,4 +34,4 @@ void unimplemented(Context& context, const cucumber::messages::pickle_step& step
     // throw std::runtime_error("This step is unimplemented: " + step.text);
 }
 
-}
+}  // namespace TypeDB::BDD

@@ -23,13 +23,8 @@
 
 namespace TypeDB::BDD {
 
-void createDatabase() {
-    
-}
+cucumber_bdd::StepCollection<Context> databaseSteps = {
 
-
-cucumber_bdd::StepCollection<Context> databaseSteps = { 
-    
     BDD_STEP("connection create database: (\\w+)", {
         context.driver->databases.create(matches[1]);
     }),
@@ -57,4 +52,4 @@ cucumber_bdd::StepCollection<Context> databaseSteps = {
     {std::regex("connection delete databases in parallel:"), &unimplemented},
 };
 
-}
+}  // namespace TypeDB::BDD

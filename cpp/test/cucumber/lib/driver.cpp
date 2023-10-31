@@ -27,24 +27,25 @@
 #include <string>
 
 #include <gherkin/parser.hpp>
-#include <gherkin/utils.hpp>
 #include <gherkin/pickle_compiler.hpp>
+#include <gherkin/utils.hpp>
 
 #include "cucumber_bdd/driver.hpp"
 
-
-
 #ifdef NDEBUG
-#define DEBUGONLY(CMD) {}
+#define DEBUGONLY(CMD) \
+    {}
 #else
-#define DEBUGONLY(CMD) {(CMD);}
+#define DEBUGONLY(CMD) \
+    { (CMD); }
 #endif
 
 namespace cucumber_bdd {
-template <typename T> std::string type_name();
+template <typename T>
+std::string type_name();
 
 bool skipScenario(const cucumber::messages::pickle& scenario) {
-    for (auto tag: scenario.tags) {
+    for (auto tag : scenario.tags) {
         if (tag.name == "@ignore") return true;
     }
     return false;
@@ -56,7 +57,7 @@ void DriverBase::loadFeature(const std::string& path) {
     gherkin::parser parser;
     cucumber::messages::gherkin_document doc = parser.parse(path, featureContents);
     gherkin::pickle_compiler compiler;
-    
+
     if (doc.feature.has_value()) {
         for (cucumber::messages::pickle scenario : compiler.compile(doc, path)) {
             if (skipScenario(scenario)) {
@@ -70,11 +71,10 @@ void DriverBase::loadFeature(const std::string& path) {
     DEBUGONLY(std::cout << "All tests registered." << std::endl);
 }
 
-
 int DriverBase::runAllTests() {
     return RUN_ALL_TESTS();
 }
 
-}
+}  // namespace cucumber_bdd
 
 #undef DEBUGONLY

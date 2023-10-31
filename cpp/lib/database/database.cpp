@@ -35,13 +35,13 @@ Database::Database(Database&& from) noexcept {
 }
 
 Database& Database::operator=(Database&& from) {
-  databaseNative = std::move(from.databaseNative);
-  return *this;
+    databaseNative = std::move(from.databaseNative);
+    return *this;
 }
 
 void Database::drop() {
     _native::database_delete(databaseNative.get());
-    databaseNative.release(); // Dangling pointer. Release avoids invoking the deleter (database_close)
+    databaseNative.release();  // Dangling pointer. Release avoids invoking the deleter (database_close)
 }
 
-}
+}  // namespace TypeDB

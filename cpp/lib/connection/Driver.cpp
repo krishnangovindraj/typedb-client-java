@@ -27,7 +27,8 @@ using namespace TypeDB;
 
 namespace TypeDB {
 
-Driver::Driver(const std::string& coreAddress) : Driver(_native::connection_open_core(coreAddress.c_str())) { }
+Driver::Driver(const std::string& coreAddress)
+    : Driver(_native::connection_open_core(coreAddress.c_str())) {}
 
 Driver::Driver(_native::Connection* conn) noexcept
     : connectionNative(conn, _native::connection_close),
@@ -51,4 +52,4 @@ bool Driver::isOpen() {
     return _native::connection_is_open(connectionNative.get());
 }
 
-}
+}  // namespace TypeDB

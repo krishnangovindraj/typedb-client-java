@@ -24,14 +24,16 @@
 namespace RockPaperScissors {
 
 enum Move {
-    ROCK, PAPER, SCISSORS
+    ROCK,
+    PAPER,
+    SCISSORS
 };
 
 Move stringToMove(const std::string& str);
 
 struct Context {
-    std::vector<std::string> moves[3]; // index by
+    std::vector<std::string> moves[3];  // index by
 };
 
 extern cucumber_bdd::StepCollection<Context> steps;
-}
+}  // namespace RockPaperScissors

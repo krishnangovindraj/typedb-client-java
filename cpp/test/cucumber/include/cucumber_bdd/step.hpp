@@ -27,18 +27,19 @@
 
 namespace cucumber_bdd {
 
-    template <typename CTX>
-    struct StepDefinition {
-        const std::regex regex;
-        void (*impl)(CTX& context, const cucumber::messages::pickle_step& step, const std::smatch& matches); // TODO: template void*
-    };
+template <typename CTX>
+struct StepDefinition {
+    const std::regex regex;
+    void (*impl)(CTX& context, const cucumber::messages::pickle_step& step, const std::smatch& matches);  // TODO: template void*
+};
 
-    template <typename CTX>
-    using StepCollection = const std::vector<StepDefinition<CTX>>;
+template <typename CTX>
+using StepCollection = const std::vector<StepDefinition<CTX>>;
 
-    template <typename CTX>
-    struct ResolvedStep {
-        const cucumber::messages::pickle_step step;
-        const StepDefinition<CTX>* definition;
-    };
-}
+template <typename CTX>
+struct ResolvedStep {
+    const cucumber::messages::pickle_step step;
+    const StepDefinition<CTX>* definition;
+};
+
+}  // namespace cucumber_bdd

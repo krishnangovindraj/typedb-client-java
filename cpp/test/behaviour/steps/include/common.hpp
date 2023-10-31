@@ -27,27 +27,27 @@
 
 #include "typedb/connection/Driver.hpp"
 
-#define BDD_STEP(REGEX, IMPL) (cucumber_bdd::StepDefinition<TypeDB::BDD::Context>{std::regex((REGEX)), [](Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches){IMPL}})
+#define BDD_STEP(REGEX, IMPL) (cucumber_bdd::StepDefinition<TypeDB::BDD::Context>{std::regex((REGEX)), [](Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches) { IMPL }})
 #define BDD_UNIMPLEMENTED(REGEX) (cucumber_bdd::StepDefinition<TypeDB::BDD::Context>{std::regex((REGEX)), &unimplemented})
 #define BDD_NOOP(REGEX) (cucumber_bdd::StepDefinition<TypeDB::BDD::Context>{std::regex((REGEX)), &noop})
 
 namespace TypeDB::BDD {
-    
-    struct Context { 
-        std::unique_ptr<TypeDB::Driver> driver;
-    };
 
-    class TestHooks : public cucumber_bdd::TestHooks<Context> {
-        void beforeScenario(const Context& context, const cucumber_bdd::Scenario<Context>* scenario) const override;
-        void afterScenario(const Context& context, const cucumber_bdd::Scenario<Context>* scenario) const override;
-    };
+struct Context {
+    std::unique_ptr<TypeDB::Driver> driver;
+};
 
-    extern const TestHooks testHooks;
+class TestHooks : public cucumber_bdd::TestHooks<Context> {
+    void beforeScenario(const Context& context, const cucumber_bdd::Scenario<Context>* scenario) const override;
+    void afterScenario(const Context& context, const cucumber_bdd::Scenario<Context>* scenario) const override;
+};
 
-    extern cucumber_bdd::StepCollection<Context> connectionSteps;
-    extern cucumber_bdd::StepCollection<Context> databaseSteps;
-    extern cucumber_bdd::StepCollection<Context> sessionSteps;
+extern const TestHooks testHooks;
 
-    void noop(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches);
-    void unimplemented(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches);
-}
+extern cucumber_bdd::StepCollection<Context> connectionSteps;
+extern cucumber_bdd::StepCollection<Context> databaseSteps;
+extern cucumber_bdd::StepCollection<Context> sessionSteps;
+
+void noop(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches);
+void unimplemented(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches);
+}  // namespace TypeDB::BDD

@@ -30,14 +30,18 @@ namespace RockPaperScissors {
 const int ROCK_SCISSORS = (1 << ROCK) | (1 << SCISSORS);
 const int PAPER_ROCK = (1 << PAPER) | (1 << ROCK);
 const int SCISSORS_PAPER = (1 << SCISSORS) | (1 << PAPER);
-const int DRAW = ROCK|PAPER|SCISSORS;
+const int DRAW = ROCK | PAPER | SCISSORS;
 
 int winningMove(int bitMappedMoves) {
     switch (bitMappedMoves) {
-        case ROCK_SCISSORS: return ROCK;
-        case PAPER_ROCK: return PAPER;
-        case SCISSORS_PAPER: return SCISSORS;
-        default: return DRAW;
+        case ROCK_SCISSORS:
+            return ROCK;
+        case PAPER_ROCK:
+            return PAPER;
+        case SCISSORS_PAPER:
+            return SCISSORS;
+        default:
+            return DRAW;
     }
 }
 
@@ -64,21 +68,20 @@ void record_move(Context& context, const cucumber::messages::pickle_step& step, 
 // TODO: Support multiple winners?
 void check_winner(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches) {
     int moves = 0;
-    if (context.moves[ROCK].size() >0 ) moves |= (1 << ROCK);
-    if (context.moves[PAPER].size() >0 ) moves |= (1 << PAPER);
-    if (context.moves[SCISSORS].size() >0 ) moves |= (1 << SCISSORS);
+    if (context.moves[ROCK].size() > 0) moves |= (1 << ROCK);
+    if (context.moves[PAPER].size() > 0) moves |= (1 << PAPER);
+    if (context.moves[SCISSORS].size() > 0) moves |= (1 << SCISSORS);
 
     int win = winningMove(moves);
     if (win != DRAW) {
         ASSERT_EQ(context.moves[win][0], matches[1]);
     } else ASSERT_EQ("draw", matches[1]);
-
 }
 
 cucumber_bdd::StepCollection<Context> steps = {
-    {  std::regex("Nobody has made a move"), nobody_moved },
-    {  std::regex("([A-Za-z]+) plays (rock|paper|scissors)"), record_move },
-    {  std::regex("([A-Za-z]+) wins"), check_winner },
+    {std::regex("Nobody has made a move"), nobody_moved},
+    {std::regex("([A-Za-z]+) plays (rock|paper|scissors)"), record_move},
+    {std::regex("([A-Za-z]+) wins"), check_winner},
 };
 
-}
+}  // namespace RockPaperScissors

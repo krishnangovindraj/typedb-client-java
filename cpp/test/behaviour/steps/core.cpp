@@ -40,11 +40,11 @@ const TestHooks testHooks;
 
 cucumber_bdd::StepCollection<Context> connectionSteps = {
     BDD_NOOP("typedb starts"),
-    
+
     BDD_STEP("connection opens with default authentication", {
         context.driver = std::make_unique<TypeDB::Driver>(DEFAULT_CORE_ADDRESS);
     }),
-    
+
     BDD_UNIMPLEMENTED("connection opens with authentication: (\\w), (\\w)"),
 
     BDD_UNIMPLEMENTED("connection opens with authentication: (\\w), (\\w); throws exception"),
@@ -52,7 +52,7 @@ cucumber_bdd::StepCollection<Context> connectionSteps = {
     BDD_STEP("connection has been opened", {
         ASSERT_TRUE(context.driver->isOpen());
     }),
-    
+
     BDD_STEP("connection does not have any database", {
         ASSERT_FALSE(context.driver->databases.all().hasNext());
     }),
@@ -62,4 +62,4 @@ cucumber_bdd::StepCollection<Context> connectionSteps = {
     BDD_NOOP("typedb stops"),
 };
 
-}
+}  // namespace TypeDB::BDD

@@ -27,15 +27,15 @@
 namespace TypeDB {
 
 // DatabaseIterator
-template <> std::function<void(_native::DatabaseIterator*)> DatabaseIterator::fn_nativeIterDrop = &_native::database_iterator_drop;
-template <> std::function<_native::Database*(_native::DatabaseIterator*)> DatabaseIterator::fn_nativeIterNext = &_native::database_iterator_next;
-template <> std::function<void(_native::Database*)> DatabaseIterator::fn_nativeElementDrop = &_native::database_close;
+template <>
+std::function<void(_native::DatabaseIterator*)> DatabaseIterator::fn_nativeIterDrop = &_native::database_iterator_drop;
+template <>
+std::function<_native::Database*(_native::DatabaseIterator*)> DatabaseIterator::fn_nativeIterNext = &_native::database_iterator_next;
+template <>
+std::function<void(_native::Database*)> DatabaseIterator::fn_nativeElementDrop = &_native::database_close;
 
-
-DatabaseManager::DatabaseManager(_native::Connection* connectionNative) {    
-    databaseManagerNative = connectionNative ? 
-        NativePointer<_native::DatabaseManager>(_native::database_manager_new(connectionNative), _native::database_manager_drop) :
-        NativePointer<_native::DatabaseManager>(nullptr);
+DatabaseManager::DatabaseManager(_native::Connection* connectionNative) {
+    databaseManagerNative = connectionNative ? NativePointer<_native::DatabaseManager>(_native::database_manager_new(connectionNative), _native::database_manager_drop) : NativePointer<_native::DatabaseManager>(nullptr);
 }
 
 DatabaseManager::DatabaseManager(DatabaseManager&& from) noexcept {
@@ -58,12 +58,11 @@ bool DatabaseManager::contains(const std::string& name) const {
 
 Database DatabaseManager::get(const std::string& name) const {
     std::cout << "Database manager get called" << std::endl;
-    return Database(_native::databases_get(databaseManagerNative.get(), name.c_str())); // No std::move for copy-elision
+    return Database(_native::databases_get(databaseManagerNative.get(), name.c_str()));  // No std::move for copy-elision
 }
-
 
 DatabaseIterator DatabaseManager::all() const {
     return DatabaseIterator(_native::databases_all(databaseManagerNative.get()));
 }
 
-}
+}  // namespace TypeDB

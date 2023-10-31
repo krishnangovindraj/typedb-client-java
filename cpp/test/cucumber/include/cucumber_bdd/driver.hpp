@@ -32,7 +32,6 @@ using pickle = cucumber::messages::pickle;
 using pickle_step = cucumber::messages::pickle_step;
 
 class DriverBase {
-
    public:
     void loadFeature(const std::string& path);
     int runAllTests();
@@ -43,28 +42,27 @@ class DriverBase {
 template <typename CTX>
 class Driver : public DriverBase {
    private:
-
     const TestHooks<CTX>* hooks;
     std::vector<const StepDefinition<CTX>> steps;
 
    public:
-
-    Driver(std::initializer_list<StepCollection<CTX>> stepLists, const TestHooks<CTX>* hooks = nullptr) : hooks(hooks) {
+    Driver(std::initializer_list<StepCollection<CTX>> stepLists, const TestHooks<CTX>* hooks = nullptr)
+        : hooks(hooks) {
         int totalSteps = 0;
-        for (const StepCollection<CTX> stepVec: stepLists) {
+        for (const StepCollection<CTX> stepVec : stepLists) {
             totalSteps += stepVec.size();
         }
 
         steps.reserve(totalSteps);
-        for (const StepCollection<CTX> stepVec: stepLists) {
-            for (const cucumber_bdd::StepDefinition<CTX> stepDef: stepVec) {
-                steps.push_back(StepDefinition<CTX>{stepDef.regex, stepDef.impl}); // TODO: Avoid deep copy?
+        for (const StepCollection<CTX> stepVec : stepLists) {
+            for (const cucumber_bdd::StepDefinition<CTX> stepDef : stepVec) {
+                steps.push_back(StepDefinition<CTX>{stepDef.regex, stepDef.impl});  // TODO: Avoid deep copy?
             }
         }
         assert(steps.size() == totalSteps);
         std::cerr << "Found a total of " << steps.size() << " steps\n";
     }
-    
+
     void registerTest(const std::string& featureName, const pickle& scenario) override {
         std::vector<ResolvedStep<CTX>> resolvedSteps;
         resolvedSteps.reserve(scenario.steps.size());
@@ -72,16 +70,15 @@ class Driver : public DriverBase {
             resolvedSteps.push_back(ResolvedStep<CTX>{step, resolveStep(step)});
         }
         testing::RegisterTest(
-            featureName.c_str(), scenario.name.c_str(), 
+            featureName.c_str(), scenario.name.c_str(),
             nullptr, nullptr,
             __FILE__, __LINE__,
-            TestRunFactory<CTX>{resolvedSteps, hooks}
-        );
+            TestRunFactory<CTX>{resolvedSteps, hooks});
     }
 
     const StepDefinition<CTX>* resolveStep(pickle_step& toResolve) {
-        for (int i = 0; i < steps.size(); i++)  {
-            if ( std::regex_match(toResolve.text, steps[i].regex) ) {
+        for (int i = 0; i < steps.size(); i++) {
+            if (std::regex_match(toResolve.text, steps[i].regex)) {
                 return &steps[i];
             }
         }
@@ -89,4 +86,4 @@ class Driver : public DriverBase {
     }
 };
 
-}
+}  // namespace cucumber_bdd
