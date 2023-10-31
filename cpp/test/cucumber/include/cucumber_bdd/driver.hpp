@@ -32,7 +32,7 @@ using pickle = cucumber::messages::pickle;
 using pickle_step = cucumber::messages::pickle_step;
 
 class DriverBase {
-   private:
+
    public:
 
     void loadFeature(const std::string& path);
@@ -46,11 +46,11 @@ class DriverBase {
 template <typename CTX>
 class Driver : public DriverBase {
    private:
-    CTX ctx;
+    const TestHooks<CTX>* hooks;
     std::vector<const StepDefinition<CTX>> steps;
 
    public:
-    Driver(std::initializer_list<StepCollection<CTX>> stepLists) {
+    Driver(std::initializer_list<StepCollection<CTX>> stepLists, const TestHooks<CTX>* hooks = nullptr) : hooks(hooks) {
         int totalSteps = 0;
         for (const StepCollection<CTX> stepVec: stepLists) {
             totalSteps += stepVec.size();
@@ -76,18 +76,21 @@ class Driver : public DriverBase {
             featureName.c_str(), scenario.name.c_str(), 
             nullptr, nullptr,
             __FILE__, __LINE__,
-            TestRunFactory<CTX>{resolvedSteps}
+            TestRunFactory<CTX>{resolvedSteps, hooks}
         );
     }
 
-     const StepDefinition<CTX>* resolveStep(pickle_step& toResolve) {
+    const StepDefinition<CTX>* resolveStep(pickle_step& toResolve) {
         for (int i = 0; i < steps.size(); i++)  {
             if ( std::regex_match(toResolve.text, steps[i].regex) ) {
                 return &steps[i];
             }
         }
         throw std::runtime_error("Unmatched step: " + toResolve.text);
-    } 
+    }
+
+
+
 };
 
 }

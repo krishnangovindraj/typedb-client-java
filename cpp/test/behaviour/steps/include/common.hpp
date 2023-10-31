@@ -37,6 +37,13 @@ namespace TypeDB::BDD {
         std::unique_ptr<TypeDB::Driver> driver;
     };
 
+    class TestHooks : public cucumber_bdd::TestHooks<Context> {
+        void beforeScenario(const Context& context, const cucumber_bdd::Scenario<Context>* scenario) const override;
+        void afterScenario(const Context& context, const cucumber_bdd::Scenario<Context>* scenario) const override;
+    };
+    
+    extern const TestHooks testHooks;
+
     void noop(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches);
     void unimplemented(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches);
 

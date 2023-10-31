@@ -42,16 +42,34 @@ using Scenario = std::vector<ResolvedStep<CTX>>;
 #define DEBUGONLY(CMD) {(CMD);}
 #endif
 
+
+template <typename CTX>
+class TestHooks {
+   public:
+    virtual void beforeScenario(const CTX&, const Scenario<CTX>*) const { }
+    virtual void afterScenario(const CTX& context, const Scenario<CTX>*) const { }
+};
+
 template <typename CTX>
 class TestRun : public testing::Test {
    private:
     CTX ctx;
     const Scenario<CTX>* scenario;
+    const TestHooks<CTX>* hooks;
 
    public:
-    TestRun(const Scenario<CTX>* scenario) 
-    : scenario(scenario)
+    TestRun(const Scenario<CTX>* scenario, const TestHooks<CTX>* hooks = nullptr) 
+    : scenario(scenario),
+      hooks(hooks)
      { }
+
+    void SetUp() override {
+        if (hooks != nullptr) hooks->beforeScenario(ctx, scenario);
+    }
+
+    void TearDown() override {
+        if (hooks != nullptr) hooks->afterScenario(ctx, scenario);
+    }
 
 
     void TestBody() override {
@@ -69,9 +87,10 @@ class TestRun : public testing::Test {
 template <typename CTX>
 struct TestRunFactory {
     const Scenario<CTX> resolvedSteps;
+    const TestHooks<CTX>* hooks;
     
     TestRun<CTX>* operator()() {
-        return new TestRun<CTX>(&resolvedSteps);
+        return new TestRun<CTX>(&resolvedSteps, hooks);
     }
 };
 
