@@ -55,4 +55,36 @@ Database DatabaseManager::get(const std::string& name) const {
     return Database(_native::databases_get(databaseManagerNative.get(), name.c_str())); // No std::move for copy-elision
 }
 
+
+DatabaseIterator DatabaseManager::all() const {
+    return DatabaseIterator(_native::databases_all(databaseManagerNative.get()));
+}
+
+DatabaseIterator::DatabaseIterator(_native::DatabaseIterator* nativeIterator) {
+    databaseIteratorNative = nativeIterator ? 
+        NativePointer<_native::DatabaseIterator>(nativeIterator, _native::database_iterator_drop) :
+        NativePointer<_native::DatabaseIterator>(nullptr);
+}
+
+bool DatabaseIterator::hasNext() {
+    if (pNext.get() == nullptr && databaseIteratorNative != nullptr) {
+        _native::Database* p = _native::database_iterator_next(databaseIteratorNative.get());
+        if (p != nullptr) {
+            pNext = NativePointer<_native::Database>(p, &_native::database_close);
+        } else {
+            pNext = NativePointer<_native::Database>(nullptr);
+            databaseIteratorNative.reset();
+        }
+    }
+    return pNext.get() != nullptr;
+}
+
+Database DatabaseIterator::next() {
+    if (hasNext()) {
+        return Database(pNext.release());
+    } else {
+        throw std::out_of_range("next() was called on iterator which does not have a next element.");
+    }
+}
+
 }

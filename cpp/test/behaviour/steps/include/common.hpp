@@ -27,12 +27,14 @@
 
 #include "typedb/connection/Driver.hpp"
 
-// #define BDD_STEP(REGEX, IMPL) (StepDefinition<TypeDB::BDD::Context>{(REGEX), [](Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches){IMPL}})
+#define BDD_STEP(REGEX, IMPL) (cucumber_bdd::StepDefinition<TypeDB::BDD::Context>{std::regex((REGEX)), [](Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches){IMPL}})
+#define BDD_UNIMPLEMENTED(REGEX) (cucumber_bdd::StepDefinition<TypeDB::BDD::Context>{std::regex((REGEX)), &unimplemented})
+#define BDD_NOOP(REGEX) (cucumber_bdd::StepDefinition<TypeDB::BDD::Context>{std::regex((REGEX)), &noop})
 
 namespace TypeDB::BDD {
     
     struct Context { 
-        // TypeDB::Driver driver;
+        std::unique_ptr<TypeDB::Driver> driver;
     };
 
     void noop(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches);

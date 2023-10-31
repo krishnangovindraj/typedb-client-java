@@ -23,15 +23,26 @@
 
 namespace TypeDB::BDD {
 
-cucumber_bdd::StepCollection<TypeDB::BDD::Context> connectionSteps = {
-    {std::regex("typedb starts"), &unimplemented},
-    
-    {std::regex("connection opens with default authentication"), &unimplemented},
-    {std::regex("connection opens with authentication: (\\w), (\\w)"), &unimplemented},
-    {std::regex("connection opens with authentication: (\\w), (\\w); throws exception"), &unimplemented},
+const std::string DEFAULT_CORE_ADDRESS = "127.0.0.1:1729";
 
-    {std::regex("connection has been opened"), &unimplemented},
-    {std::regex("connection does not have any database"), &unimplemented},
+cucumber_bdd::StepCollection<TypeDB::BDD::Context> connectionSteps = {
+    {std::regex("typedb starts"), &noop},
+    
+    BDD_STEP("connection opens with default authentication", {
+        context.driver = std::make_unique<TypeDB::Driver>(DEFAULT_CORE_ADDRESS);
+    }),
+    
+    BDD_UNIMPLEMENTED("connection opens with authentication: (\\w), (\\w)"),
+
+    BDD_UNIMPLEMENTED("connection opens with authentication: (\\w), (\\w); throws exception"),
+
+    BDD_STEP("connection has been opened", {
+        ASSERT_TRUE(context.driver->isOpen());
+    }),
+    
+    BDD_STEP("connection does not have any database", {
+        ASSERT_FALSE(context.driver->databases.all().hasNext());
+    }),
 
     {std::regex("typedb stops"), &unimplemented},
     {std::regex("connection closes"), &unimplemented},

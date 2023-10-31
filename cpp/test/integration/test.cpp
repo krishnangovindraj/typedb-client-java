@@ -32,8 +32,8 @@ using namespace TypeDB;
 
 
 void delete_if_exists(const TypeDB::Driver& driver, const std::string& name) {
-    if (driver.databaseManager.contains(name)) {
-        driver.databaseManager.get(name).drop();
+    if (driver.databases().contains(name)) {
+        driver.databases().get(name).drop();
     }
 }
 
@@ -42,10 +42,10 @@ TEST(TestConceptAPI, TestData) {
     TypeDB::Driver driver("127.0.0.1:1729");
     delete_if_exists(driver, dbName);
     EXPECT_FALSE(_native::check_error());
-    driver.databaseManager.create(dbName);
+    driver.databases().create(dbName);
 
     try {
-        driver.databaseManager.create(dbName);
+        driver.databases().create(dbName);
         FAIL(); // "Exception not thrown"
     } catch (TypeDBDriverException e) {
         std::cout << "Caught exception with message: " << e.message() << std::endl ;

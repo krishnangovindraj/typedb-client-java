@@ -21,30 +21,41 @@
 #pragma once
 
 #include <string>
+#include <memory>
 
 #include "typedb/common/native.hpp"
 #include "typedb/database/Database.hpp"
 
 namespace TypeDB {
 
+class DatabaseIterator;
 
 class DatabaseManager {
-    private:
-    
+   private:
     NativePointer<_native::DatabaseManager> databaseManagerNative;
-    
 
-    public:
-     DatabaseManager(_native::Connection*);
-     DatabaseManager(const DatabaseManager&) = delete;
-     DatabaseManager(DatabaseManager&&) noexcept;
+   public:
+    DatabaseManager(_native::Connection*);
+    DatabaseManager(const DatabaseManager&) = delete;
+    DatabaseManager(DatabaseManager&&) noexcept;
      
-     DatabaseManager& operator=(DatabaseManager&&);
+    DatabaseManager& operator=(DatabaseManager&&);
 
-     void create(const std::string&) const;
-     bool contains(const std::string&) const;
-     Database get(const std::string&) const;
+    void create(const std::string&) const;
+    bool contains(const std::string&) const;
+    Database get(const std::string&) const;
+    DatabaseIterator all() const;
+};
 
+class DatabaseIterator : public std::iterator<std::input_iterator_tag,Database> {
+    // Start with the java style iterator. Can implement std::iterator style functions later.
+   private: 
+    NativePointer<_native::DatabaseIterator> databaseIteratorNative;
+    NativePointer<_native::Database> pNext;
+   public:
+    DatabaseIterator(_native::DatabaseIterator* nativeIterator);
+    bool hasNext();
+    Database next();
 };
 
 }

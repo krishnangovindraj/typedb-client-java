@@ -23,7 +23,12 @@
 #include "common.hpp"
 
 namespace TypeDB::BDD {
+
+void createDatabase() {
     
+}
+
+
 cucumber_bdd::StepCollection<Context> databaseSteps = { 
     
     {std::regex("connection create database: (\\w+)"), &unimplemented},

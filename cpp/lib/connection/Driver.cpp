@@ -31,20 +31,24 @@ Driver::Driver(const std::string& coreAddress) : Driver(_native::connection_open
 
 Driver::Driver(_native::Connection* conn) noexcept
     : connectionNative(conn, _native::connection_close),
-      databaseManager(this->connectionNative.get()),
-      userManager(this->connectionNative.get()) {}
+      databases(this->connectionNative.get()),
+      users(this->connectionNative.get()) {}
 
 Driver::Driver(Driver&& from)
     : connectionNative(std::move(from.connectionNative)),
-      databaseManager(std::move(from.databaseManager)),
-      userManager(std::move(from.userManager)) {}
+      databases(std::move(from.databases)),
+      users(std::move(from.users)) {}
 
 Driver& Driver::operator=(Driver&& from) {
     connectionNative = std::move(from.connectionNative);
     from.connectionNative = nullptr;
-    databaseManager = std::move(from.databaseManager);
-    userManager = std::move(from.userManager);
-return *this;
+    databases = std::move(from.databases);
+    users = std::move(from.users);
+    return *this;
+}
+
+bool Driver::isOpen() {
+    return _native::connection_is_open(connectionNative.get());
 }
 
 }

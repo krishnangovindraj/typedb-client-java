@@ -20,7 +20,6 @@
  */
 #pragma once
 
-
 #include "typedb/common/native.hpp"
 #include "typedb/connection/DatabaseManager.hpp"
 #include "typedb/user/UserManager.hpp"
@@ -36,13 +35,16 @@ class Driver {
     Driver(TypeDB::_native::Connection* conn) noexcept;
 
    public:
-    DatabaseManager databaseManager;
-    UserManager userManager;
+    DatabaseManager databases;
+    UserManager users;
 
     Driver(const std::string &coreAddress);
     Driver(const Driver&) = delete;
     Driver(Driver&& from);
 
     Driver& operator=(Driver&& from);
+
+    bool isOpen();
 };
+
 }
