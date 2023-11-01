@@ -54,5 +54,6 @@ class DatabaseManager {
 template <> std::function<void(_native::DatabaseIterator*)> DatabaseIterator::fn_nativeIterDrop;
 template <> std::function<_native::Database*(_native::DatabaseIterator*)> DatabaseIterator::fn_nativeIterNext;
 template <> std::function<void(_native::Database*)> DatabaseIterator::fn_nativeElementDrop;
+template <> DatabaseIterator DatabaseIterator::end;
 
 }

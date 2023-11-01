@@ -39,6 +39,13 @@ Database& Database::operator=(Database&& from) {
     return *this;
 }
 
+std::string Database::name() {
+    char* nameNative = _native::database_get_name(databaseNative.get());
+    std::string str(nameNative);
+    _native::string_free(nameNative);
+    return str;
+}
+
 void Database::drop() {
     _native::database_delete(databaseNative.get());
     databaseNative.release();  // Dangling pointer. Release avoids invoking the deleter (database_close)

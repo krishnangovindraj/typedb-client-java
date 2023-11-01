@@ -33,6 +33,7 @@ class Database {
 
     Database& operator=(Database&&);
 
+    std::string name();
     void drop();
 };
 

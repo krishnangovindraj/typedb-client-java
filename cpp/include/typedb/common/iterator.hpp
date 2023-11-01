@@ -12,8 +12,10 @@ namespace TypeDB {
 template <
     typename NATIVE_ITER, typename NATIVE_T, typename T
 >
-class TypeDBIterator {
+class TypeDBIterator : public std::iterator<std::input_iterator_tag, T> {
     // Start with the java style iterator. Can implement std::iterator style functions later.
+
+    using SELF = TypeDBIterator<NATIVE_ITER, NATIVE_T, T>;
    private: 
     NativePointer<NATIVE_ITER> iteratorNative;
     NativePointer<NATIVE_T> pNext;
@@ -24,6 +26,9 @@ class TypeDBIterator {
     static std::function<void(NATIVE_T*)> fn_nativeElementDrop;
 
    public:
+
+    static SELF end;
+
     TypeDBIterator(NATIVE_ITER* nativeIterator) {
         iteratorNative = NativePointer<NATIVE_ITER>(nativeIterator, fn_nativeIterDrop);
         pNext = NativePointer<NATIVE_T>(nullptr);
@@ -34,6 +39,7 @@ class TypeDBIterator {
             if (p != nullptr) {
                 pNext = NativePointer<NATIVE_T>(p, fn_nativeElementDrop);
             } else {
+                // We're at the end of the iterator
                 pNext = NativePointer<NATIVE_T>(nullptr);
                 iteratorNative.reset();
             }
@@ -48,6 +54,28 @@ class TypeDBIterator {
             throw std::out_of_range("next() was called on iterator which does not have a next element.");
         }
     }
+
+    // bool operator==(SELF other) {
+    //     return iteratorNative == other.iteratorNative;
+    // }
+
+    // bool operator!=(SELF other) {
+    //     return !(*this == other);
+    // }
+    
+    // SELF operator++(int) = delete;
+
+    // SELF& operator++() {
+    //     next();
+    // }
+
+    // T& operator*() const { 
+    //     if (pNext == nullptr) {
+    //         throw TypeDBDriverException("[TYPEDB_DRIVER_INTERNAL]", "Attempted to dereference an iterator which was uninitialised OR ")
+    //     }
+    //     return ;
+    // }
+
 };
 
 // template < typename NATIVE_ITER, typename NATIVE_T, typename T > 
