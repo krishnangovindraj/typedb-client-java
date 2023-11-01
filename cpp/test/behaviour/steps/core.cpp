@@ -20,6 +20,7 @@
  */
 
 #include "common.hpp"
+#include "steps.hpp"
 
 namespace TypeDB::BDD {
 
@@ -57,7 +58,9 @@ cucumber_bdd::StepCollection<Context> connectionSteps = {
         ASSERT_FALSE(context.driver->databases.all().hasNext());
     }),
 
-    BDD_UNIMPLEMENTED("connection closes"),
+    BDD_STEP("connection closes", {
+        context.driver.reset();
+    }),
 
     BDD_NOOP("typedb stops"),
 };

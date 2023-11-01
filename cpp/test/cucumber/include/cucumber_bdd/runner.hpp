@@ -31,7 +31,7 @@ namespace cucumber_bdd {
 using pickle = cucumber::messages::pickle;
 using pickle_step = cucumber::messages::pickle_step;
 
-class DriverBase {
+class TestRunnerBase {
    public:
     void loadFeature(const std::string& path);
     int runAllTests();
@@ -40,13 +40,13 @@ class DriverBase {
 };
 
 template <typename CTX>
-class Driver : public DriverBase {
+class TestRunner : public TestRunnerBase {
    private:
     const TestHooks<CTX>* hooks;
     std::vector<const StepDefinition<CTX>> steps;
 
    public:
-    Driver(std::initializer_list<StepCollection<CTX>> stepLists, const TestHooks<CTX>* hooks = nullptr)
+    TestRunner(std::initializer_list<StepCollection<CTX>> stepLists, const TestHooks<CTX>* hooks = nullptr)
         : hooks(hooks) {
         int totalSteps = 0;
         for (const StepCollection<CTX> stepVec : stepLists) {

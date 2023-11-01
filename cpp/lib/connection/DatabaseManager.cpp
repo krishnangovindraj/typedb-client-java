@@ -53,16 +53,21 @@ void DatabaseManager::create(const std::string& name) const {
 }
 
 bool DatabaseManager::contains(const std::string& name) const {
-    return _native::databases_contains(databaseManagerNative.get(), name.c_str());
+    auto t = _native::databases_contains(databaseManagerNative.get(), name.c_str());
+    TypeDBDriverException::check_and_throw();
+    return t; 
 }
 
 Database DatabaseManager::get(const std::string& name) const {
-    std::cout << "Database manager get called" << std::endl;
-    return Database(_native::databases_get(databaseManagerNative.get(), name.c_str()));  // No std::move for copy-elision
+    auto t = _native::databases_get(databaseManagerNative.get(), name.c_str());
+    TypeDBDriverException::check_and_throw();
+    return Database(t);  // No std::move for copy-elision
 }
 
 DatabaseIterator DatabaseManager::all() const {
-    return DatabaseIterator(_native::databases_all(databaseManagerNative.get()));
+    auto t = _native::databases_all(databaseManagerNative.get());
+    TypeDBDriverException::check_and_throw();
+    return DatabaseIterator(t);
 }
 
 }  // namespace TypeDB

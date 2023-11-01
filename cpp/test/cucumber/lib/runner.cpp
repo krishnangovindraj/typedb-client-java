@@ -30,7 +30,7 @@
 #include <gherkin/pickle_compiler.hpp>
 #include <gherkin/utils.hpp>
 
-#include "cucumber_bdd/driver.hpp"
+#include "cucumber_bdd/runner.hpp"
 
 #ifdef NDEBUG
 #define DEBUGONLY(CMD) \
@@ -51,7 +51,7 @@ bool skipScenario(const cucumber::messages::pickle& scenario) {
     return false;
 }
 
-void DriverBase::loadFeature(const std::string& path) {
+void TestRunnerBase::loadFeature(const std::string& path) {
     // std::regex testFilter = std::regex(::testing::GTEST_FLAG(filter), std::regex::extended);
     std::string featureContents = gherkin::slurp(path);
     gherkin::parser parser;
@@ -71,7 +71,7 @@ void DriverBase::loadFeature(const std::string& path) {
     DEBUGONLY(std::cout << "All tests registered." << std::endl);
 }
 
-int DriverBase::runAllTests() {
+int TestRunnerBase::runAllTests() {
     return RUN_ALL_TESTS();
 }
 

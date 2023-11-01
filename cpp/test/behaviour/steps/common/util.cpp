@@ -22,6 +22,7 @@
 #include <exception>
 
 #include "common.hpp"
+#include "steps.hpp"
 
 namespace TypeDB::BDD {
 
@@ -30,8 +31,7 @@ void noop(Context& context, const cucumber::messages::pickle_step& step, const s
 }
 
 void unimplemented(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches) {
-    std::cerr << "This step is unimplemented: " + step.text << std::endl;
-    // throw std::runtime_error("This step is unimplemented: " + step.text);
+    throw std::runtime_error("This step is unimplemented: " + step.text);
 }
 
 }  // namespace TypeDB::BDD

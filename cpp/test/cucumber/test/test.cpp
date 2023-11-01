@@ -21,7 +21,7 @@
 
 #include <iostream>
 
-#include "cucumber_bdd/driver.hpp"
+#include "cucumber_bdd/runner.hpp"
 #include "impl.hpp"
 
 #include "gtest/gtest.h"
@@ -30,8 +30,8 @@ using namespace cucumber_bdd;
 
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
-    Driver<RockPaperScissors::Context> driver({RockPaperScissors::steps});
-    driver.loadFeature("cpp/test/cucumber/test/test.feature");
-    return driver.runAllTests();
+    TestRunner<RockPaperScissors::Context> runner({RockPaperScissors::steps});
+    runner.loadFeature("cpp/test/cucumber/test/test.feature");
+    return runner.runAllTests();
     return 0;
 }

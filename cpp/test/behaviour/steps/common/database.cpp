@@ -20,11 +20,12 @@
  */
 
 #include "common.hpp"
+#include "steps.hpp"
 
 namespace TypeDB::BDD {
 
 cucumber_bdd::StepCollection<Context> databaseSteps = {
-
+    // basic
     BDD_STEP("connection create database: (\\w+)", {
         context.driver->databases.create(matches[1]);
     }),
@@ -41,15 +42,42 @@ cucumber_bdd::StepCollection<Context> databaseSteps = {
         context.driver->databases.get(matches[1]).drop();
     }),
 
-    {std::regex("connection delete database; throws exception: (\\w+)"), &unimplemented},
+    BDD_STEP("connection delete database; throws exception: (\\w+)", {
+      DRIVER_THROWS(matches[1], {context.driver->databases.get(matches[1]).drop();});
+    }),
 
-    {std::regex("connection create databases:"), &unimplemented},
-    {std::regex("connection has databases:"), &unimplemented},
-    {std::regex("connection does not have databases:"), &unimplemented},
-    {std::regex("connection delete databases:"), &unimplemented},
+    // multi
+    BDD_STEP("connection create databases:", {
+        for (auto row : step.argument->data_table->rows) {
+            context.driver->databases.create(row.cells[0].value);
+        }
+    }),
 
-    {std::regex("connection create databases in parallel:"), &unimplemented},
-    {std::regex("connection delete databases in parallel:"), &unimplemented},
+    BDD_UNIMPLEMENTED("connection has databases:"),
+
+    BDD_STEP("connection does not have databases:", {
+        for (auto row : step.argument->data_table->rows) {
+            ASSERT_FALSE(context.driver->databases.contains(row.cells[0].value));
+        }
+    }),
+
+    BDD_STEP("connection delete databases:", {
+        for (auto row : step.argument->data_table->rows) {
+            context.driver->databases.get(row.cells[0].value).drop();
+        }
+    }),
+
+    // parallel
+    BDD_STEP("connection create databases in parallel:", {
+        for (auto row : step.argument->data_table->rows) {
+            context.driver->databases.create(row.cells[0].value);
+        }
+    }),
+    BDD_STEP("connection delete databases in parallel:", {
+        for (auto row : step.argument->data_table->rows) {
+            context.driver->databases.get(row.cells[0].value).drop();
+        }
+    }),
 };
 
 }  // namespace TypeDB::BDD

@@ -21,15 +21,11 @@
 
 #pragma once
 
-#include "cucumber_bdd/driver.hpp"
+#include "cucumber_bdd/runner.hpp"
 #include "cucumber_bdd/step.hpp"
 #include "cucumber_bdd/testrun.hpp"
 
 #include "typedb/connection/Driver.hpp"
-
-#define BDD_STEP(REGEX, IMPL) (cucumber_bdd::StepDefinition<TypeDB::BDD::Context>{std::regex((REGEX)), [](Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches) { IMPL }})
-#define BDD_UNIMPLEMENTED(REGEX) (cucumber_bdd::StepDefinition<TypeDB::BDD::Context>{std::regex((REGEX)), &unimplemented})
-#define BDD_NOOP(REGEX) (cucumber_bdd::StepDefinition<TypeDB::BDD::Context>{std::regex((REGEX)), &noop})
 
 namespace TypeDB::BDD {
 
@@ -44,10 +40,4 @@ class TestHooks : public cucumber_bdd::TestHooks<Context> {
 
 extern const TestHooks testHooks;
 
-extern cucumber_bdd::StepCollection<Context> connectionSteps;
-extern cucumber_bdd::StepCollection<Context> databaseSteps;
-extern cucumber_bdd::StepCollection<Context> sessionSteps;
-
-void noop(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches);
-void unimplemented(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches);
 }  // namespace TypeDB::BDD

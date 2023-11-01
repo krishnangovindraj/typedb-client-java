@@ -20,6 +20,7 @@
  */
 
 #include "common.hpp"
+#include "steps.hpp"
 
 namespace TypeDB::BDD {
 
