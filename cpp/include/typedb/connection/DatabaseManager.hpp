@@ -29,6 +29,8 @@
 
 namespace TypeDB {
 
+class Driver; // Forward declaration for friendship
+
 using DatabaseIterator = TypeDBIterator<
     _native::DatabaseIterator, _native::Database, TypeDB::Database
 >;
@@ -38,15 +40,19 @@ using DatabaseIterable = TypeDBIterable<
 >;
 
 class DatabaseManager {
+
+    friend class TypeDB::Driver;
+
    private:
     NativePointer<_native::DatabaseManager> databaseManagerNative;
+    
+    DatabaseManager(_native::Connection*);
+    DatabaseManager(DatabaseManager&&) noexcept;
+    DatabaseManager& operator=(DatabaseManager&&); // TODO: Make all move functions private & add Driver as friend
 
    public:
-    DatabaseManager(_native::Connection*);
     DatabaseManager(const DatabaseManager&) = delete;
-    DatabaseManager(DatabaseManager&&) noexcept;
-     
-    DatabaseManager& operator=(DatabaseManager&&); // TODO: Make all move functions private & add Driver as friend
+    DatabaseManager& operator=(const DatabaseManager&) = delete;
 
     void create(const std::string&) const;
     bool contains(const std::string&) const;

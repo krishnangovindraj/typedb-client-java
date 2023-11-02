@@ -18,29 +18,32 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#pragma once
 
 #include "typedb/common/native.hpp"
+
+
+#include <iostream>
 
 namespace TypeDB {
 
 class Driver; // forward declaration for friendship
 
-class UserManager {
+class Session {
 
     friend class TypeDB::Driver;
 
    private:
-    NativePointer<_native::UserManager> userManagerNative;
-
-    UserManager(const _native::Connection*);
-    UserManager(UserManager&&) noexcept;
-    UserManager& operator=(UserManager&&);
-
+    NativePointer<_native::Session> sessionNative;
+    
+    Session(_native::Session*);
+    
    public:
-    UserManager(const UserManager&) = delete;
-    UserManager& operator=(const UserManager&) = delete;
+    Session(const Session&) = delete;
+    Session(Session&&);
+
+    Session& operator=(const Session&) = delete;
+    Session& operator=(Session&&);
 
 };
 
-}
+}  // namespace TypeDB
