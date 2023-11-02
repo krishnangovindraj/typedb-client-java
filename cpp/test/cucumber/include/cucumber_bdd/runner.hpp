@@ -36,6 +36,8 @@ class TestRunnerBase {
     void loadFeature(const std::string& path);
     int runAllTests();
 
+    virtual void beforeAllTests() = 0;
+    virtual void afterAllTests() = 0;
     virtual void registerTest(const std::string& featureName, const pickle& scenario) = 0;
 };
 
@@ -61,6 +63,14 @@ class TestRunner : public TestRunnerBase {
         }
         assert(steps.size() == totalSteps);
         std::cerr << "Found a total of " << steps.size() << " steps\n";
+    }
+
+    void beforeAllTests() override {
+        hooks->beforeAll();
+    }
+
+    void afterAllTests() override {
+        hooks->afterAll();
     }
 
     void registerTest(const std::string& featureName, const pickle& scenario) override {

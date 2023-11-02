@@ -34,7 +34,7 @@ struct Context {
 };
 
 class TestHooks : public cucumber_bdd::TestHooks<Context> {
-    void beforeScenario(const Context& context, const cucumber_bdd::Scenario<Context>* scenario) const override;
+    void beforeAll() const override;
     void afterScenario(const Context& context, const cucumber_bdd::Scenario<Context>* scenario) const override;
 };
 

@@ -46,6 +46,9 @@ using Scenario = std::vector<ResolvedStep<CTX>>;
 template <typename CTX>
 class TestHooks {
    public:
+    virtual void beforeAll() const {}
+    virtual void afterAll() const {}
+    
     virtual void beforeScenario(const CTX&, const Scenario<CTX>*) const {}
     virtual void afterScenario(const CTX& context, const Scenario<CTX>*) const {}
 };

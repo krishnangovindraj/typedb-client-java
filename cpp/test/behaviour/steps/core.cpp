@@ -26,15 +26,21 @@ namespace TypeDB::BDD {
 
 const std::string DEFAULT_CORE_ADDRESS = "127.0.0.1:1729";
 
-void TestHooks::beforeScenario(const Context& context, const cucumber_bdd::Scenario<Context>* scenario) const {
-}
 
-void TestHooks::afterScenario(const Context& context, const cucumber_bdd::Scenario<Context>* scenario) const {
-    TypeDB::Driver driver(DEFAULT_CORE_ADDRESS);
+
+void wipeDatabases(const TypeDB::Driver& driver) {
     DatabaseIterable dbIterable = driver.databases.all();
     for (DatabaseIterator it = dbIterable.begin(); it != dbIterable.end() ; ++it ) {
         (*it).drop();
     }
+}
+
+void TestHooks::beforeAll() const {
+    wipeDatabases(TypeDB::Driver(DEFAULT_CORE_ADDRESS));
+}
+
+void TestHooks::afterScenario(const Context& context, const cucumber_bdd::Scenario<Context>* scenario) const {
+    wipeDatabases(TypeDB::Driver(DEFAULT_CORE_ADDRESS));
 }
 
 const TestHooks testHooks;
