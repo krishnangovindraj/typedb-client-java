@@ -25,7 +25,7 @@
 #include "cucumber_bdd/step.hpp"
 #include "cucumber_bdd/testrun.hpp"
 
-#include "typedb/connection/Driver.hpp"
+#include "typedb/connection/driver.hpp"
 
 namespace TypeDB::BDD {
 

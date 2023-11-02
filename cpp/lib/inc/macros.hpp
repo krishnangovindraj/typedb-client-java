@@ -22,7 +22,7 @@
 #pragma once
 
 #include <cassert>
-#include "typedb/common/TypeDBDriverException.hpp"
+#include "typedb/common/exception.hpp"
 
 #ifdef NDEBUG
     #define CHECK_NATIVE(PTR) {} // Debug only    

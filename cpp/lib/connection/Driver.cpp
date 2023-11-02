@@ -19,7 +19,7 @@
  * under the License.
  */
 
-#include "typedb/connection/Driver.hpp"
+#include "typedb/connection/driver.hpp"
 
 #include <iostream>
 

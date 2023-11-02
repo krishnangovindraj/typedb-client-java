@@ -25,8 +25,8 @@
 #include "cucumber_bdd/step.hpp"
 #include "cucumber_bdd/testrun.hpp"
 
-#include "typedb/connection/Driver.hpp"
-#include "typedb/common/TypeDBDriverException.hpp"
+#include "typedb/connection/driver.hpp"
+#include "typedb/common/exception.hpp"
 
 
 

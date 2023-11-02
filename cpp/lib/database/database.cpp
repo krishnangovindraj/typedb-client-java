@@ -19,7 +19,7 @@
  * under the License.
  */
 
-#include "typedb/database/Database.hpp"
+#include "typedb/database/database.hpp"
 
 #include <iostream>
 #include "inc/macros.hpp"

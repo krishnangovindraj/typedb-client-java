@@ -21,8 +21,8 @@
 #pragma once
 
 #include "typedb/common/native.hpp"
-#include "typedb/connection/DatabaseManager.hpp"
-#include "typedb/user/UserManager.hpp"
+#include "typedb/connection/databasemanager.hpp"
+#include "typedb/user/usermanager.hpp"
 
 #include <string>
 

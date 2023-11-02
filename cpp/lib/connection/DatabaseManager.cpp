@@ -19,8 +19,8 @@
  * under the License.
  */
 
-#include "typedb/connection/DatabaseManager.hpp"
-#include "typedb/common/TypeDBDriverException.hpp"
+#include "typedb/connection/databasemanager.hpp"
+#include "typedb/common/exception.hpp"
 
 #include "../inc/macros.hpp"
 

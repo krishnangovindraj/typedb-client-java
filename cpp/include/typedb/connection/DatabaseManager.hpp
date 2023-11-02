@@ -25,7 +25,7 @@
 
 #include "typedb/common/native.hpp"
 #include "typedb/common/iterator.hpp"
-#include "typedb/database/Database.hpp"
+#include "typedb/database/database.hpp"
 
 namespace TypeDB {
 

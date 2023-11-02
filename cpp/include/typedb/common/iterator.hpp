@@ -7,7 +7,7 @@
 #include <iterator>
 
 #include "typedb/common/native.hpp"
-#include "typedb/common/TypeDBDriverException.hpp"
+#include "typedb/common/exception.hpp"
 
 namespace TypeDB {
 template <
