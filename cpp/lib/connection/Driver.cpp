@@ -52,4 +52,8 @@ bool Driver::isOpen() {
     return _native::connection_is_open(connectionNative.get());
 }
 
+bool Driver::operator==(const Driver& other) {
+    return connectionNative == other.connectionNative;
+}
+
 }  // namespace TypeDB

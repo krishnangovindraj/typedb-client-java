@@ -56,13 +56,19 @@ cucumber_bdd::StepCollection<Context> databaseSteps = {
     BDD_STEP("connection has databases:", {
         std::set<std::string> expected;
         for (auto row : step.argument->data_table->rows) expected.insert(row.cells[0].value);
+        
         int cnt = 0;
         DatabaseIterator it = context.driver->databases.all();
-        while (it.hasNext()) {
-            std::string dbName = it.next().name();
+        for (auto it = IteratorWrapper(context.driver->databases.all()); it != IteratorWrapper<DatabaseIterator>::end; it++) {
+            std::string dbName = it->name();
             cnt++;
             ASSERT_TRUE( expected.find(dbName) != expected.end() );
         }
+        // while (it.hasNext()) {
+        //     std::string dbName = it.next().name();
+        //     cnt++;
+        //     ASSERT_TRUE( expected.find(dbName) != expected.end() );
+        // }
         ASSERT_EQ(expected.size(), cnt);
     }),
 

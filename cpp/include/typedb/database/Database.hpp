@@ -32,6 +32,7 @@ class Database {
     Database(Database&&) noexcept;
 
     Database& operator=(Database&&);
+    bool operator==(const Database& other);
 
     std::string name();
     void drop();

@@ -40,4 +40,6 @@ class TypeDBDriverException : public std::runtime_error {
     static void check_and_throw();
 };
 
+typedef TypeDBDriverException TypeDBDriverCustomException;
+
 }

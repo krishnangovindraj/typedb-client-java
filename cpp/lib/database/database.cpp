@@ -39,6 +39,10 @@ Database& Database::operator=(Database&& from) {
     return *this;
 }
 
+bool Database::operator==(const Database& other) {
+    return databaseNative == other.databaseNative;
+}
+
 std::string Database::name() {
     char* nameNative = _native::database_get_name(databaseNative.get());
     std::string str(nameNative);

@@ -33,8 +33,7 @@ template <>
 std::function<_native::Database*(_native::DatabaseIterator*)> DatabaseIterator::fn_nativeIterNext = &_native::database_iterator_next;
 template <>
 std::function<void(_native::Database*)> DatabaseIterator::fn_nativeElementDrop = &_native::database_close;
-template <>
-DatabaseIterator DatabaseIterator::end = DatabaseIterator(nullptr);
+
 
 DatabaseManager::DatabaseManager(_native::Connection* connectionNative) {
     databaseManagerNative = connectionNative ? NativePointer<_native::DatabaseManager>(_native::database_manager_new(connectionNative), _native::database_manager_drop) : NativePointer<_native::DatabaseManager>(nullptr);

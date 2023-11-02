@@ -45,6 +45,8 @@ class Driver {
     Driver& operator=(Driver&& from);
 
     bool isOpen();
+
+    bool operator==(const Driver& other);
 };
 
 }

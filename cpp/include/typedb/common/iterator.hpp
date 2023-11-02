@@ -1,22 +1,24 @@
 
 
-
 #pragma once
 
 #include <iterator>
 
 #include "typedb/common/native.hpp"
+#include "typedb/common/TypeDBDriverException.hpp"
 
 namespace TypeDB {
 
 template <
-    typename NATIVE_ITER, typename NATIVE_T, typename T
->
-class TypeDBIterator : public std::iterator<std::input_iterator_tag, T> {
+    typename NATIVE_ITER,
+    typename NATIVE_T,
+    typename T>
+class TypeDBIterator {
     // Start with the java style iterator. Can implement std::iterator style functions later.
 
     using SELF = TypeDBIterator<NATIVE_ITER, NATIVE_T, T>;
-   private: 
+
+   private:
     NativePointer<NATIVE_ITER> iteratorNative;
     NativePointer<NATIVE_T> pNext;
 
@@ -27,12 +29,24 @@ class TypeDBIterator : public std::iterator<std::input_iterator_tag, T> {
 
    public:
 
-    static SELF end;
-
+    
     TypeDBIterator(NATIVE_ITER* nativeIterator) {
         iteratorNative = NativePointer<NATIVE_ITER>(nativeIterator, fn_nativeIterDrop);
         pNext = NativePointer<NATIVE_T>(nullptr);
     }
+
+    TypeDBIterator(SELF& other) = delete;
+
+    TypeDBIterator(SELF&& from) {
+        *this = std::move(from);
+    }
+
+    SELF& operator=(SELF&& from) {
+        iteratorNative = std::move(from.iteratorNative);
+        pNext = std::move(from.pNext);
+        return *this;
+    }
+
     bool hasNext() {
         if (pNext.get() == nullptr && iteratorNative != nullptr) {
             _native::Database* p = fn_nativeIterNext(iteratorNative.get());
@@ -54,37 +68,63 @@ class TypeDBIterator : public std::iterator<std::input_iterator_tag, T> {
             throw std::out_of_range("next() was called on iterator which does not have a next element.");
         }
     }
-
-    // bool operator==(SELF other) {
-    //     return iteratorNative == other.iteratorNative;
-    // }
-
-    // bool operator!=(SELF other) {
-    //     return !(*this == other);
-    // }
-    
-    // SELF operator++(int) = delete;
-
-    // SELF& operator++() {
-    //     next();
-    // }
-
-    // T& operator*() const { 
-    //     if (pNext == nullptr) {
-    //         throw TypeDBDriverException("[TYPEDB_DRIVER_INTERNAL]", "Attempted to dereference an iterator which was uninitialised OR ")
-    //     }
-    //     return ;
-    // }
-
 };
 
-// template < typename NATIVE_ITER, typename NATIVE_T, typename T > 
-// std::function<void(NATIVE_ITER*)> TypeDBIterator<NATIVE_ITER, NATIVE_T, T>::*fn_nativeIterDrop;
+// TODO: Improve or combine into one.
+template <
+    typename NATIVE_ITER,
+    typename NATIVE_T,
+    typename T>
+class IteratorWrapper : public std::iterator<std::input_iterator_tag, T> {
 
-// template < typename NATIVE_ITER, typename NATIVE_T, typename T > 
-// std::function<NATIVE_T*(NATIVE_ITER*)> TypeDBIterator<NATIVE_ITER, NATIVE_T, T>::*fn_nativeIterNext;
+    using SELF = IteratorWrapper<NATIVE_ITER, NATIVE_T, T>;
 
-// template < typename NATIVE_ITER, typename NATIVE_T, typename T > 
-//     std::function<void(NATIVE_T*)> TypeDBIterator<NATIVE_ITER, NATIVE_T, T>::*fn_nativeElementDrop;
+   private:
+    TypeDBIterator<NATIVE_ITER, NATIVE_T, T> wrappedIter;
+    T obj;
 
-}
+    IteratorWrapper() : wrappedIter(nullptr), obj(nullptr) { }
+
+   public:
+    static SELF end;
+
+    IteratorWrapper(TypeDBIterator<NATIVE_ITER, NATIVE_T, T>&& wrappedIter)
+        : wrappedIter(std::move(wrappedIter)),
+          obj(wrappedIter.hasNext() ? wrappedIter.next() : nullptr) {}
+
+    IteratorWrapper(SELF& other) = delete;
+    IteratorWrapper(SELF&& other) = delete;
+
+    bool operator==(const SELF& other) {
+        return wrappedIter.iteratorNative == other.wrappedIter.iteratorNative && obj == other.obj;
+    }
+
+    bool operator!=(const SELF& other) {
+        return !(*this == other);
+    }
+
+    SELF operator++(int) = delete;  // Just use ++it.
+
+    SELF& operator++() {
+        if (wrappedIter.hasNext()) {
+            obj = std::move(wrappedIter.next());
+        } else {
+            obj = std::move(T(nullptr));
+        }
+    }
+
+    T& operator*() const {
+        if (obj == end) {
+            throw TypeDBDriverCustomException("[CUSTOM]", "Dereferenced iterator");
+        }
+        return obj;
+    }
+};
+
+template <
+    typename NATIVE_ITER,
+    typename NATIVE_T,
+    typename T
+> IteratorWrapper<NATIVE_ITER, NATIVE_T, T> IteratorWrapper<NATIVE_ITER, NATIVE_T, T>::end = IteratorWrapper();
+
+}  // namespace TypeDB
