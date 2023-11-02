@@ -18,40 +18,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#pragma once
-
-#include <memory>
-#include <utility>
-
-// Including these triggers the guards, Skipping them when we do the include in the _native namespace
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <functional>
-
-namespace TypeDB {
-
-namespace _native {
-
-extern "C" {
-#include "c/typedb_driver.h"
-}
-
-}
-
-template <typename T> using NativePointer = std::unique_ptr< T, std::function<void(T*)> >;
-
-// Re-export structs
-typedef _native::SessionType SessionType;
-typedef _native::TransactionType TransactionType;
 
 
-namespace Constants {
-namespace SessionType {
-    constexpr _native::SessionType DATA = _native::Data;
-    constexpr _native::SessionType SCHEMA = _native::Schema;
-}
-}
+#include "utils.hpp"
 
+bool parseBoolean(const std::string& str) {
+    std::string strCopy;
+    std::transform(str.begin(), str.end(), strCopy.begin(), ::tolower);
+    return (strCopy == "true");
 }

@@ -20,38 +20,25 @@
  */
 #pragma once
 
-#include <memory>
-#include <utility>
-
-// Including these triggers the guards, Skipping them when we do the include in the _native namespace
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <functional>
+#include "typedb/common/native.hpp"
 
 namespace TypeDB {
 
-namespace _native {
+class Session;
+class Transaction;
 
-extern "C" {
-#include "c/typedb_driver.h"
-}
+class Options {
 
-}
+    friend class DatabaseManager;
+    friend class Session;
 
-template <typename T> using NativePointer = std::unique_ptr< T, std::function<void(T*)> >;
+   private:
+    NativePointer<_native::Options> optionsNative;
+    _native::Options* getNative() const;
 
-// Re-export structs
-typedef _native::SessionType SessionType;
-typedef _native::TransactionType TransactionType;
+   public:
+    Options();
 
+};
 
-namespace Constants {
-namespace SessionType {
-    constexpr _native::SessionType DATA = _native::Data;
-    constexpr _native::SessionType SCHEMA = _native::Schema;
-}
-}
-
-}
+}  // namespace TypeDB

@@ -23,6 +23,7 @@
 #include "typedb/common/native.hpp"
 #include "typedb/connection/databasemanager.hpp"
 #include "typedb/user/usermanager.hpp"
+#include "typedb/connection/session.hpp"
 
 #include <string>
 
@@ -38,6 +39,8 @@ class Driver {
     DatabaseManager databases;
     UserManager users;
 
+    Driver();
+
     Driver(const std::string &coreAddress);
     Driver(const Driver&) = delete;
     Driver(Driver&& from);
@@ -46,8 +49,8 @@ class Driver {
     Driver& operator=(Driver&& from);
 
     bool isOpen();
-
-    bool operator==(const Driver& other);
+    void close();
+    Session session(const std::string& database, SessionType sessionType, const Options& options);
 };
 
 }

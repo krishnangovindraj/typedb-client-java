@@ -34,7 +34,7 @@ int main(int argc, char** argv) {
 
     ::testing::InitGoogleTest(&argc, argv);
 
-    cucumber_bdd::TestRunner<TypeDB::BDD::Context> driver({TypeDB::BDD::connectionSteps, TypeDB::BDD::databaseSteps}, &TypeDB::BDD::testHooks);
+    cucumber_bdd::TestRunner<TypeDB::BDD::Context> driver({TypeDB::BDD::connectionSteps, TypeDB::BDD::databaseSteps, TypeDB::BDD::sessionSteps}, &TypeDB::BDD::testHooks);
     driver.loadFeature(argv[1]);
     return driver.runAllTests();
     return 0;

@@ -30,7 +30,8 @@
 namespace TypeDB::BDD {
 
 struct Context {
-    std::unique_ptr<TypeDB::Driver> driver;
+    TypeDB::Driver driver;
+    TypeDB::Session session;
 };
 
 class TestHooks : public cucumber_bdd::TestHooks<Context> {

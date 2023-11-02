@@ -21,11 +21,23 @@
 
 #include "common.hpp"
 #include "steps.hpp"
+#include "utils.hpp"
 
 namespace TypeDB::BDD {
 
 cucumber_bdd::StepCollection<Context> sessionSteps = {
-    {std::regex("connection open session for database: (\\w+)"), &unimplemented},
+    BDD_STEP("connection open session for database: (\\w+)", {
+        context.session = std::move(context.driver.session(matches[1], Constants::SessionType::DATA, Options()));
+    }),
+    BDD_STEP("session is null: (true|false)", {
+        ASSERT_EQ(parseBoolean(matches[1]), !context.session.isOpen());
+    }),
+    BDD_STEP("session is open: (true|false)", {
+        ASSERT_EQ(parseBoolean(matches[1]), context.session.isOpen());
+    }),
+    BDD_STEP("session has database: (\\w+)", {
+        ASSERT_EQ(matches[1], context.session.databaseName());
+    })
 };
 
 }

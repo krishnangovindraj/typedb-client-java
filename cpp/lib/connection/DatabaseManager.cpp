@@ -75,4 +75,12 @@ DatabaseIterable DatabaseManager::all() const {
     return DatabaseIterable(t);
 }
 
+// Private
+Session DatabaseManager::session(const std::string& database, SessionType sessionType, const Options& options) {
+    CHECK_NATIVE(databaseManagerNative);
+    _native::Session* p = _native::session_new(databaseManagerNative.get(), database.c_str(), sessionType, options.getNative());
+    TypeDBDriverException::check_and_throw();
+    return Session(p);  // No std::move for copy-elision
+}
+
 }  // namespace TypeDB

@@ -20,8 +20,13 @@
  */
 
 #include "typedb/connection/session.hpp"
+#include "typedb/common/exception.hpp"
+
+#include "inc/macros.hpp"
 
 namespace TypeDB {
+
+Session::Session() : Session(nullptr) {}
 
 Session::Session(_native::Session* sessionNative)
     : sessionNative(sessionNative, _native::session_close) {}
@@ -35,5 +40,19 @@ Session& Session::operator=(Session&& from) {
     sessionNative = std::move(from.sessionNative);
     return *this;
 }
+
+bool Session::isOpen() {
+    return sessionNative != nullptr && _native::session_is_open(sessionNative.get());
+}
+
+std::string Session::databaseName() {
+    CHECK_NATIVE(sessionNative);
+    char* nameNative = _native::session_get_database_name(sessionNative.get());
+    TypeDBDriverException::check_and_throw();
+    std::string databaseName(nameNative);
+    _native::string_free(nameNative);
+    return databaseName;
+}
+
 
 }  // namespace TypeDB

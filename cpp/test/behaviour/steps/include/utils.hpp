@@ -21,6 +21,7 @@
 
 #pragma once
 #include <vector>
+#include <future>
 
 namespace TypeDB::BDD {
 
@@ -37,5 +38,7 @@ void foreach_parallel(const std::vector<A1>& args, std::function<T(const A1&)> f
     std::transform(args.begin(), args.end(), std::back_inserter(futures), async_fn);
     std::for_each(futures.begin(), futures.end(), [](std::future<T>& f) { f.wait(); });
 }
+
+bool parseBoolean(const std::string& str);
 
 }  // namespace TypeDB::BDD

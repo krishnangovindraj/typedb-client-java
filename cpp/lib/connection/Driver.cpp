@@ -21,11 +21,13 @@
 
 #include "typedb/connection/driver.hpp"
 
-#include <iostream>
+#include "inc/macros.hpp"
 
 using namespace TypeDB;
 
 namespace TypeDB {
+
+Driver::Driver() : Driver(nullptr) {}
 
 Driver::Driver(const std::string& coreAddress)
     : Driver(_native::connection_open_core(coreAddress.c_str())) {}
@@ -52,8 +54,13 @@ bool Driver::isOpen() {
     return connectionNative != nullptr && _native::connection_is_open(connectionNative.get());
 }
 
-bool Driver::operator==(const Driver& other) {
-    return connectionNative == other.connectionNative;
+void Driver::close() {
+    connectionNative.reset();
+}
+
+Session Driver::session(const std::string& database, SessionType sessionType, const Options& options) {
+    CHECK_NATIVE(connectionNative);
+    return databases.session(database, sessionType, options);
 }
 
 }  // namespace TypeDB

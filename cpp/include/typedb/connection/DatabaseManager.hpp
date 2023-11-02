@@ -20,35 +20,40 @@
  */
 #pragma once
 
-#include <string>
 #include <memory>
+#include <string>
 
-#include "typedb/common/native.hpp"
 #include "typedb/common/iterator.hpp"
+#include "typedb/common/native.hpp"
+#include "typedb/connection/options.hpp"
+#include "typedb/connection/session.hpp"
 #include "typedb/database/database.hpp"
 
 namespace TypeDB {
 
-class Driver; // Forward declaration for friendship
+class Driver;  // Forward declaration for friendship
 
 using DatabaseIterator = TypeDBIterator<
-    _native::DatabaseIterator, _native::Database, TypeDB::Database
->;
+    _native::DatabaseIterator,
+    _native::Database,
+    TypeDB::Database>;
 
 using DatabaseIterable = TypeDBIterable<
-    _native::DatabaseIterator, _native::Database, TypeDB::Database
->;
+    _native::DatabaseIterator,
+    _native::Database,
+    TypeDB::Database>;
 
 class DatabaseManager {
-
     friend class TypeDB::Driver;
 
    private:
     NativePointer<_native::DatabaseManager> databaseManagerNative;
-    
+
     DatabaseManager(_native::Connection*);
     DatabaseManager(DatabaseManager&&) noexcept;
-    DatabaseManager& operator=(DatabaseManager&&); // TODO: Make all move functions private & add Driver as friend
+    DatabaseManager& operator=(DatabaseManager&&);  // TODO: Make all move functions private & add Driver as friend
+
+    Session session(const std::string& database, SessionType sessionType, const Options& options);
 
    public:
     DatabaseManager(const DatabaseManager&) = delete;
@@ -61,8 +66,11 @@ class DatabaseManager {
 };
 
 // DatabaseIterator static methods
-template <> std::function<void(_native::DatabaseIterator*)> DatabaseIterator::fn_nativeIterDrop;
-template <> std::function<_native::Database*(_native::DatabaseIterator*)> DatabaseIterator::fn_nativeIterNext;
-template <> std::function<void(_native::Database*)> DatabaseIterator::fn_nativeElementDrop;
+template <>
+std::function<void(_native::DatabaseIterator*)> DatabaseIterator::fn_nativeIterDrop;
+template <>
+std::function<_native::Database*(_native::DatabaseIterator*)> DatabaseIterator::fn_nativeIterNext;
+template <>
+std::function<void(_native::Database*)> DatabaseIterator::fn_nativeElementDrop;
 
-}
+}  // namespace TypeDB

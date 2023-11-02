@@ -30,7 +30,7 @@
 
 
 
-#define BDD_STEP(REGEX, IMPL) (cucumber_bdd::StepDefinition<TypeDB::BDD::Context>{std::regex((REGEX)), [](Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches) { IMPL }})
+#define BDD_STEP(REGEX, IMPL) (cucumber_bdd::StepDefinition<TypeDB::BDD::Context>{std::regex("\\s*" REGEX "\\s*"), [](Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches) { IMPL }})
 #define BDD_UNIMPLEMENTED(REGEX) (cucumber_bdd::StepDefinition<TypeDB::BDD::Context>{std::regex((REGEX)), &unimplemented})
 #define BDD_NOOP(REGEX) (cucumber_bdd::StepDefinition<TypeDB::BDD::Context>{std::regex((REGEX)), &noop})
 

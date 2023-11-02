@@ -47,7 +47,7 @@ cucumber_bdd::StepCollection<Context> connectionSteps = {
     BDD_NOOP("typedb starts"),
 
     BDD_STEP("connection opens with default authentication", {
-        context.driver = std::make_unique<TypeDB::Driver>(DEFAULT_CORE_ADDRESS);
+        context.driver = std::move(TypeDB::Driver(DEFAULT_CORE_ADDRESS));
     }),
 
     BDD_UNIMPLEMENTED("connection opens with authentication: (\\w), (\\w)"),
@@ -55,16 +55,16 @@ cucumber_bdd::StepCollection<Context> connectionSteps = {
     BDD_UNIMPLEMENTED("connection opens with authentication: (\\w), (\\w); throws exception"),
 
     BDD_STEP("connection has been opened", {
-        ASSERT_TRUE(context.driver->isOpen());
+        ASSERT_TRUE(context.driver.isOpen());
     }),
 
     BDD_STEP("connection does not have any database", {
-        DatabaseIterable databases = context.driver->databases.all();
+        DatabaseIterable databases = context.driver.databases.all();
         ASSERT_TRUE(databases.begin() == databases.end());
     }),
 
     BDD_STEP("connection closes", {
-        context.driver.reset();
+        context.driver.close();
     }),
 
     BDD_NOOP("typedb stops"),
