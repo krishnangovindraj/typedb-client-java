@@ -23,6 +23,9 @@
 
 #include "common.hpp"
 #include "steps.hpp"
+#include "utils.hpp"
+
+using namespace cucumber::messages;
 
 namespace TypeDB::BDD {
 
@@ -50,9 +53,8 @@ cucumber_bdd::StepCollection<Context> databaseSteps = {
 
     // multi
     BDD_STEP("connection create databases:", {
-        for (auto row : step.argument->data_table->rows) {
-            context.driver->databases.create(row.cells[0].value);
-        }
+        std::function<void(const pickle_table_row&)> fn = [&](const pickle_table_row& row) { context.driver->databases.create(row.cells[0].value); };
+        foreach_serial(step.argument->data_table->rows, fn);
     }),
 
     BDD_STEP("connection has databases:", {
@@ -77,27 +79,19 @@ cucumber_bdd::StepCollection<Context> databaseSteps = {
     }),
 
     BDD_STEP("connection delete databases:", {
-        for (auto row : step.argument->data_table->rows) {
-            context.driver->databases.get(row.cells[0].value).drop();
-        }
+        std::function<void(const pickle_table_row&)> fn = [&](const pickle_table_row& row) { context.driver->databases.get(row.cells[0].value).drop(); };
+        foreach_serial(step.argument->data_table->rows, fn);
     }),
 
     // parallel
     BDD_STEP("connection create databases in parallel:", {
-        std::vector<std::future<void>> futures;
-        auto fn = [&](std::string dbName){context.driver->databases.create(dbName);};
-        for (auto row : step.argument->data_table->rows) {
-            futures.push_back(std::async(std::launch::async, fn, row.cells[0].value));
-        }
-        for (const std::future<void>& f: futures) f.wait();
+        std::function<void(const pickle_table_row&)> fn = [&](const pickle_table_row& row) { context.driver->databases.create(row.cells[0].value); };
+        foreach_parallel(step.argument->data_table->rows, fn);
     }),
+
     BDD_STEP("connection delete databases in parallel:", {
-        std::vector<std::future<void>> futures;
-        auto fn = [&](std::string dbName){context.driver->databases.get(dbName).drop();};
-        for (auto row : step.argument->data_table->rows) {
-            futures.push_back(std::async(std::launch::async, fn, row.cells[0].value));
-        }
-        for (const std::future<void>& f: futures) f.wait();
+        std::function<void(const pickle_table_row&)> fn = [&](const pickle_table_row& row) { context.driver->databases.get(row.cells[0].value).drop(); };
+        foreach_parallel(step.argument->data_table->rows, fn);
     }),
 };
 
