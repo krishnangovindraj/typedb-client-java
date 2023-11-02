@@ -28,6 +28,14 @@ cc_test(
     args = ["$(location @vaticle_typedb_behaviour//connection:database.feature)"]
 )
 
+cc_test(
+    name = "session-test",
+    deps = ["//cpp/test/behaviour/steps:core-steps"],
+    data = ["@vaticle_typedb_behaviour//connection:session.feature"],
+    args = ["$(location @vaticle_typedb_behaviour//connection:session.feature)"]
+)
+
+
 checkstyle_test(
     name = "checkstyle",
     include = glob(["*"]),

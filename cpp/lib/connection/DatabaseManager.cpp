@@ -22,7 +22,7 @@
 #include "typedb/connection/DatabaseManager.hpp"
 #include "typedb/common/TypeDBDriverException.hpp"
 
-#include <iostream>
+#include "../inc/macros.hpp"
 
 namespace TypeDB {
 
@@ -49,23 +49,27 @@ DatabaseManager& DatabaseManager::operator=(DatabaseManager&& from) {
 }
 
 void DatabaseManager::create(const std::string& name) const {
+    CHECK_NATIVE(databaseManagerNative);
     _native::databases_create(databaseManagerNative.get(), name.c_str());
     TypeDBDriverException::check_and_throw();
 }
 
 bool DatabaseManager::contains(const std::string& name) const {
+    CHECK_NATIVE(databaseManagerNative);
     auto t = _native::databases_contains(databaseManagerNative.get(), name.c_str());
     TypeDBDriverException::check_and_throw();
     return t; 
 }
 
 Database DatabaseManager::get(const std::string& name) const {
+    CHECK_NATIVE(databaseManagerNative);
     auto t = _native::databases_get(databaseManagerNative.get(), name.c_str());
     TypeDBDriverException::check_and_throw();
     return Database(t);  // No std::move for copy-elision
 }
 
 DatabaseIterable DatabaseManager::all() const {
+    CHECK_NATIVE(databaseManagerNative);
     _native::DatabaseIterator* t = _native::databases_all(databaseManagerNative.get());
     TypeDBDriverException::check_and_throw();
     return DatabaseIterable(t);

@@ -49,7 +49,7 @@ Driver& Driver::operator=(Driver&& from) {
 }
 
 bool Driver::isOpen() {
-    return _native::connection_is_open(connectionNative.get());
+    return connectionNative != nullptr && _native::connection_is_open(connectionNative.get());
 }
 
 bool Driver::operator==(const Driver& other) {

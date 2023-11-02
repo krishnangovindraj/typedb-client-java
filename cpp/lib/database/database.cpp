@@ -22,6 +22,7 @@
 #include "typedb/database/Database.hpp"
 
 #include <iostream>
+#include "inc/macros.hpp"
 
 using namespace TypeDB;
 
@@ -44,6 +45,7 @@ bool Database::operator==(const Database& other) {
 }
 
 std::string Database::name() {
+    CHECK_NATIVE(databaseNative);
     char* nameNative = _native::database_get_name(databaseNative.get());
     std::string str(nameNative);
     _native::string_free(nameNative);
@@ -51,6 +53,7 @@ std::string Database::name() {
 }
 
 void Database::drop() {
+    CHECK_NATIVE(databaseNative);
     _native::database_delete(databaseNative.get());
     databaseNative.release();  // Dangling pointer. Release avoids invoking the deleter (database_close)
 }

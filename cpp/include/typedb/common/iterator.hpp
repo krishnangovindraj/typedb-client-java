@@ -14,15 +14,15 @@ template <
     typename NATIVE_ITER,
     typename NATIVE_T,
     typename T>
-class BaseIterable;
+class TypeDBIterable;
 
 template <
     typename NATIVE_ITER,
     typename NATIVE_T,
     typename T>
-class BaseIterator { // Does not support range-based for loops yet.
+class TypeDBIterator { // Does not support range-based for loops yet.
 
-    using SELF = BaseIterator<NATIVE_ITER, NATIVE_T, T>;
+    using SELF = TypeDBIterator<NATIVE_ITER, NATIVE_T, T>;
 
    protected:
 
@@ -36,19 +36,19 @@ class BaseIterator { // Does not support range-based for loops yet.
     NativePointer<NATIVE_ITER> iteratorNative;
     T obj;
 
-    BaseIterator() : iteratorNative(nullptr), obj(nullptr) { }
+    TypeDBIterator() : iteratorNative(nullptr), obj(nullptr) { }
 
-    BaseIterator(SELF&& from) : iteratorNative(std::move(from.iteratorNative)), obj(std::move(from.obj)) { }
+    TypeDBIterator(SELF&& from) : iteratorNative(std::move(from.iteratorNative)), obj(std::move(from.obj)) { }
 
    public:
     static SELF end;
         
-    BaseIterator(NATIVE_ITER* iteratorNative)
+    TypeDBIterator(NATIVE_ITER* iteratorNative)
      : iteratorNative(iteratorNative, fn_nativeIterDrop),
        obj(nullptr) 
        { }
 
-    BaseIterator(const SELF& from) = delete;
+    TypeDBIterator(const SELF& from) = delete;
 
 
     SELF& operator=(const SELF& from) = delete;
@@ -85,7 +85,7 @@ class BaseIterator { // Does not support range-based for loops yet.
         return obj;
     }
 
-    friend class BaseIterable<NATIVE_ITER, NATIVE_T, T>;
+    friend class TypeDBIterable<NATIVE_ITER, NATIVE_T, T>;
 };
 
 
@@ -94,24 +94,24 @@ template <
     typename NATIVE_ITER,
     typename NATIVE_T,
     typename T>
-class BaseIterable {
+class TypeDBIterable {
 
-    using SELF = BaseIterable<NATIVE_ITER, NATIVE_T, T>;
-    using ITERATOR = BaseIterator<NATIVE_ITER, NATIVE_T, T>;
+    using SELF = TypeDBIterable<NATIVE_ITER, NATIVE_T, T>;
+    using ITERATOR = TypeDBIterator<NATIVE_ITER, NATIVE_T, T>;
 
    private:
     NativePointer<NATIVE_ITER> iteratorNative;
 
    public:
-    BaseIterable(NATIVE_ITER* iteratorNative) : iteratorNative(iteratorNative, ITERATOR::fn_nativeIterDrop) { } 
-    BaseIterable(SELF& from) = delete;
-    BaseIterable(SELF&& from) {
+    TypeDBIterable(NATIVE_ITER* iteratorNative) : iteratorNative(iteratorNative, ITERATOR::fn_nativeIterDrop) { } 
+    TypeDBIterable(SELF& from) = delete;
+    TypeDBIterable(SELF&& from) {
         *this = std::move(from);
     }
 
-    BaseIterable& operator=(const SELF& from) = delete; 
+    TypeDBIterable& operator=(const SELF& from) = delete; 
     
-    BaseIterable& operator=(SELF&& from){
+    TypeDBIterable& operator=(SELF&& from){
         iteratorNative = std::move(from.iteratorNative);
         return *this;
     }
@@ -131,6 +131,6 @@ template <
     typename NATIVE_ITER,
     typename NATIVE_T,
     typename T
-> BaseIterator<NATIVE_ITER, NATIVE_T, T> BaseIterator<NATIVE_ITER, NATIVE_T, T>::end = BaseIterator();
+> TypeDBIterator<NATIVE_ITER, NATIVE_T, T> TypeDBIterator<NATIVE_ITER, NATIVE_T, T>::end = TypeDBIterator();
 
 }  // namespace TypeDB
