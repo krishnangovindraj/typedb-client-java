@@ -31,7 +31,7 @@ cc_library(
 
     ],
     copts = ["-Iexternal/gherkin_cpp/include -std=c++17"],
-    srcs = glob(["core.cpp", "common/*.cpp"]),
+    srcs = glob(["core_steps.cpp", "common/*.cpp"]),
     hdrs = glob(["include/*.hpp"]),
     strip_include_prefix = "include",
     visibility = ["//cpp/test/behaviour:__subpackages__"],

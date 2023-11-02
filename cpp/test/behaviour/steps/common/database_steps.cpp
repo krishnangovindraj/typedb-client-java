@@ -19,6 +19,8 @@
  * under the License.
  */
 
+#include <future>
+
 #include "common.hpp"
 #include "steps.hpp"
 
@@ -82,14 +84,20 @@ cucumber_bdd::StepCollection<Context> databaseSteps = {
 
     // parallel
     BDD_STEP("connection create databases in parallel:", {
+        std::vector<std::future<void>> futures;
+        auto fn = [&](std::string dbName){context.driver->databases.create(dbName);};
         for (auto row : step.argument->data_table->rows) {
-            context.driver->databases.create(row.cells[0].value);
+            futures.push_back(std::async(std::launch::async, fn, row.cells[0].value));
         }
+        for (const std::future<void>& f: futures) f.wait();
     }),
     BDD_STEP("connection delete databases in parallel:", {
+        std::vector<std::future<void>> futures;
+        auto fn = [&](std::string dbName){context.driver->databases.get(dbName).drop();};
         for (auto row : step.argument->data_table->rows) {
-            context.driver->databases.get(row.cells[0].value).drop();
+            futures.push_back(std::async(std::launch::async, fn, row.cells[0].value));
         }
+        for (const std::future<void>& f: futures) f.wait();
     }),
 };
 
