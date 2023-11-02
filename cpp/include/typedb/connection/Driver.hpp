@@ -42,6 +42,7 @@ class Driver {
     Driver(const Driver&) = delete;
     Driver(Driver&& from);
 
+    Driver& operator=(Driver& from) = delete;
     Driver& operator=(Driver&& from);
 
     bool isOpen();

@@ -29,9 +29,12 @@ class Database {
     
    public:
     Database(_native::Database*) noexcept;
+    Database(Database&) = delete;
     Database(Database&&) noexcept;
 
+    Database& operator=(Database&) = delete;
     Database& operator=(Database&&);
+
     bool operator==(const Database& other);
 
     std::string name();

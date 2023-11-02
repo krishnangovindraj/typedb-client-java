@@ -58,17 +58,13 @@ cucumber_bdd::StepCollection<Context> databaseSteps = {
         for (auto row : step.argument->data_table->rows) expected.insert(row.cells[0].value);
         
         int cnt = 0;
-        DatabaseIterator it = context.driver->databases.all();
-        for (auto it = IteratorWrapper(context.driver->databases.all()); it != IteratorWrapper<DatabaseIterator>::end; it++) {
-            std::string dbName = it->name();
+        DatabaseIterable databases = context.driver->databases.all();
+        for (DatabaseIterator it = databases.begin(); it != databases.end() ; ++it ) {
+            Database& db = *it;
+            std::string dbName = db.name();
             cnt++;
             ASSERT_TRUE( expected.find(dbName) != expected.end() );
         }
-        // while (it.hasNext()) {
-        //     std::string dbName = it.next().name();
-        //     cnt++;
-        //     ASSERT_TRUE( expected.find(dbName) != expected.end() );
-        // }
         ASSERT_EQ(expected.size(), cnt);
     }),
 

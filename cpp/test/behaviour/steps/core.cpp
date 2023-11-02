@@ -31,9 +31,9 @@ void TestHooks::beforeScenario(const Context& context, const cucumber_bdd::Scena
 
 void TestHooks::afterScenario(const Context& context, const cucumber_bdd::Scenario<Context>* scenario) const {
     TypeDB::Driver driver(DEFAULT_CORE_ADDRESS);
-    DatabaseIterator dbIter = driver.databases.all();
-    while (dbIter.hasNext()) {
-        dbIter.next().drop();
+    DatabaseIterable dbIterable = driver.databases.all();
+    for (DatabaseIterator it = dbIterable.begin(); it != dbIterable.end() ; ++it ) {
+        (*it).drop();
     }
 }
 
@@ -55,7 +55,8 @@ cucumber_bdd::StepCollection<Context> connectionSteps = {
     }),
 
     BDD_STEP("connection does not have any database", {
-        ASSERT_FALSE(context.driver->databases.all().hasNext());
+        DatabaseIterable databases = context.driver->databases.all();
+        ASSERT_TRUE(databases.begin() == databases.end());
     }),
 
     BDD_STEP("connection closes", {

@@ -65,10 +65,10 @@ Database DatabaseManager::get(const std::string& name) const {
     return Database(t);  // No std::move for copy-elision
 }
 
-DatabaseIterator DatabaseManager::all() const {
-    auto t = _native::databases_all(databaseManagerNative.get());
+DatabaseIterable DatabaseManager::all() const {
+    _native::DatabaseIterator* t = _native::databases_all(databaseManagerNative.get());
     TypeDBDriverException::check_and_throw();
-    return DatabaseIterator(t);
+    return DatabaseIterable(t);
 }
 
 }  // namespace TypeDB
