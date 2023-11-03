@@ -32,19 +32,6 @@ namespace TypeDB::BDD {
 
 bool parseBoolean(const std::string& str);
 
-// template <typename T1, typename T2> 
-// using zipped = std::pair<const T1*, const T2*> 
-
-// template <typename T1, typename T2> 
-// std::vector<const std::pair<const T1*, const T2*>> zip_pointers(const std::vector<T1>& v1, const std::vector<T2>& v2) {
-//     assert(v1.size() == v2.size());
-//     std::vector<const std::pair<const T1*, const  T2*>> results;
-//     for (int i=0 ; i < v1.size() ; i ++) {
-//         results.push_back(std::pair{&(v1[i]), &(v2[i])});
-//     }
-//     return results;
-// }
-
 template <typename T, typename A1>
 void foreach_serial(const std::vector<A1>& args, std::function<T(const A1&)> fn) {
     std::for_each(args.begin(), args.end(), fn);

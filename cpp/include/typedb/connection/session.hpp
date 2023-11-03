@@ -21,6 +21,7 @@
 #pragma once
 
 #include "typedb/common/native.hpp"
+#include "typedb/connection/transaction.hpp"
 
 namespace TypeDB {
 
@@ -43,7 +44,10 @@ class Session {
     Session& operator=(Session&&);
 
     bool isOpen() const;
+    void close();
     std::string databaseName() const;
+
+    Transaction transaction(TransactionType type, const Options& options);
 
 };
 

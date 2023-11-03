@@ -47,7 +47,10 @@ namespace TypeDB::BDD {
 extern cucumber_bdd::StepCollection<Context> connectionSteps;
 extern cucumber_bdd::StepCollection<Context> databaseSteps;
 extern cucumber_bdd::StepCollection<Context> sessionSteps;
+extern cucumber_bdd::StepCollection<Context> transactionSteps;
+extern cucumber_bdd::StepCollection<Context> querySteps;
 
 void noop(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches);
 void unimplemented(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches);
+
 }  // namespace TypeDB::BDD

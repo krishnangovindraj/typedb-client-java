@@ -24,13 +24,16 @@
 
 namespace TypeDB {
 
+// Forward declarations for friendship
 class Session;
 class Transaction;
+class QueryManager;
 
 class Options {
 
     friend class DatabaseManager;
     friend class Session;
+    friend class QueryManager;
 
    private:
     NativePointer<_native::Options> optionsNative;

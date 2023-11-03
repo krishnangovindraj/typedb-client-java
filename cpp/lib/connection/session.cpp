@@ -24,19 +24,12 @@
 
 #include "inc/macros.hpp"
 
-#include <iostream>
-
 namespace TypeDB {
-
-void closeMe(_native::Session* sessionNative) {
-    DBG("Closeme called on %x", sessionNative);
-    _native::session_close(sessionNative);
-}
 
 Session::Session() : Session(nullptr) {}
 
 Session::Session(_native::Session* sessionNative)
-    : sessionNative(sessionNative, closeMe) {} // _native::session_close) {} // TODO: Revert
+    : sessionNative(sessionNative, _native::session_close) {}
 
 
 Session::Session(Session&& from) {
@@ -52,6 +45,10 @@ bool Session::isOpen() const {
     return sessionNative != nullptr && _native::session_is_open(sessionNative.get());
 }
 
+void Session::close() {
+    sessionNative.reset();
+}
+
 std::string Session::databaseName() const {
     CHECK_NATIVE(sessionNative);
     char* nameNative = _native::session_get_database_name(sessionNative.get());
@@ -61,5 +58,11 @@ std::string Session::databaseName() const {
     return databaseName;
 }
 
+Transaction Session::transaction(TransactionType type, const Options& options) {
+    CHECK_NATIVE(sessionNative);
+    _native::Transaction* p = _native::transaction_new(sessionNative.get(), type, options.getNative());
+    TypeDBDriverException::check_and_throw();
+    return Transaction(p);  // No std::move for copy-elision
+}
 
 }  // namespace TypeDB

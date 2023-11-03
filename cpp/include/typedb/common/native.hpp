@@ -52,6 +52,10 @@ namespace SessionType {
     constexpr _native::SessionType DATA = _native::Data;
     constexpr _native::SessionType SCHEMA = _native::Schema;
 }
+namespace TransactionType {
+    constexpr _native::TransactionType READ = _native::Read;
+    constexpr _native::TransactionType WRITE = _native::Write;
+}
 }
 
 }

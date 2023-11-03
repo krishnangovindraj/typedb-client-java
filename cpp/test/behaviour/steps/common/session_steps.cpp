@@ -31,8 +31,6 @@ namespace TypeDB::BDD {
 
 using namespace cucumber::messages;
 
-using row_sess_pair = const std::pair<const pickle_table_row*, const TypeDB::Session*>;
-
 cucumber_bdd::StepCollection<Context> sessionSteps = {
     BDD_STEP("connection open session for database: (\\w+)", {
         context.session = std::move(context.driver.session(matches[1], Constants::SessionType::DATA, context.sessionOptions));
@@ -112,16 +110,6 @@ cucumber_bdd::StepCollection<Context> sessionSteps = {
         assert(matches[1] == "session-idle-timeout-millis");
         context.sessionOptions.sessionIdleTimeoutMillis(atoi(matches[2].str().c_str()));
     }),
-
-
-    BDD_UNIMPLEMENTED("session opens transaction of type: (read|write)"),
-    
-    BDD_UNIMPLEMENTED("typeql define"),
-    BDD_UNIMPLEMENTED("typeql define"),
-
-    BDD_UNIMPLEMENTED("typeql define; throws exception containing \"(.*)\""),
-    BDD_UNIMPLEMENTED("typeql insert; throws exception containing \"(.*)\""),
-    
 };
 
 }

@@ -18,32 +18,46 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 #pragma once
 
-#include "cucumber_bdd/runner.hpp"
-#include "cucumber_bdd/step.hpp"
-#include "cucumber_bdd/testrun.hpp"
+#include "typedb/common/native.hpp"
+#include "typedb/connection/options.hpp"
+#include "typedb/query/querymanager.hpp"
 
-#include "typedb/connection/driver.hpp"
+namespace TypeDB {
 
-namespace TypeDB::BDD {
+class Session;  // forward declaration for friendship
 
-struct Context {
-    TypeDB::Driver driver;
-    TypeDB::Session session;
-    TypeDB::Transaction transaction;
+class Transaction {
 
-    std::vector<Session> sessions;
-    TypeDB::Options sessionOptions;
-    TypeDB::Options transactionOptions;
+    friend class TypeDB::Session;
+    friend class TypeDB::QueryManager;
+
+   private:
+    NativePointer<_native::Transaction> transactionNative;
+
+    Transaction(_native::Transaction*);
+
+    _native::Transaction* getNative();
+    
+   public:
+    const QueryManager query;
+
+    Transaction();
+    Transaction(const Transaction&) = delete;
+    Transaction(Transaction&&);
+
+    Transaction& operator=(const Transaction&) = delete;
+    Transaction& operator=(Transaction&&);
+
+    bool isOpen() const;
+    
+    void forceClose();
+
+    void commit();
+
+    void rollback();
+
 };
 
-class TestHooks : public cucumber_bdd::TestHooks<Context> {
-    void beforeAll() const override;
-    void afterScenario(const Context& context, const cucumber_bdd::Scenario<Context>* scenario) const override;
-};
-
-extern const TestHooks testHooks;
-
-}  // namespace TypeDB::BDD
+}  // namespace TypeDB

@@ -19,31 +19,16 @@
  * under the License.
  */
 
-#pragma once
+#include "typedb/common/exception.hpp"
+#include "typedb/query/querymanager.hpp"
+#include "typedb/connection/transaction.hpp"
 
-#include "cucumber_bdd/runner.hpp"
-#include "cucumber_bdd/step.hpp"
-#include "cucumber_bdd/testrun.hpp"
+#include "../inc/macros.hpp"
 
-#include "typedb/connection/driver.hpp"
+namespace TypeDB {
 
-namespace TypeDB::BDD {
+void QueryManager::define(const std::string& query, const Options& options) const {
+    _native::query_define(parentTransaction->getNative(),  query.c_str(), options.getNative());
+}
 
-struct Context {
-    TypeDB::Driver driver;
-    TypeDB::Session session;
-    TypeDB::Transaction transaction;
-
-    std::vector<Session> sessions;
-    TypeDB::Options sessionOptions;
-    TypeDB::Options transactionOptions;
-};
-
-class TestHooks : public cucumber_bdd::TestHooks<Context> {
-    void beforeAll() const override;
-    void afterScenario(const Context& context, const cucumber_bdd::Scenario<Context>* scenario) const override;
-};
-
-extern const TestHooks testHooks;
-
-}  // namespace TypeDB::BDD
+}  // namespace TypeDB

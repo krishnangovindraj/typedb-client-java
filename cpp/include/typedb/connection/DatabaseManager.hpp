@@ -51,7 +51,7 @@ class DatabaseManager {
 
     DatabaseManager(_native::Connection*);
     DatabaseManager(DatabaseManager&&) noexcept;
-    DatabaseManager& operator=(DatabaseManager&&);  // TODO: Make all move functions private & add Driver as friend
+    DatabaseManager& operator=(DatabaseManager&&);
 
     Session session(const std::string& database, SessionType sessionType, const Options& options);
 

@@ -18,32 +18,32 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 #pragma once
 
-#include "cucumber_bdd/runner.hpp"
-#include "cucumber_bdd/step.hpp"
-#include "cucumber_bdd/testrun.hpp"
+#include "typedb/common/native.hpp"
+#include "typedb/connection/options.hpp"
 
-#include "typedb/connection/driver.hpp"
+namespace TypeDB {
 
-namespace TypeDB::BDD {
+class Transaction;
 
-struct Context {
-    TypeDB::Driver driver;
-    TypeDB::Session session;
-    TypeDB::Transaction transaction;
+class QueryManager {
 
-    std::vector<Session> sessions;
-    TypeDB::Options sessionOptions;
-    TypeDB::Options transactionOptions;
+    friend class TypeDB::Transaction;
+
+   private:
+    // _native::Transaction* transactionNative; // Use the native directly, enforcing that the QueryManager never outlives the transaction.
+    TypeDB::Transaction* parentTransaction;
+
+    QueryManager(TypeDB::Transaction*);
+    QueryManager(QueryManager&&) noexcept;
+    QueryManager& operator=(QueryManager&&);
+
+   public:
+    QueryManager(const QueryManager&) = delete;
+    QueryManager& operator=(const QueryManager&) = delete;
+
+    void define(const std::string& query, const Options& options) const;
 };
 
-class TestHooks : public cucumber_bdd::TestHooks<Context> {
-    void beforeAll() const override;
-    void afterScenario(const Context& context, const cucumber_bdd::Scenario<Context>* scenario) const override;
-};
-
-extern const TestHooks testHooks;
-
-}  // namespace TypeDB::BDD
+}
