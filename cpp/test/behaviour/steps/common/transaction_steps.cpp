@@ -34,13 +34,21 @@ using namespace cucumber::messages;
 cucumber_bdd::StepCollection<Context> transactionSteps = {
     
     BDD_STEP("session opens transaction of type: (read|write)", {
-        TypeDB::TransactionType transactionType = matches[1] == "read" ? TypeDB::Constants::TransactionType::READ : TypeDB::Constants::TransactionType::WRITE;
-        context.transaction = std::move(context.session.transaction(transactionType, context.transactionOptions));
+        context.transaction = std::move(context.session.transaction(parseTransactionType(matches[1].str()), context.transactionOptions));
     }),
     
-    BDD_UNIMPLEMENTED("for each session, open transaction of type: (read|write)"),
-    BDD_UNIMPLEMENTED("for each session, open transaction of type"),
-    BDD_UNIMPLEMENTED("for each session, open transactions of type"),
+    BDD_STEP("for each session, open transaction of type: (read|write)", {
+        std::function<TypeDB::Transaction(const TypeDB::Session&)> fn = [&](const TypeDB::Session& session) { return session.transaction(parseTransactionType(matches[1].str()), context.transactionOptions); };
+        apply_serial(context.sessions, fn);
+    }),
+    // BDD_UNIMPLEMENTED("for each session, open transaction of type"),
+    BDD_STEP("for each session, open transactions of type", {
+        std::vector<zipped<TypeDB::Session>> z = zip(step.argument->data_table->rows, context.sessions);
+        std::function<TypeDB::Transaction(const zipped<TypeDB::Session>&)> fn = [&](const zipped<TypeDB::Session>& rowSession) { 
+            return rowSession.obj->transaction(parseTransactionType(rowSession.row->cells[0].value), context.transactionOptions);
+        };
+        context.transactions = apply_serial(z, fn);
+    }),
     BDD_UNIMPLEMENTED("session open transaction of type; throws exception: (read|write)"),
     BDD_UNIMPLEMENTED("for each session, open transactions of type; throws exception"),
     BDD_UNIMPLEMENTED("session transaction is null: (true|false)"),

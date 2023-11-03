@@ -35,6 +35,13 @@ cc_test(
     args = ["$(location @vaticle_typedb_behaviour//connection:session.feature)"]
 )
 
+cc_test(
+    name = "transaction-test",
+    deps = ["//cpp/test/behaviour/steps:core-steps"],
+    data = ["@vaticle_typedb_behaviour//connection:transaction.feature"],
+    args = ["$(location @vaticle_typedb_behaviour//connection:transaction.feature)"]
+)
+
 
 checkstyle_test(
     name = "checkstyle",

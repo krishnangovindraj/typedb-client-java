@@ -21,33 +21,11 @@
 #pragma once
 
 #include "typedb/common/native.hpp"
-#include "typedb/connection/transaction.hpp"
 
 namespace TypeDB {
 
-class DatabaseManager; // forward declaration for friendship
-
-class Session {
+class ConceptMap {
     
-    friend class TypeDB::DatabaseManager;
-
-   private:
-    NativePointer<_native::Session> sessionNative;
-    Session(_native::Session*);
-    
-   public:
-    Session();
-    Session(const Session&) = delete;
-    Session(Session&&);
-
-    Session& operator=(const Session&) = delete;
-    Session& operator=(Session&&);
-
-    bool isOpen() const;
-    void close();
-    std::string databaseName() const;
-    Transaction transaction(TransactionType type, const Options& options) const;
-
 };
 
 }  // namespace TypeDB

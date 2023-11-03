@@ -27,8 +27,19 @@
 
 namespace TypeDB {
 
+QueryManager::QueryManager(TypeDB::Transaction* parentTransaction) : parentTransaction(parentTransaction) {
+    
+}
+
 void QueryManager::define(const std::string& query, const Options& options) const {
     _native::query_define(parentTransaction->getNative(),  query.c_str(), options.getNative());
+    TypeDBDriverException::check_and_throw();
+}
+
+ConceptMapIterable QueryManager::insert(const std::string& query, const Options& options) const {
+    auto p = _native::query_insert(parentTransaction->getNative(),  query.c_str(), options.getNative());
+    TypeDBDriverException::check_and_throw();
+    return ConceptMapIterable(p);
 }
 
 }  // namespace TypeDB

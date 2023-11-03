@@ -34,7 +34,9 @@ struct Context {
     TypeDB::Session session;
     TypeDB::Transaction transaction;
 
-    std::vector<Session> sessions;
+    std::vector<TypeDB::Session> sessions;
+    std::vector<TypeDB::Transaction> transactions;
+    
     TypeDB::Options sessionOptions;
     TypeDB::Options transactionOptions;
 };

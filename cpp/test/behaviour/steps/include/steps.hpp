@@ -28,7 +28,7 @@
 #include "typedb/connection/driver.hpp"
 #include "typedb/common/exception.hpp"
 
-
+#include <iostream>
 
 #define BDD_STEP(REGEX, IMPL) (cucumber_bdd::StepDefinition<TypeDB::BDD::Context>{std::regex("\\s*" REGEX "\\s*"), [](Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches) { IMPL }})
 #define BDD_UNIMPLEMENTED(REGEX) (cucumber_bdd::StepDefinition<TypeDB::BDD::Context>{std::regex((REGEX)), &unimplemented})
@@ -37,20 +37,20 @@
 #define DRIVER_THROWS(MSG, IMPL) {  \
         try { \
                 IMPL; \
-        } catch (TypeDB::TypeDBDriverException e) { \
+        } catch (TypeDB::TypeDBDriverException& e) { \
             ASSERT_TRUE(e.message().find(MSG) != std::string::npos); \
         } \
     }
 
 namespace TypeDB::BDD {
 
+void noop(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches);
+void unimplemented(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches);
+
 extern cucumber_bdd::StepCollection<Context> connectionSteps;
 extern cucumber_bdd::StepCollection<Context> databaseSteps;
 extern cucumber_bdd::StepCollection<Context> sessionSteps;
 extern cucumber_bdd::StepCollection<Context> transactionSteps;
 extern cucumber_bdd::StepCollection<Context> querySteps;
-
-void noop(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches);
-void unimplemented(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches);
 
 }  // namespace TypeDB::BDD

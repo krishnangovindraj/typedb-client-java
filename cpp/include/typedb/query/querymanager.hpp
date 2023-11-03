@@ -22,6 +22,7 @@
 
 #include "typedb/common/native.hpp"
 #include "typedb/connection/options.hpp"
+#include "typedb/answer/iterators.hpp"
 
 namespace TypeDB {
 
@@ -33,17 +34,19 @@ class QueryManager {
 
    private:
     // _native::Transaction* transactionNative; // Use the native directly, enforcing that the QueryManager never outlives the transaction.
-    TypeDB::Transaction* parentTransaction;
+    TypeDB::Transaction* const parentTransaction;
 
     QueryManager(TypeDB::Transaction*);
-    QueryManager(QueryManager&&) noexcept;
-    QueryManager& operator=(QueryManager&&);
 
    public:
+    QueryManager(QueryManager&&) noexcept = delete;
+    QueryManager& operator=(QueryManager&&)  = delete;
     QueryManager(const QueryManager&) = delete;
     QueryManager& operator=(const QueryManager&) = delete;
 
     void define(const std::string& query, const Options& options) const;
+    ConceptMapIterable insert(const std::string& query, const Options& options) const; // TODO: return ConceptMapIterator
+    
 };
 
 }

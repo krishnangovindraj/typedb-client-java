@@ -89,22 +89,19 @@ cucumber_bdd::StepCollection<Context> sessionSteps = {
     
     
     BDD_STEP("sessions have databases:", {
-        auto rows = step.argument->data_table->rows;
-        ASSERT_EQ(context.sessions.size(), rows.size());
-        for (int i = 0; i < rows.size() ; i++) {
-            ASSERT_EQ(rows[i].cells[0].value, context.sessions[i].databaseName());
-        }
+        std::vector<zipped<TypeDB::Session>> z = zip(step.argument->data_table->rows, context.sessions);
+        std::function<void(const zipped<TypeDB::Session>&)> fn = [&](const zipped<TypeDB::Session>& rowSession) { 
+            ASSERT_EQ(rowSession.row->cells[0].value, rowSession.obj->databaseName());
+        };
+        foreach_serial(z, fn);
     }),
     
     BDD_STEP("sessions in parallel have databases:", {
-        std::function<void(const pickle_table_row* row, const TypeDB::Session* session)> fn = [&](const pickle_table_row* row, const TypeDB::Session* session){ ASSERT_EQ(row->cells[0].value, session->databaseName()); };
-        auto rows = step.argument->data_table->rows;
-        ASSERT_EQ(context.sessions.size(), rows.size());
-        std::vector<std::future<void>> futures;
-        for (int i = 0; i < rows.size() ; i++) {
-            futures.push_back(std::async(std::launch::async, fn, &rows[i], &context.sessions[i]));
-        }
-        for (auto& f: futures) { f.wait(); }
+        std::vector<zipped<TypeDB::Session>> z = zip(step.argument->data_table->rows, context.sessions);
+        std::function<void(const zipped<TypeDB::Session>&)> fn = [&](const zipped<TypeDB::Session>& rowSession) { 
+            ASSERT_EQ(rowSession.row->cells[0].value, rowSession.obj->databaseName());
+        };
+        foreach_parallel(z, fn);
     }),
     BDD_STEP("set session option (\\w+) to: (\\w+)", {
         assert(matches[1] == "session-idle-timeout-millis");

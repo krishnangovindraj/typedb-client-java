@@ -44,7 +44,8 @@ void TestHooks::afterScenario(const Context& context, const cucumber_bdd::Scenar
 const TestHooks testHooks;
 
 cucumber_bdd::StepCollection<Context> connectionSteps = {
-    BDD_NOOP("typedb starts"),
+    // BDD_NOOP("typedb starts"),
+    BDD_STEP("typedb starts", {}),
 
     BDD_STEP("connection opens with default authentication", {
         context.driver = std::move(TypeDB::Driver(DEFAULT_CORE_ADDRESS));

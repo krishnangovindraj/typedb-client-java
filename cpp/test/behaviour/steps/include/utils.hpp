@@ -22,6 +22,8 @@
 #pragma once
 #include <vector>
 #include <future>
+#include "typedb/common/native.hpp"
+#include "cucumber/messages/pickle_table.hpp"
 
 
 #include <cstdio>
@@ -31,11 +33,29 @@
 namespace TypeDB::BDD {
 
 bool parseBoolean(const std::string& str);
+TypeDB::TransactionType parseTransactionType(const std::string& str);
 
 template <typename T, typename A1>
 void foreach_serial(const std::vector<A1>& args, std::function<T(const A1&)> fn) {
     std::for_each(args.begin(), args.end(), fn);
 }
+
+template <typename T> 
+struct zipped {
+    const cucumber::messages::pickle_table_row* row;
+    T* obj;   
+};
+
+template <typename T> 
+std::vector<zipped<T>> zip(const std::vector<cucumber::messages::pickle_table_row>& rows, std::vector<T>& objs) { // Important that these are by reference.
+    assert( rows.size() == objs.size() );
+    std::vector<zipped<T>> z;
+    for (int i = 0; i < rows.size(); i++) {
+        z.push_back(zipped<T>{&rows[i], &objs[i]});
+    }
+    return z;
+}
+
 
 template <typename T, typename A1>
 std::vector<T> apply_serial(const std::vector<A1>& args, std::function<T(const A1&)> fn) {

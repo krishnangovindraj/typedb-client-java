@@ -21,33 +21,26 @@
 #pragma once
 
 #include "typedb/common/native.hpp"
-#include "typedb/connection/transaction.hpp"
+#include "typedb/common/iterator.hpp"
+#include "typedb/answer/conceptmap.hpp"
 
 namespace TypeDB {
 
-class DatabaseManager; // forward declaration for friendship
+using ConceptMapIterator = TypeDBIterator<
+    _native::ConceptMapIterator,
+    _native::ConceptMap,
+    TypeDB::ConceptMap>;
 
-class Session {
-    
-    friend class TypeDB::DatabaseManager;
+using ConceptMapIterable = TypeDBIterable<
+    _native::ConceptMapIterator,
+    _native::ConceptMap,
+    TypeDB::ConceptMap>;
 
-   private:
-    NativePointer<_native::Session> sessionNative;
-    Session(_native::Session*);
-    
-   public:
-    Session();
-    Session(const Session&) = delete;
-    Session(Session&&);
-
-    Session& operator=(const Session&) = delete;
-    Session& operator=(Session&&);
-
-    bool isOpen() const;
-    void close();
-    std::string databaseName() const;
-    Transaction transaction(TransactionType type, const Options& options) const;
-
-};
+template <>
+std::function<void(_native::ConceptMapIterator*)> ConceptMapIterator::fn_nativeIterDrop;
+template <>
+std::function<_native::ConceptMap*(_native::ConceptMapIterator*)> ConceptMapIterator::fn_nativeIterNext;
+template <>
+std::function<void(_native::ConceptMap*)> ConceptMapIterator::fn_nativeElementDrop;
 
 }  // namespace TypeDB

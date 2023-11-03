@@ -19,7 +19,6 @@
  * under the License.
  */
 
-
 #include "utils.hpp"
 
 #include <iostream>
@@ -29,6 +28,10 @@ namespace TypeDB::BDD {
 
 bool parseBoolean(const std::string& str) {
     return (str == "true");
+}
+
+TypeDB::TransactionType parseTransactionType(const std::string& str) {
+    return str == "read" ? TypeDB::Constants::TransactionType::READ : TypeDB::Constants::TransactionType::WRITE;
 }
 
 }

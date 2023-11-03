@@ -58,7 +58,7 @@ std::string Session::databaseName() const {
     return databaseName;
 }
 
-Transaction Session::transaction(TransactionType type, const Options& options) {
+Transaction Session::transaction(TransactionType type, const Options& options) const {
     CHECK_NATIVE(sessionNative);
     _native::Transaction* p = _native::transaction_new(sessionNative.get(), type, options.getNative());
     TypeDBDriverException::check_and_throw();

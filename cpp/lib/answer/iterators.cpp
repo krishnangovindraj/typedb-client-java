@@ -18,36 +18,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#pragma once
-
+#include "typedb/answer/iterators.hpp"
 #include "typedb/common/native.hpp"
-#include "typedb/connection/transaction.hpp"
 
 namespace TypeDB {
 
-class DatabaseManager; // forward declaration for friendship
-
-class Session {
-    
-    friend class TypeDB::DatabaseManager;
-
-   private:
-    NativePointer<_native::Session> sessionNative;
-    Session(_native::Session*);
-    
-   public:
-    Session();
-    Session(const Session&) = delete;
-    Session(Session&&);
-
-    Session& operator=(const Session&) = delete;
-    Session& operator=(Session&&);
-
-    bool isOpen() const;
-    void close();
-    std::string databaseName() const;
-    Transaction transaction(TransactionType type, const Options& options) const;
-
-};
+template <>
+std::function<void(_native::ConceptMapIterator*)> ConceptMapIterator::fn_nativeIterDrop = &_native::concept_map_iterator_drop;
+template <>
+std::function<_native::ConceptMap*(_native::ConceptMapIterator*)> ConceptMapIterator::fn_nativeIterNext = &_native::concept_map_iterator_next;
+template <>
+std::function<void(_native::ConceptMap*)> ConceptMapIterator::fn_nativeElementDrop = &_native::concept_map_drop;
 
 }  // namespace TypeDB

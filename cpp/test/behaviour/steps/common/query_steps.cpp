@@ -36,14 +36,24 @@ cucumber_bdd::StepCollection<Context> querySteps = {
     BDD_STEP("typeql define", {
         context.transaction.query.define(step.argument->doc_string->content, TypeDB::Options());
     }),
-    BDD_UNIMPLEMENTED("typeql define; throws exception"),
-    BDD_UNIMPLEMENTED("typeql define; throws exception containing \"(.*)\""),
+    BDD_STEP("typeql define; throws exception", {
+        DRIVER_THROWS("", {context.transaction.query.define(step.argument->doc_string->content, TypeDB::Options());});
+    }),
+    BDD_STEP("typeql define; throws exception containing \"(.+)\"", {
+        DRIVER_THROWS(matches[1].str(), {context.transaction.query.define(step.argument->doc_string->content, TypeDB::Options());});
+    }),
     BDD_UNIMPLEMENTED("typeql undefine"),
     BDD_UNIMPLEMENTED("typeql undefine; throws exception"),
     BDD_UNIMPLEMENTED("typeql undefine; throws exception containing \"(.*)\""),
-    BDD_UNIMPLEMENTED("typeql insert"),
-    BDD_UNIMPLEMENTED("typeql insert; throws exception"),
-    BDD_UNIMPLEMENTED("typeql insert; throws exception containing \"(.*)\""),
+    BDD_STEP("typeql insert", {
+        context.transaction.query.insert(step.argument->doc_string->content, TypeDB::Options());
+    }),
+    BDD_STEP("typeql insert; throws exception", {
+        DRIVER_THROWS("", {context.transaction.query.insert(step.argument->doc_string->content, TypeDB::Options());});
+    }),
+    BDD_STEP("typeql insert; throws exception containing \"(.*)\"", {
+        DRIVER_THROWS(matches[1].str(), {context.transaction.query.insert(step.argument->doc_string->content, TypeDB::Options());});
+    }),
     BDD_UNIMPLEMENTED("typeql delete"),
     BDD_UNIMPLEMENTED("typeql delete; throws exception"),
     BDD_UNIMPLEMENTED("typeql delete; throws exception containing \"(.*)\""),
