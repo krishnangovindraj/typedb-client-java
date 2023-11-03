@@ -19,15 +19,23 @@
  * under the License.
  */
 
+#include <cstdlib>
+
 #include "common.hpp"
 #include "steps.hpp"
 #include "utils.hpp"
 
+#include "typedb/connection/session.hpp"
+
 namespace TypeDB::BDD {
+
+using namespace cucumber::messages;
+
+using row_sess_pair = const std::pair<const pickle_table_row*, const TypeDB::Session*>;
 
 cucumber_bdd::StepCollection<Context> sessionSteps = {
     BDD_STEP("connection open session for database: (\\w+)", {
-        context.session = std::move(context.driver.session(matches[1], Constants::SessionType::DATA, Options()));
+        context.session = std::move(context.driver.session(matches[1], Constants::SessionType::DATA, context.sessionOptions));
     }),
     BDD_STEP("session is null: (true|false)", {
         ASSERT_EQ(parseBoolean(matches[1]), !context.session.isOpen());
@@ -37,7 +45,83 @@ cucumber_bdd::StepCollection<Context> sessionSteps = {
     }),
     BDD_STEP("session has database: (\\w+)", {
         ASSERT_EQ(matches[1], context.session.databaseName());
-    })
+    }),
+
+    BDD_STEP("connection open schema session for database: (\\w+)", {
+        context.session = std::move(context.driver.session(matches[1], Constants::SessionType::SCHEMA, context.sessionOptions));
+    }),
+    BDD_STEP("connection open data session for database: (\\w+)", {
+        context.session = std::move(context.driver.session(matches[1], Constants::SessionType::DATA, context.sessionOptions));
+    }),
+    BDD_STEP("connection open sessions for databases:", {
+        std::function<TypeDB::Session(const pickle_table_row&)> fn = [&](const pickle_table_row& row) { return context.driver.session(row.cells[0].value, Constants::SessionType::DATA, context.sessionOptions); };
+        context.sessions = std::move(apply_serial(step.argument->data_table->rows, fn));
+    }),
+    
+    BDD_STEP("connection open data sessions in parallel for databases:", {
+        std::function<TypeDB::Session(const pickle_table_row&)> fn = [&](const pickle_table_row& row) { return context.driver.session(row.cells[0].value, Constants::SessionType::DATA, context.sessionOptions); };
+        context.sessions = std::move(apply_parallel(step.argument->data_table->rows, fn));
+    }),
+    BDD_STEP("connection open sessions in parallel for databases:", {
+        std::function<TypeDB::Session(const pickle_table_row&)> fn = [&](const pickle_table_row& row) { return context.driver.session(row.cells[0].value, Constants::SessionType::DATA, context.sessionOptions); };
+        context.sessions = std::move(apply_parallel(step.argument->data_table->rows, fn));
+    }),
+    BDD_STEP("connection close all sessions", {
+        std::function<TypeDB::Session(const pickle_table_row&)> fn = [&](const pickle_table_row& row) { return context.driver.session(row.cells[0].value, Constants::SessionType::DATA, context.sessionOptions); };
+        foreach_serial(step.argument->data_table->rows, fn);
+    }),
+    
+    BDD_STEP("sessions are null: (true|false)", {
+        std::function<void(const pickle_table_row&)> fn = [&](const pickle_table_row& row) {  ASSERT_EQ(parseBoolean(matches[1]), !context.session.isOpen()); };
+        foreach_serial(step.argument->data_table->rows, fn);
+    }),
+    
+    BDD_STEP("sessions are open: (true|false)", {
+        std::function<void(const pickle_table_row&)> fn = [&](const pickle_table_row& row) {  ASSERT_EQ(parseBoolean(matches[1]), context.session.isOpen()); };
+        foreach_serial(step.argument->data_table->rows, fn);
+    }),
+    BDD_STEP("sessions in parallel are null: (true|false)", {
+        std::function<void(const pickle_table_row&)> fn = [&](const pickle_table_row& row) {  ASSERT_EQ(parseBoolean(matches[1]), !context.session.isOpen()); };
+        foreach_parallel(step.argument->data_table->rows, fn);
+    }),
+    BDD_STEP("sessions in parallel are open: (true|false)", {
+        std::function<void(const pickle_table_row&)> fn = [&](const pickle_table_row& row) {  ASSERT_EQ(parseBoolean(matches[1]), context.session.isOpen()); };
+        foreach_parallel(step.argument->data_table->rows, fn);
+    }),
+    
+    
+    BDD_STEP("sessions have databases:", {
+        auto rows = step.argument->data_table->rows;
+        ASSERT_EQ(context.sessions.size(), rows.size());
+        for (int i = 0; i < rows.size() ; i++) {
+            ASSERT_EQ(rows[i].cells[0].value, context.sessions[i].databaseName());
+        }
+    }),
+    
+    BDD_STEP("sessions in parallel have databases:", {
+        std::function<void(const pickle_table_row* row, const TypeDB::Session* session)> fn = [&](const pickle_table_row* row, const TypeDB::Session* session){ ASSERT_EQ(row->cells[0].value, session->databaseName()); };
+        auto rows = step.argument->data_table->rows;
+        ASSERT_EQ(context.sessions.size(), rows.size());
+        std::vector<std::future<void>> futures;
+        for (int i = 0; i < rows.size() ; i++) {
+            futures.push_back(std::async(std::launch::async, fn, &rows[i], &context.sessions[i]));
+        }
+        for (auto& f: futures) { f.wait(); }
+    }),
+    BDD_STEP("set session option (\\w+) to: (\\w+)", {
+        assert(matches[1] == "session-idle-timeout-millis");
+        context.sessionOptions.sessionIdleTimeoutMillis(atoi(matches[2].str().c_str()));
+    }),
+
+
+    BDD_UNIMPLEMENTED("session opens transaction of type: (read|write)"),
+    
+    BDD_UNIMPLEMENTED("typeql define"),
+    BDD_UNIMPLEMENTED("typeql define"),
+
+    BDD_UNIMPLEMENTED("typeql define; throws exception containing \"(.*)\""),
+    BDD_UNIMPLEMENTED("typeql insert; throws exception containing \"(.*)\""),
+    
 };
 
 }

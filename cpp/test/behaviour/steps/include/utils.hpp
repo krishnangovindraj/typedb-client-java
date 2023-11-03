@@ -23,11 +23,38 @@
 #include <vector>
 #include <future>
 
+
+#include <cstdio>
+#define DBG1(STR) fprintf(stderr, STR "\n")
+#define DBG(FMT, ...) fprintf(stderr, FMT "\n", __VA_ARGS__) // TODO: Remove
+
 namespace TypeDB::BDD {
+
+bool parseBoolean(const std::string& str);
+
+// template <typename T1, typename T2> 
+// using zipped = std::pair<const T1*, const T2*> 
+
+// template <typename T1, typename T2> 
+// std::vector<const std::pair<const T1*, const T2*>> zip_pointers(const std::vector<T1>& v1, const std::vector<T2>& v2) {
+//     assert(v1.size() == v2.size());
+//     std::vector<const std::pair<const T1*, const  T2*>> results;
+//     for (int i=0 ; i < v1.size() ; i ++) {
+//         results.push_back(std::pair{&(v1[i]), &(v2[i])});
+//     }
+//     return results;
+// }
 
 template <typename T, typename A1>
 void foreach_serial(const std::vector<A1>& args, std::function<T(const A1&)> fn) {
     std::for_each(args.begin(), args.end(), fn);
+}
+
+template <typename T, typename A1>
+std::vector<T> apply_serial(const std::vector<A1>& args, std::function<T(const A1&)> fn) {
+    std::vector<T> results;
+    std::transform(args.begin(), args.end(), std::back_inserter(results), fn);
+    return results;
 }
 
 template <typename T, typename A1>
@@ -39,6 +66,15 @@ void foreach_parallel(const std::vector<A1>& args, std::function<T(const A1&)> f
     std::for_each(futures.begin(), futures.end(), [](std::future<T>& f) { f.wait(); });
 }
 
-bool parseBoolean(const std::string& str);
+template <typename T, typename A1>
+std::vector<T> apply_parallel(const std::vector<A1>& args, std::function<T(const A1&)> fn) {
+    std::function<std::future<T>(const A1&)> async_fn = [&](const A1& arg) { return std::async(std::launch::async, fn, arg); };
+    std::vector<std::future<T>> futures;
+    std::transform(args.begin(), args.end(), std::back_inserter(futures), async_fn);
+
+    std::vector<T> results;
+    std::transform(futures.begin(), futures.end(), std::back_inserter(results), [](std::future<T>& f) { return f.get(); });
+    return results;
+}
 
 }  // namespace TypeDB::BDD

@@ -39,6 +39,47 @@ class Options {
    public:
     Options();
 
+    std::optional<bool> infer(); 
+
+    std::optional<bool> traceInference(); 
+
+    std::optional<bool> explain(); 
+
+    std::optional<bool> parallel(); 
+
+    std::optional<bool> prefetch(); 
+
+    std::optional<int32_t> prefetchSize(); 
+
+    std::optional<int64_t> sessionIdleTimeoutMillis(); 
+
+    std::optional<int64_t> transactionTimeoutMillis(); 
+
+    std::optional<int64_t> schemaLockAcquireTimeoutMillis(); 
+
+    std::optional<bool> readAnyReplica(); 
+
+
+    Options& infer(bool infer);
+
+    Options& traceInference(bool traceInference);
+
+    Options& explain(bool explain);
+
+    Options& parallel(bool parallel);
+
+    Options& prefetch(bool prefetch);
+
+    Options& prefetchSize(int32_t prefetchSize);
+
+    Options& sessionIdleTimeoutMillis(int64_t timeoutMillis);
+
+    Options& transactionTimeoutMillis(int64_t timeoutMillis);
+
+    Options& schemaLockAcquireTimeoutMillis(int64_t timeoutMillis);
+
+    Options& readAnyReplica(bool readAnyReplica);
+
 };
 
 }  // namespace TypeDB

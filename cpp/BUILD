@@ -34,6 +34,7 @@ cc_library(
         "//c:typedb_driver_clib_headers"
     ],
     visibility = ["//visibility:public"],
+    copts = ["-std=c++17"]
 )
 
 cc_test(

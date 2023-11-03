@@ -24,12 +24,19 @@
 
 #include "inc/macros.hpp"
 
+#include <iostream>
+
 namespace TypeDB {
+
+void closeMe(_native::Session* sessionNative) {
+    DBG("Closeme called on %x", sessionNative);
+    _native::session_close(sessionNative);
+}
 
 Session::Session() : Session(nullptr) {}
 
 Session::Session(_native::Session* sessionNative)
-    : sessionNative(sessionNative, _native::session_close) {}
+    : sessionNative(sessionNative, closeMe) {} // _native::session_close) {} // TODO: Revert
 
 
 Session::Session(Session&& from) {
@@ -41,11 +48,11 @@ Session& Session::operator=(Session&& from) {
     return *this;
 }
 
-bool Session::isOpen() {
+bool Session::isOpen() const {
     return sessionNative != nullptr && _native::session_is_open(sessionNative.get());
 }
 
-std::string Session::databaseName() {
+std::string Session::databaseName() const {
     CHECK_NATIVE(sessionNative);
     char* nameNative = _native::session_get_database_name(sessionNative.get());
     TypeDBDriverException::check_and_throw();

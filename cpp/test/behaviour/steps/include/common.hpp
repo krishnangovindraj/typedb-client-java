@@ -32,6 +32,10 @@ namespace TypeDB::BDD {
 struct Context {
     TypeDB::Driver driver;
     TypeDB::Session session;
+
+    std::vector<Session> sessions;
+    TypeDB::Options sessionOptions;
+    TypeDB::Options transactionOptions;
 };
 
 class TestHooks : public cucumber_bdd::TestHooks<Context> {

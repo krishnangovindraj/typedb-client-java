@@ -24,6 +24,10 @@
 #include <cassert>
 #include "typedb/common/exception.hpp"
 
+#include <cstdio>
+#define DBG1(STR) fprintf(stderr, STR "\n")
+#define DBG(FMT, ...) fprintf(stderr, FMT "\n", __VA_ARGS__) // TODO: Remove
+
 #ifdef NDEBUG
     #define CHECK_NATIVE(PTR) {} // Debug only    
 #else

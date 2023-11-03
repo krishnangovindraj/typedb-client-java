@@ -42,8 +42,8 @@ class Session {
     Session& operator=(const Session&) = delete;
     Session& operator=(Session&&);
 
-    bool isOpen();
-    std::string databaseName();
+    bool isOpen() const;
+    std::string databaseName() const;
 
 };
 

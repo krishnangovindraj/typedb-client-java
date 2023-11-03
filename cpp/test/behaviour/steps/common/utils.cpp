@@ -22,8 +22,13 @@
 
 #include "utils.hpp"
 
+#include <iostream>
+
+namespace TypeDB::BDD {
+
+
 bool parseBoolean(const std::string& str) {
-    std::string strCopy;
-    std::transform(str.begin(), str.end(), strCopy.begin(), ::tolower);
-    return (strCopy == "true");
+    return (str == "true");
+}
+
 }
