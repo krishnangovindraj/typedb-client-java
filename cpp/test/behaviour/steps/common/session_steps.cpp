@@ -51,6 +51,10 @@ cucumber_bdd::StepCollection<Context> sessionSteps = {
     BDD_STEP("connection open data session for database: (\\w+)", {
         context.session = std::move(context.driver.session(matches[1], Constants::SessionType::DATA, context.sessionOptions));
     }),
+    BDD_STEP("connection open sessions for database:", {
+        std::function<TypeDB::Session(const pickle_table_row&)> fn = [&](const pickle_table_row& row) { return context.driver.session(row.cells[0].value, Constants::SessionType::DATA, context.sessionOptions); };
+        context.sessions = std::move(apply_serial(step.argument->data_table->rows, fn));
+    }),
     BDD_STEP("connection open sessions for databases:", {
         std::function<TypeDB::Session(const pickle_table_row&)> fn = [&](const pickle_table_row& row) { return context.driver.session(row.cells[0].value, Constants::SessionType::DATA, context.sessionOptions); };
         context.sessions = std::move(apply_serial(step.argument->data_table->rows, fn));
@@ -103,7 +107,7 @@ cucumber_bdd::StepCollection<Context> sessionSteps = {
         };
         foreach_parallel(z, fn);
     }),
-    BDD_STEP("set session option (\\w+) to: (\\w+)", {
+    BDD_STEP("set session option ([A-Za-z_\\-]+) to: ([A-Za-z0-9]+)", {
         assert(matches[1] == "session-idle-timeout-millis");
         context.sessionOptions.sessionIdleTimeoutMillis(atoi(matches[2].str().c_str()));
     }),

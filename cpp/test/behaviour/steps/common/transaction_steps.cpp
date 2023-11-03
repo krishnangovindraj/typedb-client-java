@@ -41,8 +41,8 @@ cucumber_bdd::StepCollection<Context> transactionSteps = {
         std::function<TypeDB::Transaction(const TypeDB::Session&)> fn = [&](const TypeDB::Session& session) { return session.transaction(parseTransactionType(matches[1].str()), context.transactionOptions); };
         apply_serial(context.sessions, fn);
     }),
-    // BDD_UNIMPLEMENTED("for each session, open transaction of type"),
-    BDD_STEP("for each session, open transactions of type", {
+    // BDD_STEP("for each session, open transaction of type:"),
+    BDD_STEP("for each session, open transactions of type:", {
         std::vector<zipped<TypeDB::Session>> z = zip(step.argument->data_table->rows, context.sessions);
         std::function<TypeDB::Transaction(const zipped<TypeDB::Session>&)> fn = [&](const zipped<TypeDB::Session>& rowSession) { 
             return rowSession.obj->transaction(parseTransactionType(rowSession.row->cells[0].value), context.transactionOptions);
@@ -69,16 +69,25 @@ cucumber_bdd::StepCollection<Context> transactionSteps = {
     BDD_UNIMPLEMENTED("for each session, transactions commit; throws exception"),
     BDD_UNIMPLEMENTED("for each session, transaction closes"),
     BDD_UNIMPLEMENTED("for each session, transaction has type"),
-    BDD_UNIMPLEMENTED("for each session, transactions have type"),
+    BDD_STEP("for each session, transactions have type:", {
+        std::vector<zipped<TypeDB::Transaction>> z = zip(step.argument->data_table->rows, context.transactions);
+        std::function<void(const zipped<TypeDB::Transaction>&)> fn = [&](const zipped<TypeDB::Transaction>& rowTxn) { 
+            ASSERT_EQ(parseTransactionType(rowTxn.row->cells[0].value), rowTxn.obj->type());
+        };
+        foreach_serial(z, fn);
+    }),
     BDD_UNIMPLEMENTED("for each session, transaction has type: (read|write)"),
     BDD_UNIMPLEMENTED("session transaction has type: (read|write)"),
-    BDD_UNIMPLEMENTED("for each session, open transactions in parallel of type"),
+    BDD_UNIMPLEMENTED("for each session, open transactions in parallel of type:"),
     BDD_UNIMPLEMENTED("for each session, transactions in parallel are null: (true|false)"),
     BDD_UNIMPLEMENTED("for each session, transactions in parallel are open: (true|false)"),
-    BDD_UNIMPLEMENTED("for each session, transactions in parallel have type"),
+    BDD_UNIMPLEMENTED("for each session, transactions in parallel have type:"),
     BDD_UNIMPLEMENTED("for each session in parallel, transactions in parallel are null: (true|false)"),
     BDD_UNIMPLEMENTED("for each session in parallel, transactions in parallel are open: (true|false)"),
-    BDD_UNIMPLEMENTED("set transaction option (\\w+) to: (\\d+)"),
+    BDD_STEP("set transaction option ([A-Za-z_\\-]+) to: ([A-Za-z0-9]+)", {
+        assert(matches[1] == "transaction-timeout-millis");
+        context.transactionOptions.transactionTimeoutMillis(atoi(matches[2].str().c_str()));
+    }),
     BDD_UNIMPLEMENTED("for each transaction, define query; throws exception containing \"(.+)\""),
 };
 

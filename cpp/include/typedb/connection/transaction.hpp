@@ -35,13 +35,15 @@ class Transaction {
 
    private:
     NativePointer<_native::Transaction> transactionNative;
+    
 
-    Transaction(_native::Transaction*);
+    Transaction(_native::Transaction*, TypeDB::TransactionType);
 
     _native::Transaction* getNative();
-    
+    TypeDB::TransactionType txnType;
    public:
     const QueryManager query;
+    
 
     Transaction();
     Transaction(const Transaction&) = delete;
@@ -49,6 +51,8 @@ class Transaction {
 
     Transaction& operator=(const Transaction&) = delete;
     Transaction& operator=(Transaction&&);
+
+    TypeDB::TransactionType type();
 
     bool isOpen() const;
     

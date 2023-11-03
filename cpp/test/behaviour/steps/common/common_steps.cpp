@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2022 Vaticle
  *
@@ -19,31 +20,19 @@
  * under the License.
  */
 
-#include <iostream>
-
-#include "gtest/gtest.h"
+#include <thread>
+#include <chrono>
+#include <cstdlib>
 
 #include "common.hpp"
 #include "steps.hpp"
 
-int main(int argc, char** argv) {
-    if (argc != 2) {
-        std::cout << "Expected the path to the feature file as argument" << std::endl;
-        return 1;
-    }
+namespace TypeDB::BDD {
 
-    ::testing::InitGoogleTest(&argc, argv);
+cucumber_bdd::StepCollection<Context> commonSteps = {
+    BDD_STEP("wait (\\d+) seconds", {
+        std::this_thread::sleep_for(std::chrono::seconds(atoi(matches[1].str().c_str())));
+    }),
+};
 
-    cucumber_bdd::TestRunner<TypeDB::BDD::Context> driver(
-        {
-         TypeDB::BDD::connectionSteps,
-         TypeDB::BDD::commonSteps,
-         TypeDB::BDD::databaseSteps,
-         TypeDB::BDD::sessionSteps,
-         TypeDB::BDD::transactionSteps,
-         TypeDB::BDD::querySteps},
-        &TypeDB::BDD::testHooks);
-    driver.loadFeature(argv[1]);
-    return driver.runAllTests();
-    return 0;
 }

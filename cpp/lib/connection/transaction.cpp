@@ -26,23 +26,28 @@
 
 namespace TypeDB {
 
-Transaction::Transaction() : Transaction(nullptr) {}
+Transaction::Transaction() : Transaction(nullptr, TypeDB::Constants::TransactionType::READ) {}
 
-Transaction::Transaction(_native::Transaction* transactionNative)
-    : transactionNative(transactionNative, _native::transaction_close), query(this) {}
+Transaction::Transaction(_native::Transaction* transactionNative, TypeDB::TransactionType txnType)
+    : transactionNative(transactionNative, _native::transaction_close), txnType(txnType), query(this) {}
 
 
-Transaction::Transaction(Transaction&& from) : query(this) {
+Transaction::Transaction(Transaction&& from) : query(this) { // This might need testing
     *this = std::move(from);
 }
 
 Transaction& Transaction::operator=(Transaction&& from) {
     transactionNative = std::move(from.transactionNative);
+    this->txnType = from.txnType;
     return *this;
 }
 
 _native::Transaction* Transaction::getNative() {
     return transactionNative.get();
+}
+
+TypeDB::TransactionType Transaction::type() {
+    return txnType;
 }
 
 bool Transaction::isOpen() const {

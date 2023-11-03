@@ -62,7 +62,7 @@ Transaction Session::transaction(TransactionType type, const Options& options) c
     CHECK_NATIVE(sessionNative);
     _native::Transaction* p = _native::transaction_new(sessionNative.get(), type, options.getNative());
     TypeDBDriverException::check_and_throw();
-    return Transaction(p);  // No std::move for copy-elision
+    return Transaction(p, type);  // No std::move for copy-elision
 }
 
 }  // namespace TypeDB
