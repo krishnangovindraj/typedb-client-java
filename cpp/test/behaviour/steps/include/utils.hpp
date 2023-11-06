@@ -32,9 +32,9 @@
 
 namespace TypeDB::BDD {
 
-bool parseBoolean(std::string& str);
+bool parseBoolean(const std::string& str);
 
-TypeDB::TransactionType parseTransactionType(std::string& str);
+TypeDB::TransactionType parseTransactionType(const std::string& str);
 
 
 template <typename T> 

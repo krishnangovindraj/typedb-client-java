@@ -52,20 +52,20 @@ cucumber_bdd::StepCollection<Context> sessionSteps = {
         context.session = std::move(context.driver.session(matches[1], Constants::SessionType::DATA, context.sessionOptions));
     }),
     BDD_STEP("connection open sessions for database:", {
-        std::function<TypeDB::Session(const pickle_table_row*)> fn = [&](const pickle_table_row* row) { return context.driver.session(row->cells[0].value, Constants::SessionType::DATA, context.sessionOptions); };
+        std::function<TypeDB::Session(pickle_table_row*)> fn = [&](pickle_table_row* row) { return context.driver.session(row->cells[0].value, Constants::SessionType::DATA, context.sessionOptions); };
         context.sessions = std::move(apply_serial(step.argument->data_table->rows, fn));
     }),
     BDD_STEP("connection open sessions for databases:", {
-        std::function<TypeDB::Session(const pickle_table_row*)> fn = [&](const pickle_table_row* row) { return context.driver.session(row->cells[0].value, Constants::SessionType::DATA, context.sessionOptions); };
+        std::function<TypeDB::Session(pickle_table_row*)> fn = [&](pickle_table_row* row) { return context.driver.session(row->cells[0].value, Constants::SessionType::DATA, context.sessionOptions); };
         context.sessions = std::move(apply_serial(step.argument->data_table->rows, fn));
     }),
     
     BDD_STEP("connection open data sessions in parallel for databases:", {
-        std::function<TypeDB::Session(const pickle_table_row*)> fn = [&](const pickle_table_row* row) { return context.driver.session(row->cells[0].value, Constants::SessionType::DATA, context.sessionOptions); };
+        std::function<TypeDB::Session(pickle_table_row*)> fn = [&](pickle_table_row* row) { return context.driver.session(row->cells[0].value, Constants::SessionType::DATA, context.sessionOptions); };
         context.sessions = std::move(apply_parallel(step.argument->data_table->rows, fn));
     }),
     BDD_STEP("connection open sessions in parallel for databases:", {
-        std::function<TypeDB::Session(const pickle_table_row*)> fn = [&](const pickle_table_row* row) { return context.driver.session(row->cells[0].value, Constants::SessionType::DATA, context.sessionOptions); };
+        std::function<TypeDB::Session(pickle_table_row*)> fn = [&](pickle_table_row* row) { return context.driver.session(row->cells[0].value, Constants::SessionType::DATA, context.sessionOptions); };
         context.sessions = std::move(apply_parallel(step.argument->data_table->rows, fn));
     }),
     BDD_STEP("connection close all sessions", {
@@ -73,27 +73,27 @@ cucumber_bdd::StepCollection<Context> sessionSteps = {
     }),
     
     BDD_STEP("sessions are null: (true|false)", {
-        std::function<void(const TypeDB::Session*)> fn = [&](const TypeDB::Session*sess) {  ASSERT_EQ(parseBoolean(matches[1]), !sess->isOpen()); };
+        std::function<void(TypeDB::Session*)> fn = [&](TypeDB::Session*sess) {  ASSERT_EQ(parseBoolean(matches[1]), !sess->isOpen()); };
         foreach_serial(context.sessions, fn);
     }),
     
     BDD_STEP("sessions are open: (true|false)", {
-        std::function<void(const TypeDB::Session*)> fn = [&](const TypeDB::Session*sess) {  ASSERT_EQ(parseBoolean(matches[1]), sess->isOpen()); };
+        std::function<void(TypeDB::Session*)> fn = [&](TypeDB::Session*sess) {  ASSERT_EQ(parseBoolean(matches[1]), sess->isOpen()); };
         foreach_serial(context.sessions, fn);
     }),
     BDD_STEP("sessions in parallel are null: (true|false)", {
-        std::function<void(const TypeDB::Session*)> fn = [&](const TypeDB::Session*sess) {  ASSERT_EQ(parseBoolean(matches[1]), !sess->isOpen()); };
+        std::function<void(TypeDB::Session*)> fn = [&](TypeDB::Session*sess) {  ASSERT_EQ(parseBoolean(matches[1]), !sess->isOpen()); };
         foreach_parallel(context.sessions, fn);
     }),
     BDD_STEP("sessions in parallel are open: (true|false)", {
-        std::function<void(const TypeDB::Session*)> fn = [&](const TypeDB::Session*sess) {  ASSERT_EQ(parseBoolean(matches[1]), sess->isOpen()); };
+        std::function<void(TypeDB::Session*)> fn = [&](TypeDB::Session*sess) {  ASSERT_EQ(parseBoolean(matches[1]), sess->isOpen()); };
         foreach_parallel(context.sessions, fn);
     }),
     
     
     BDD_STEP("sessions have databases:", {
         std::vector<zipped<TypeDB::Session>> z = zip(step.argument->data_table->rows, context.sessions);
-        std::function<void(const zipped<TypeDB::Session>*)> fn = [&](const zipped<TypeDB::Session>* rowSession) { 
+        std::function<void(zipped<TypeDB::Session>*)> fn = [&](zipped<TypeDB::Session>* rowSession) { 
             ASSERT_EQ(rowSession->row->cells[0].value, rowSession->obj->databaseName());
         };
         foreach_serial(z, fn);
@@ -101,7 +101,7 @@ cucumber_bdd::StepCollection<Context> sessionSteps = {
     
     BDD_STEP("sessions in parallel have databases:", {
         std::vector<zipped<TypeDB::Session>> z = zip(step.argument->data_table->rows, context.sessions);
-        std::function<void(const zipped<TypeDB::Session>*)> fn = [&](const zipped<TypeDB::Session>* rowSession) { 
+        std::function<void(zipped<TypeDB::Session>*)> fn = [&](zipped<TypeDB::Session>* rowSession) { 
             ASSERT_EQ(rowSession->row->cells[0].value, rowSession->obj->databaseName());
         };
         foreach_parallel(z, fn);

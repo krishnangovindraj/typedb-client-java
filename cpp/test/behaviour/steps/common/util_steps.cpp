@@ -26,11 +26,11 @@
 
 namespace TypeDB::BDD {
 
-void noop(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches) {
+void noop(Context& context, cucumber::messages::pickle_step& step, const std::smatch& matches) {
     // no-op
 }
 
-void unimplemented(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches) {
+void unimplemented(Context& context, cucumber::messages::pickle_step& step, const std::smatch& matches) {
     throw std::runtime_error("This step is unimplemented: " + step.text);
 }
 
