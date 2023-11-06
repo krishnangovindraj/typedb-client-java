@@ -34,15 +34,11 @@ class TypeDBIterator { // Does not support range-based for loops yet.
    private:
     
     NativePointer<NATIVE_ITER> iteratorNative;
-    T obj;
+    T obj; // TODO: Make std::optional
 
     TypeDBIterator() : iteratorNative(nullptr), obj(nullptr) { }
 
-    TypeDBIterator(SELF&& from) : iteratorNative(std::move(from.iteratorNative)), obj(std::move(from.obj)) { }
-
-   public:
-    static SELF end;
-        
+   public:        
     TypeDBIterator(NATIVE_ITER* iteratorNative)
      : iteratorNative(iteratorNative, fn_nativeIterDrop),
        obj(nullptr) 
@@ -50,6 +46,7 @@ class TypeDBIterator { // Does not support range-based for loops yet.
 
     TypeDBIterator(const SELF& from) = delete;
 
+    TypeDBIterator(SELF&& from) : iteratorNative(std::move(from.iteratorNative)), obj(std::move(from.obj)) { }
 
     SELF& operator=(const SELF& from) = delete;
 
@@ -79,7 +76,7 @@ class TypeDBIterator { // Does not support range-based for loops yet.
     }
 
     T& operator*() {
-        if ((*this) == end) {
+        if ((*this) == SELF()) {
             throw TypeDBDriverCustomException("[CUSTOM]", "Dereferenced iterator which has reached end (or was invalidated by a move).");
         }
         return obj;
@@ -122,15 +119,9 @@ class TypeDBIterable {
         return std::move(it);
     }
 
-    const ITERATOR& end() {
-        return ITERATOR::end;
+    ITERATOR end() {
+        return ITERATOR();
     }
 };
-
-template <
-    typename NATIVE_ITER,
-    typename NATIVE_T,
-    typename T
-> TypeDBIterator<NATIVE_ITER, NATIVE_T, T> TypeDBIterator<NATIVE_ITER, NATIVE_T, T>::end = TypeDBIterator();
 
 }  // namespace TypeDB
