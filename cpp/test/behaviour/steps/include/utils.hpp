@@ -35,10 +35,6 @@ namespace TypeDB::BDD {
 bool parseBoolean(const std::string& str);
 TypeDB::TransactionType parseTransactionType(const std::string& str);
 
-template <typename T, typename A1>
-void foreach_serial(const std::vector<A1>& args, std::function<T(const A1&)> fn) {
-    std::for_each(args.begin(), args.end(), fn);
-}
 
 template <typename T> 
 struct zipped {
@@ -57,28 +53,33 @@ std::vector<zipped<T>> zip(const std::vector<cucumber::messages::pickle_table_ro
 }
 
 
+template <typename A1>
+void foreach_serial(const std::vector<A1>& args, std::function<void(const A1*)> fn) {
+    for (auto& arg: args) { fn(&arg); }
+}
+
 template <typename T, typename A1>
-std::vector<T> apply_serial(const std::vector<A1>& args, std::function<T(const A1&)> fn) {
+std::vector<T> apply_serial(const std::vector<A1>& args, std::function<T(const A1*)> fn) {
     std::vector<T> results;
-    std::transform(args.begin(), args.end(), std::back_inserter(results), fn);
+    for (auto& arg: args) results.push_back(fn(&arg));
     return results;
 }
 
-template <typename T, typename A1>
-void foreach_parallel(const std::vector<A1>& args, std::function<T(const A1&)> fn) {
-    std::function<std::future<T>(const A1&)> async_fn = [&](const A1& arg) { return std::async(std::launch::async, fn, arg); };
-
-    std::vector<std::future<T>> futures;
-    std::transform(args.begin(), args.end(), std::back_inserter(futures), async_fn);
-    std::for_each(futures.begin(), futures.end(), [](std::future<T>& f) { f.wait(); });
+template <typename A1>
+void foreach_parallel(const std::vector<A1>& args, std::function<void(const A1*)> fn) {
+    std::vector<std::future<void>> futures;
+    for (const A1& arg : args ) {
+        futures.push_back(std::async(std::launch::async, fn, &arg));
+    }
+    std::for_each(futures.begin(), futures.end(), [](std::future<void>& f) { f.wait(); });
 }
 
 template <typename T, typename A1>
-std::vector<T> apply_parallel(const std::vector<A1>& args, std::function<T(const A1&)> fn) {
-    std::function<std::future<T>(const A1&)> async_fn = [&](const A1& arg) { return std::async(std::launch::async, fn, arg); };
+std::vector<T> apply_parallel(const std::vector<A1>& args, std::function<T(const A1*)> fn) {
     std::vector<std::future<T>> futures;
-    std::transform(args.begin(), args.end(), std::back_inserter(futures), async_fn);
-
+    for (const A1& arg : args ) {
+        futures.push_back(std::async(std::launch::async, fn, &arg));
+    }
     std::vector<T> results;
     std::transform(futures.begin(), futures.end(), std::back_inserter(results), [](std::future<T>& f) { return f.get(); });
     return results;

@@ -55,6 +55,8 @@ class Transaction {
     TypeDB::TransactionType type();
 
     bool isOpen() const;
+
+    void close();
     
     void forceClose();
 

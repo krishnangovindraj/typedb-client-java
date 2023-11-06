@@ -37,6 +37,7 @@
 #define DRIVER_THROWS(MSG, IMPL) {  \
         try { \
                 IMPL; \
+                FAIL(); \
         } catch (TypeDB::TypeDBDriverException& e) { \
             ASSERT_TRUE(e.message().find(MSG) != std::string::npos); \
         } \

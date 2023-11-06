@@ -51,7 +51,7 @@ cucumber_bdd::StepCollection<Context> databaseSteps = {
 
     // multi
     BDD_STEP("connection create databases:", {
-        std::function<void(const pickle_table_row&)> fn = [&](const pickle_table_row& row) { context.driver.databases.create(row.cells[0].value); };
+        std::function<void(const pickle_table_row*)> fn = [&](const pickle_table_row* row) { context.driver.databases.create(row->cells[0].value); };
         foreach_serial(step.argument->data_table->rows, fn);
     }),
 
@@ -60,9 +60,9 @@ cucumber_bdd::StepCollection<Context> databaseSteps = {
         for (auto row : step.argument->data_table->rows) expected.insert(row.cells[0].value);
         
         int cnt = 0;
+        
         DatabaseIterable databases = context.driver.databases.all();
-        for (DatabaseIterator it = databases.begin(); it != databases.end() ; ++it ) {
-            Database& db = *it;
+        for (Database& db : databases ) {
             std::string dbName = db.name();
             cnt++;
             ASSERT_TRUE( expected.find(dbName) != expected.end() );
@@ -71,24 +71,23 @@ cucumber_bdd::StepCollection<Context> databaseSteps = {
     }),
 
     BDD_STEP("connection does not have databases:", {
-        for (auto row : step.argument->data_table->rows) {
-            ASSERT_FALSE(context.driver.databases.contains(row.cells[0].value));
-        }
+        std::function<void(const pickle_table_row*)> fn = [&](const pickle_table_row* row) { ASSERT_FALSE(context.driver.databases.contains(row->cells[0].value)); };
+        foreach_serial(step.argument->data_table->rows, fn);
     }),
 
     BDD_STEP("connection delete databases:", {
-        std::function<void(const pickle_table_row&)> fn = [&](const pickle_table_row& row) { context.driver.databases.get(row.cells[0].value).drop(); };
+        std::function<void(const pickle_table_row*)> fn = [&](const pickle_table_row* row) { context.driver.databases.get(row->cells[0].value).drop(); };
         foreach_serial(step.argument->data_table->rows, fn);
     }),
 
     // parallel
     BDD_STEP("connection create databases in parallel:", {
-        std::function<void(const pickle_table_row&)> fn = [&](const pickle_table_row& row) { context.driver.databases.create(row.cells[0].value); };
+        std::function<void(const pickle_table_row*)> fn = [&](const pickle_table_row* row) { context.driver.databases.create(row->cells[0].value); };
         foreach_parallel(step.argument->data_table->rows, fn);
     }),
 
     BDD_STEP("connection delete databases in parallel:", {
-        std::function<void(const pickle_table_row&)> fn = [&](const pickle_table_row& row) { context.driver.databases.get(row.cells[0].value).drop(); };
+        std::function<void(const pickle_table_row*)> fn = [&](const pickle_table_row* row) { context.driver.databases.get(row->cells[0].value).drop(); };
         foreach_parallel(step.argument->data_table->rows, fn);
     }),
 };

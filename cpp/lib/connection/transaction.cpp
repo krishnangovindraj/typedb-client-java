@@ -54,6 +54,10 @@ bool Transaction::isOpen() const {
     return transactionNative != nullptr && _native::transaction_is_open(transactionNative.get());
 }
 
+void Transaction::close() {
+    if (transactionNative != nullptr) _native::transaction_close(transactionNative.release());
+}
+
 void Transaction::forceClose() {
     _native::transaction_force_close(transactionNative.release());
 }
