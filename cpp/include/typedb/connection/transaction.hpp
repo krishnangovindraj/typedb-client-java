@@ -52,7 +52,7 @@ class Transaction {
     Transaction& operator=(const Transaction&) = delete;
     Transaction& operator=(Transaction&&);
 
-    TypeDB::TransactionType type();
+    TypeDB::TransactionType type() const;
 
     bool isOpen() const;
 

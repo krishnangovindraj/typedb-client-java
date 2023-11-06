@@ -46,7 +46,7 @@ _native::Transaction* Transaction::getNative() {
     return transactionNative.get();
 }
 
-TypeDB::TransactionType Transaction::type() {
+TypeDB::TransactionType Transaction::type() const {
     return txnType;
 }
 
@@ -59,14 +59,17 @@ void Transaction::close() {
 }
 
 void Transaction::forceClose() {
+    CHECK_NATIVE(transactionNative);
     _native::transaction_force_close(transactionNative.release());
 }
 
 void Transaction::commit() {
+    CHECK_NATIVE(transactionNative);
     _native::transaction_commit(transactionNative.release());
 }
 
 void Transaction::rollback() {
+    CHECK_NATIVE(transactionNative);
     _native::transaction_rollback(transactionNative.release());
 }
 

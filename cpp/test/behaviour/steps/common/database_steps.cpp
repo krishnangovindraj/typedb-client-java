@@ -51,7 +51,7 @@ cucumber_bdd::StepCollection<Context> databaseSteps = {
 
     // multi
     BDD_STEP("connection create databases:", {
-        std::function<void(const pickle_table_row*)> fn = [&](const pickle_table_row* row) { context.driver.databases.create(row->cells[0].value); };
+        std::function<void(pickle_table_row*)> fn = [&](pickle_table_row* row) { context.driver.databases.create(row->cells[0].value); };
         foreach_serial(step.argument->data_table->rows, fn);
     }),
 
@@ -71,23 +71,23 @@ cucumber_bdd::StepCollection<Context> databaseSteps = {
     }),
 
     BDD_STEP("connection does not have databases:", {
-        std::function<void(const pickle_table_row*)> fn = [&](const pickle_table_row* row) { ASSERT_FALSE(context.driver.databases.contains(row->cells[0].value)); };
+        std::function<void(pickle_table_row*)> fn = [&](pickle_table_row* row) { ASSERT_FALSE(context.driver.databases.contains(row->cells[0].value)); };
         foreach_serial(step.argument->data_table->rows, fn);
     }),
 
     BDD_STEP("connection delete databases:", {
-        std::function<void(const pickle_table_row*)> fn = [&](const pickle_table_row* row) { context.driver.databases.get(row->cells[0].value).drop(); };
+        std::function<void(pickle_table_row*)> fn = [&](pickle_table_row* row) { context.driver.databases.get(row->cells[0].value).drop(); };
         foreach_serial(step.argument->data_table->rows, fn);
     }),
 
     // parallel
     BDD_STEP("connection create databases in parallel:", {
-        std::function<void(const pickle_table_row*)> fn = [&](const pickle_table_row* row) { context.driver.databases.create(row->cells[0].value); };
+        std::function<void(pickle_table_row*)> fn = [&](pickle_table_row* row) { context.driver.databases.create(row->cells[0].value); };
         foreach_parallel(step.argument->data_table->rows, fn);
     }),
 
     BDD_STEP("connection delete databases in parallel:", {
-        std::function<void(const pickle_table_row*)> fn = [&](const pickle_table_row* row) { context.driver.databases.get(row->cells[0].value).drop(); };
+        std::function<void(pickle_table_row*)> fn = [&](pickle_table_row* row) { context.driver.databases.get(row->cells[0].value).drop(); };
         foreach_parallel(step.argument->data_table->rows, fn);
     }),
 };
