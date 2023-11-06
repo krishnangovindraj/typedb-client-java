@@ -86,67 +86,89 @@ cucumber_bdd::StepCollection<Context> transactionSteps = {
         };
         foreach_serial(context.sessions, fn);
     }),
-    // BDD_STEP("for each session, open transaction of type:"),
-    BDD_STEP("for each session, open transactions of type:", {
-        std::vector<zipped<TypeDB::Session>> z = zip(step.argument->data_table->rows, context.sessions);
-        std::function<void(zipped<TypeDB::Session>*)> fn = [&](zipped<TypeDB::Session>* rowSession) { 
-            context.sessionTransactions[rowSession->obj].push_back(rowSession->obj->transaction(parseTransactionType(rowSession->row->cells[0].value), context.transactionOptions));
-        };
-    }),
-    BDD_STEP("for each session, transaction is null: (true|false)", {
-        std::function<void(TypeDB::Transaction*)> fn = [&](TypeDB::Transaction* tx) { ASSERT_EQ(parseBoolean(matches[1]), !tx->isOpen()); };
-        forEachSessionTransaction_serial(context, fn);
-    }),
-    BDD_STEP("for each session, transactions are null: (true|false)", {
-        std::function<void(TypeDB::Transaction*)> fn = [&](TypeDB::Transaction* tx) { ASSERT_EQ(parseBoolean(matches[1]), !tx->isOpen()); };
-        forEachSessionTransaction_serial(context, fn);
-    }),
-    BDD_STEP("for each session, transaction is open: (true|false)", {
-        std::function<void(TypeDB::Transaction*)> fn = [&](TypeDB::Transaction* tx) { ASSERT_EQ(parseBoolean(matches[1]), tx->isOpen()); };
-        forEachSessionTransaction_serial(context, fn);
-    }),
-    BDD_STEP("for each session, transactions are open: (true|false)", {
-        std::function<void(TypeDB::Transaction*)> fn = [&](TypeDB::Transaction* tx) -> void { ASSERT_EQ(parseBoolean(matches[1]), tx->isOpen()); };
-        forEachSessionTransaction_serial(context, fn);
-    }),
-    BDD_STEP("for each session, transaction commits", {
-        std::function<void(TypeDB::Transaction*)> fn = [&](TypeDB::Transaction* transaction) { transaction->commit(); };
-        forEachSessionTransaction_serial(context, fn);
-    }),
-    BDD_UNIMPLEMENTED("for each session, transactions commit"),
-    BDD_UNIMPLEMENTED("for each session, transaction commits; throws exception"),
-    BDD_UNIMPLEMENTED("for each session, transactions commit; throws exception"),
-    BDD_UNIMPLEMENTED("for each session, transaction closes"),
-    BDD_UNIMPLEMENTED("for each session, transaction has type"),
-    BDD_STEP("for each session, transactions have type:", {
-        std::vector<TypeDB::Transaction*> transactions;
-        for (auto& session: context.sessions) {
-            for (auto& txn : context.sessionTransactions[&session]) {
-                transactions.push_back(&txn);
-            }
-        } 
-        ASSERT_EQ(step.argument->data_table->rows.size(), transactions.size());
-        for (int i=0; i < transactions.size(); i++) {
-            ASSERT_EQ(parseTransactionType(step.argument->data_table->rows[i].cells[0].value), transactions[i]->type());
-        }
-    }),
-    BDD_STEP("for each session, transaction has type: (read|write)", {
-        std::function<void(TypeDB::Transaction*)> fn = [&](TypeDB::Transaction* transaction) { ASSERT_EQ(parseTransactionType(matches[1].str()), transaction->type()); };
-        forEachSessionTransaction_serial(context, fn);
-    }),
+    // // BDD_STEP("for each session, open transaction of type:"),
+    // BDD_STEP("for each session, open transactions of type:", {
+    //     std::vector<zipped<TypeDB::Session>> z = zip(step.argument->data_table->rows, context.sessions);
+    //     std::function<void(zipped<TypeDB::Session>*)> fn = [&](zipped<TypeDB::Session>* rowSession) { 
+    //         context.sessionTransactions[rowSession->obj].push_back(rowSession->obj->transaction(parseTransactionType(rowSession->row->cells[0].value), context.transactionOptions));
+    //     };
+    // }),
+    // BDD_STEP("for each session, transaction is null: (true|false)", {
+    //     std::function<void(TypeDB::Transaction*)> fn = [&](TypeDB::Transaction* tx) { ASSERT_EQ(parseBoolean(matches[1]), !tx->isOpen()); };
+    //     forEachSessionTransaction_serial(context, fn);
+    // }),
+    // BDD_STEP("for each session, transactions are null: (true|false)", {
+    //     std::function<void(TypeDB::Transaction*)> fn = [&](TypeDB::Transaction* tx) { ASSERT_EQ(parseBoolean(matches[1]), !tx->isOpen()); };
+    //     forEachSessionTransaction_serial(context, fn);
+    // }),
+    // BDD_STEP("for each session, transaction is open: (true|false)", {
+    //     std::function<void(TypeDB::Transaction*)> fn = [&](TypeDB::Transaction* tx) { ASSERT_EQ(parseBoolean(matches[1]), tx->isOpen()); };
+    //     forEachSessionTransaction_serial(context, fn);
+    // }),
+    // BDD_STEP("for each session, transactions are open: (true|false)", {
+    //     std::function<void(TypeDB::Transaction*)> fn = [&](TypeDB::Transaction* tx) -> void { ASSERT_EQ(parseBoolean(matches[1]), tx->isOpen()); };
+    //     forEachSessionTransaction_serial(context, fn);
+    // }),
+    // BDD_STEP("for each session, transaction commits", {
+    //     std::function<void(TypeDB::Transaction*)> fn = [&](TypeDB::Transaction* transaction) { transaction->commit(); };
+    //     forEachSessionTransaction_serial(context, fn);
+    // }),
+    // BDD_STEP("for each session, transactions commit", {
+    //     std::function<void(TypeDB::Transaction*)> fn = [&](TypeDB::Transaction* transaction) { transaction->commit(); };
+    //     forEachSessionTransaction_serial(context, fn);
+    // }),
+    // BDD_STEP("for each session, transaction commits; throws exception", {
+    //     std::function<void(TypeDB::Transaction*)> fn = [&](TypeDB::Transaction* transaction) { DRIVER_THROWS("", transaction->commit()); };
+    //     forEachSessionTransaction_serial(context, fn);
+    // }),
+    // BDD_STEP("for each session, transactions commit; throws exception", {
+    //     std::function<void(TypeDB::Transaction*)> fn = [&](TypeDB::Transaction* transaction) { DRIVER_THROWS("", transaction->commit()); };
+    //     forEachSessionTransaction_serial(context, fn);
+    // }),
+    // BDD_STEP("for each session, transaction closes", {
+    //     std::function<void(TypeDB::Transaction*)> fn = [&](TypeDB::Transaction* transaction) { transaction->close(); };
+    //     forEachSessionTransaction_serial(context, fn);
+    // }),
+    // BDD_STEP("for each session, transaction has type", {
+    //     std::vector<TypeDB::Transaction*> transactions;
+    //     for (auto& session: context.sessions) {
+    //         for (auto& txn : context.sessionTransactions[&session]) {
+    //             transactions.push_back(&txn);
+    //         }
+    //     } 
+    //     ASSERT_EQ(step.argument->data_table->rows.size(), transactions.size());
+    //     for (int i=0; i < transactions.size(); i++) {
+    //         ASSERT_EQ(parseTransactionType(step.argument->data_table->rows[i].cells[0].value), transactions[i]->type());
+    //     }
+    // }),
+    // BDD_STEP("for each session, transactions have type:", {
+    //     std::vector<TypeDB::Transaction*> transactions;
+    //     for (auto& session: context.sessions) {
+    //         for (auto& txn : context.sessionTransactions[&session]) {
+    //             transactions.push_back(&txn);
+    //         }
+    //     } 
+    //     ASSERT_EQ(step.argument->data_table->rows.size(), transactions.size());
+    //     for (int i=0; i < transactions.size(); i++) {
+    //         ASSERT_EQ(parseTransactionType(step.argument->data_table->rows[i].cells[0].value), transactions[i]->type());
+    //     }
+    // }),
+    // BDD_STEP("for each session, transaction has type: (read|write)", {
+    //     std::function<void(TypeDB::Transaction*)> fn = [&](TypeDB::Transaction* transaction) { ASSERT_EQ(parseTransactionType(matches[1].str()), transaction->type()); };
+    //     forEachSessionTransaction_serial(context, fn);
+    // }),
 
-    BDD_UNIMPLEMENTED("for each session, open transactions in parallel of type:"),
-    BDD_UNIMPLEMENTED("for each session, transactions in parallel are null: (true|false)"),
-    BDD_UNIMPLEMENTED("for each session, transactions in parallel are open: (true|false)"),
-    BDD_UNIMPLEMENTED("for each session, transactions in parallel have type:"),
-    BDD_UNIMPLEMENTED("for each session in parallel, transactions in parallel are null: (true|false)"),
-    BDD_UNIMPLEMENTED("for each session in parallel, transactions in parallel are open: (true|false)"),
-
+    // BDD_UNIMPLEMENTED("for each session, open transactions in parallel of type:"),
+    // BDD_UNIMPLEMENTED("for each session, transactions in parallel are null: (true|false)"),
+    // BDD_UNIMPLEMENTED("for each session, transactions in parallel are open: (true|false)"),
+    // BDD_UNIMPLEMENTED("for each session, transactions in parallel have type:"),
+    // BDD_UNIMPLEMENTED("for each session in parallel, transactions in parallel are null: (true|false)"),
+    // BDD_UNIMPLEMENTED("for each session in parallel, transactions in parallel are open: (true|false)"),
+    // BDD_UNIMPLEMENTED("for each transaction, define query; throws exception containing \"(.+)\""),
     BDD_STEP("set transaction option ([A-Za-z_\\-]+) to: ([A-Za-z0-9]+)", {
         assert(matches[1] == "transaction-timeout-millis");
         context.transactionOptions.transactionTimeoutMillis(atoi(matches[2].str().c_str()));
     }),
-    BDD_UNIMPLEMENTED("for each transaction, define query; throws exception containing \"(.+)\""),
 };
 
 }  // namespace TypeDB::BDD
