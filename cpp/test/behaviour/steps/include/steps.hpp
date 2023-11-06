@@ -45,8 +45,8 @@
 
 namespace TypeDB::BDD {
 
-void noop(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches);
-void unimplemented(Context& context, const cucumber::messages::pickle_step& step, const std::smatch& matches);
+void noop(Context& context, cucumber::messages::pickle_step& step, const std::smatch& matches);
+void unimplemented(Context& context, cucumber::messages::pickle_step& step, const std::smatch& matches);
 
 extern cucumber_bdd::StepCollection<Context> connectionSteps;
 extern cucumber_bdd::StepCollection<Context> commonSteps;
