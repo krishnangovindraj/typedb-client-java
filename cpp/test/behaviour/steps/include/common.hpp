@@ -20,17 +20,22 @@
  */
 
 #pragma once
+#include <map>
+#include <vector>
+#include <memory>
 
 #include "cucumber_bdd/runner.hpp"
 #include "cucumber_bdd/step.hpp"
 #include "cucumber_bdd/testrun.hpp"
 
 #include "typedb/connection/driver.hpp"
+#include "typedb/answer/conceptmap.hpp"
 
 namespace TypeDB::BDD {
 
+
 struct Context {
-    TypeDB::Driver driver;
+    TypeDB::Driver driver; // TODO: All these optional, so the null checks are meaningful
     TypeDB::Session session;
     TypeDB::Transaction transaction;
 
@@ -39,6 +44,18 @@ struct Context {
     
     TypeDB::Options sessionOptions;
     TypeDB::Options transactionOptions;
+
+    // Results:
+    std::vector<TypeDB::ConceptMap> lastConceptMapResult;
+
+    void setResult(TypeDB::ConceptMapIterable& results) {
+        lastConceptMapResult.clear();
+        for (TypeDB::ConceptMap& result: results) {
+            lastConceptMapResult.push_back(std::move(result));
+        }
+        
+    }
+
 };
 
 class TestHooks : public cucumber_bdd::TestHooks<Context> {

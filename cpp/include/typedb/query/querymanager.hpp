@@ -45,7 +45,10 @@ class QueryManager {
     QueryManager& operator=(const QueryManager&) = delete;
 
     void define(const std::string& query, const Options& options) const;
+    void undefine(const std::string& query, const Options& options) const;
+    ConceptMapIterable match(const std::string& query, const Options& options) const;
     ConceptMapIterable insert(const std::string& query, const Options& options) const; // TODO: return ConceptMapIterator
+    void matchDelete(const std::string& query, const Options& options) const;
     
 };
 

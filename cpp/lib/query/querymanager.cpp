@@ -19,27 +19,47 @@
  * under the License.
  */
 
-#include "typedb/common/exception.hpp"
 #include "typedb/query/querymanager.hpp"
+#include "typedb/common/exception.hpp"
 #include "typedb/connection/transaction.hpp"
 
 #include "../inc/macros.hpp"
 
 namespace TypeDB {
 
-QueryManager::QueryManager(TypeDB::Transaction* parentTransaction) : parentTransaction(parentTransaction) {
-    
-}
+QueryManager::QueryManager(TypeDB::Transaction* parentTransaction)
+    : parentTransaction(parentTransaction) { }
 
 void QueryManager::define(const std::string& query, const Options& options) const {
-    _native::query_define(parentTransaction->getNative(),  query.c_str(), options.getNative());
+    CHECK_NATIVE(parentTransaction);
+    _native::query_define(parentTransaction->getNative(), query.c_str(), options.getNative());
     TypeDBDriverException::check_and_throw();
+}
+
+void QueryManager::undefine(const std::string& query, const Options& options) const {
+    CHECK_NATIVE(parentTransaction);
+    _native::query_undefine(parentTransaction->getNative(), query.c_str(), options.getNative());
+    TypeDBDriverException::check_and_throw();
+}
+
+ConceptMapIterable QueryManager::match(const std::string& query, const Options& options) const {
+    CHECK_NATIVE(parentTransaction);
+    auto p = _native::query_match(parentTransaction->getNative(), query.c_str(), options.getNative());
+    TypeDBDriverException::check_and_throw();
+    return ConceptMapIterable(p);
 }
 
 ConceptMapIterable QueryManager::insert(const std::string& query, const Options& options) const {
-    auto p = _native::query_insert(parentTransaction->getNative(),  query.c_str(), options.getNative());
+    CHECK_NATIVE(parentTransaction);
+    auto p = _native::query_insert(parentTransaction->getNative(), query.c_str(), options.getNative());
     TypeDBDriverException::check_and_throw();
     return ConceptMapIterable(p);
+}
+
+void QueryManager::matchDelete(const std::string& query, const Options& options) const {
+    CHECK_NATIVE(parentTransaction);
+    _native::query_delete(parentTransaction->getNative(), query.c_str(), options.getNative());
+    TypeDBDriverException::check_and_throw();
 }
 
 }  // namespace TypeDB

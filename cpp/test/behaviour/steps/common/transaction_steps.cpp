@@ -31,17 +31,17 @@ using namespace cucumber::messages;
 
 namespace TypeDB::BDD {
 
-void forEachSessionTransaction_serial(Context& context, std::function<void(TypeDB::Transaction*)> fn) {
-    for (auto& sess: context.sessions) {
-        foreach_serial(context.sessionTransactions[&sess], fn);
-    }
-}
+// void forEachSessionTransaction_serial(Context& context, std::function<void(TypeDB::Transaction*)> fn) {
+//     for (auto& sess: context.sessions) {
+//         foreach_serial(context.sessionTransactions[&sess], fn);
+//     }
+// }
 
-void forEachSessionTransaction_parallel(Context& context, std::function<void(TypeDB::Transaction*)> fn) {
-    for (auto& sess: context.sessions) {
-        foreach_parallel(context.sessionTransactions[&sess], fn);
-    }
-}
+// void forEachSessionTransaction_parallel(Context& context, std::function<void(TypeDB::Transaction*)> fn) {
+//     for (auto& sess: context.sessions) {
+//         foreach_parallel(context.sessionTransactions[&sess], fn);
+//     }
+// }
 
 cucumber_bdd::StepCollection<Context> transactionSteps = {
     
@@ -78,15 +78,18 @@ cucumber_bdd::StepCollection<Context> transactionSteps = {
     BDD_STEP("session transaction has type: (read|write)", {
         ASSERT_EQ(parseTransactionType(matches[1].str()), context.transaction.type());
     }),
-
-
-    BDD_STEP("for each session, open transaction of type: (read|write)", {
-        std::function<void(TypeDB::Session*)> fn = [&](TypeDB::Session* session) { 
-            context.sessionTransactions[session].push_back(session->transaction(parseTransactionType(matches[1].str()), context.transactionOptions));
-        };
-        foreach_serial(context.sessions, fn);
+    BDD_STEP("set transaction option ([A-Za-z_\\-]+) to: ([A-Za-z0-9]+)", {
+        assert(matches[1] == "transaction-timeout-millis");
+        context.transactionOptions.transactionTimeoutMillis(atoi(matches[2].str().c_str()));
     }),
-    // // BDD_STEP("for each session, open transaction of type:"),
+
+    // BDD_STEP("for each session, open transaction of type: (read|write)", {
+    //     std::function<void(TypeDB::Session*)> fn = [&](TypeDB::Session* session) { 
+    //         context.sessionTransactions[session].push_back(session->transaction(parseTransactionType(matches[1].str()), context.transactionOptions));
+    //     };
+    //     foreach_serial(context.sessions, fn);
+    // }),
+    // BDD_UNIMPLEMENTED("for each session, open transaction of type:"),
     // BDD_STEP("for each session, open transactions of type:", {
     //     std::vector<zipped<TypeDB::Session>> z = zip(step.argument->data_table->rows, context.sessions);
     //     std::function<void(zipped<TypeDB::Session>*)> fn = [&](zipped<TypeDB::Session>* rowSession) { 
@@ -165,10 +168,7 @@ cucumber_bdd::StepCollection<Context> transactionSteps = {
     // BDD_UNIMPLEMENTED("for each session in parallel, transactions in parallel are null: (true|false)"),
     // BDD_UNIMPLEMENTED("for each session in parallel, transactions in parallel are open: (true|false)"),
     // BDD_UNIMPLEMENTED("for each transaction, define query; throws exception containing \"(.+)\""),
-    BDD_STEP("set transaction option ([A-Za-z_\\-]+) to: ([A-Za-z0-9]+)", {
-        assert(matches[1] == "transaction-timeout-millis");
-        context.transactionOptions.transactionTimeoutMillis(atoi(matches[2].str().c_str()));
-    }),
+
 };
 
 }  // namespace TypeDB::BDD

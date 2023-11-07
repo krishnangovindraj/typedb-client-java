@@ -18,30 +18,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#pragma once
 
-#include "typedb/common/native.hpp"
-#include "typedb/common/iterator.hpp"
+#include "typedb/answer/conceptmap.hpp"
+#include "typedb/common/exception.hpp"
+
+#include "../inc/macros.hpp"
 
 namespace TypeDB {
 
-class ConceptMap {
-    
-    friend class TypeDBIterator<_native::ConceptMapIterator, _native::ConceptMap, ConceptMap>;
+ConceptMap::ConceptMap(_native::ConceptMap* conceptMapNative)
+    : conceptMapNative(conceptMapNative, _native::concept_map_drop) { }
 
-   private: 
+ConceptMap::ConceptMap(ConceptMap&& from) {
+    *this = std::move(from);
+}
 
-    NativePointer<_native::ConceptMap> conceptMapNative;
-    
-   public:
-    ConceptMap(_native::ConceptMap*);
-    ConceptMap(const ConceptMap&) = delete;
-    ConceptMap(ConceptMap&&);
-    
-    ConceptMap& operator=(const ConceptMap&) = delete;
-    ConceptMap& operator=(ConceptMap&&);
-
-    
-};
+ConceptMap& ConceptMap::operator=(ConceptMap&& from) {
+    conceptMapNative = std::move(from.conceptMapNative);
+    return *this;
+}
 
 }  // namespace TypeDB

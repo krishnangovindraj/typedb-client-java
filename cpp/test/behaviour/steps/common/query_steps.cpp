@@ -20,16 +20,35 @@
  */
 
 #include <cstdlib>
+#include <algorithm>
 
 #include "common.hpp"
 #include "steps.hpp"
 #include "utils.hpp"
 
+
 #include "typedb/connection/session.hpp"
+
+using namespace cucumber::messages;
 
 namespace TypeDB::BDD {
 
-using namespace cucumber::messages;
+std::vector<std::map<std::string, std::string>> dataTabletoMap(const pickle_table& table) {
+    std::vector<std::map<std::string, std::string>> result;
+    std::vector<std::string> varNames;
+    for (pickle_table_cell cell : table.rows[0].cells) {
+        varNames.push_back(cell.value);
+    } 
+    for (int i = 1; i < table.rows.size(); i++) {
+        auto& row = table.rows[i];
+        std::map<std::string, std::string> m;
+        for (int i=0; i < varNames.size(); i++) {
+            m[varNames[i]] = row.cells[i].value;
+        }
+        result.push_back(m);
+    }
+    return result;
+}
 
 cucumber_bdd::StepCollection<Context> querySteps = {
 
@@ -37,42 +56,71 @@ cucumber_bdd::StepCollection<Context> querySteps = {
         context.transaction.query.define(step.argument->doc_string->content, TypeDB::Options());
     }),
     BDD_STEP("typeql define; throws exception", {
-        DRIVER_THROWS("", {context.transaction.query.define(step.argument->doc_string->content, TypeDB::Options());});
+        DRIVER_THROWS("", { context.transaction.query.define(step.argument->doc_string->content, TypeDB::Options()); });
     }),
     BDD_STEP("typeql define; throws exception containing \"(.+)\"", {
-        DRIVER_THROWS(matches[1].str(), {context.transaction.query.define(step.argument->doc_string->content, TypeDB::Options());});
+        DRIVER_THROWS(matches[1].str(), { context.transaction.query.define(step.argument->doc_string->content, TypeDB::Options()); });
     }),
-    BDD_UNIMPLEMENTED("typeql undefine"),
-    BDD_UNIMPLEMENTED("typeql undefine; throws exception"),
-    BDD_UNIMPLEMENTED("typeql undefine; throws exception containing \"(.*)\""),
+    BDD_STEP("typeql undefine", {
+        context.transaction.query.undefine(step.argument->doc_string->content, TypeDB::Options());
+    }),
+    BDD_STEP("typeql undefine; throws exception", {
+        DRIVER_THROWS("", { context.transaction.query.undefine(step.argument->doc_string->content, TypeDB::Options()); });
+    }),
+    BDD_STEP("typeql undefine; throws exception containing \"(.*)\"", {
+        DRIVER_THROWS("", { context.transaction.query.undefine(step.argument->doc_string->content, TypeDB::Options()); });
+    }),
     BDD_STEP("typeql insert", {
-        context.transaction.query.insert(step.argument->doc_string->content, TypeDB::Options());
+        auto iterable = context.transaction.query.insert(step.argument->doc_string->content, TypeDB::Options());
+        context.setResult(iterable);
     }),
     BDD_STEP("typeql insert; throws exception", {
-        DRIVER_THROWS("", {context.transaction.query.insert(step.argument->doc_string->content, TypeDB::Options());});
+        DRIVER_THROWS("", { context.transaction.query.insert(step.argument->doc_string->content, TypeDB::Options()); });
     }),
     BDD_STEP("typeql insert; throws exception containing \"(.*)\"", {
-        DRIVER_THROWS(matches[1].str(), {context.transaction.query.insert(step.argument->doc_string->content, TypeDB::Options());});
+        DRIVER_THROWS(matches[1].str(), { context.transaction.query.insert(step.argument->doc_string->content, TypeDB::Options()); });
     }),
-    BDD_UNIMPLEMENTED("typeql delete"),
-    BDD_UNIMPLEMENTED("typeql delete; throws exception"),
-    BDD_UNIMPLEMENTED("typeql delete; throws exception containing \"(.*)\""),
+    BDD_STEP("typeql delete", {
+        context.transaction.query.matchDelete(step.argument->doc_string->content, TypeDB::Options());
+    }),
+    BDD_STEP("typeql delete; throws exception", {
+        DRIVER_THROWS("", { context.transaction.query.matchDelete(step.argument->doc_string->content, TypeDB::Options()); });
+    }),
+    BDD_STEP("typeql delete; throws exception containing \"(.*)\"", {
+        DRIVER_THROWS("", { context.transaction.query.matchDelete(step.argument->doc_string->content, TypeDB::Options()); });
+    }),
     BDD_UNIMPLEMENTED("typeql update"),
     BDD_UNIMPLEMENTED("typeql update; throws exception"),
     BDD_UNIMPLEMENTED("typeql update; throws exception containing \"(.*)\""),
     BDD_UNIMPLEMENTED("get answers of typeql insert"),
-    BDD_UNIMPLEMENTED("get answers of typeql match"),
-    BDD_UNIMPLEMENTED("typeql match; throws exception"),
-    BDD_UNIMPLEMENTED("typeql match; throws exception containing \"(.*)\""),
+    BDD_STEP("get answers of typeql match", {
+        auto iterable = context.transaction.query.match(step.argument->doc_string->content, TypeDB::Options());
+        context.setResult(iterable);
+    }),
+    BDD_STEP("typeql match; throws exception", {
+        DRIVER_THROWS("", {context.transaction.query.match(step.argument->doc_string->content, TypeDB::Options());});
+    }),
+    BDD_STEP("typeql match; throws exception containing \"(.*)\"", {
+        DRIVER_THROWS(matches[1].str(), {context.transaction.query.match(step.argument->doc_string->content, TypeDB::Options());});
+    }),
     BDD_UNIMPLEMENTED("get answer of typeql match aggregate"),
     BDD_UNIMPLEMENTED("typeql match aggregate; throws exception"),
     BDD_UNIMPLEMENTED("get answers of typeql match group"),
     BDD_UNIMPLEMENTED("typeql match group; throws exception"),
     BDD_UNIMPLEMENTED("get answers of typeql match group aggregate"),
-    BDD_UNIMPLEMENTED("answer size is: (\\d+)"),
+    BDD_STEP("answer size is: (\\d+)", {
+        ASSERT_EQ(atoi(matches[1].str().c_str()), context.lastConceptMapResult.size());
+    }),
     BDD_UNIMPLEMENTED("rules contain: (\\w+)"),
     BDD_UNIMPLEMENTED("rules do not contain: (\\w+)"),
-    BDD_UNIMPLEMENTED("uniquely identify answer concepts"),
+    BDD_STEP("uniquely identify answer concepts", {
+        // std::map<std::string, std::string> expected = dataTabletoMap(step.argument->data_table);
+        // for (auto & k : expected) std::cout << k << std::endl;
+        // for (TypeDB::ConceptMap& ans: context.lastConceptMapResult) {
+        //     std::cout << "ONE!" ;
+        // }
+
+    }),
     BDD_UNIMPLEMENTED("order of answer concepts is"),
     BDD_UNIMPLEMENTED("aggregate value is: (\\d+(\\.\\d+)?)"),
     BDD_UNIMPLEMENTED("aggregate answer is not a number"),
