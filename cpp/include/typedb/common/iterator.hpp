@@ -39,7 +39,7 @@ class IteratorHelper;
 
 namespace Impl {
 
-template <typename NATIVE_ITER, typename NATIVE_T, typename T, typename HELPER>
+template <typename T, typename TRAITS>
 class Iterable;
 
 /**
@@ -53,10 +53,13 @@ class Iterable;
  *
  * Also see <code>Iterable</code>
  */
-template <typename NATIVE_ITER, typename NATIVE_T, typename T, typename HELPER = IteratorHelper<NATIVE_ITER, NATIVE_T, T>>
+template <typename T, typename TRAITS = StandardIteratorTraits<T>>
 class Iterator {  // Does not support range-based for loops yet.
 
-    using SELF = Iterator<NATIVE_ITER, NATIVE_T, T>;
+    using NATIVE_ITER = TRAITS::NativeIterator;
+    using NATIVE_T = TRAITS::NativeElement;
+    using HELPER = TRAITS::NativeInterface;
+    using SELF = Iterator<T, TRAITS>;
 
 public:
     using value_type = T;
@@ -127,7 +130,7 @@ private:
     NativePointer<NATIVE_ITER> iteratorNative;
     std::optional<T> obj;
 
-    friend class Iterable<NATIVE_ITER, NATIVE_T, T, HELPER>;
+    friend class Iterable<T, TRAITS>;
 };
 
 /**
@@ -142,10 +145,12 @@ private:
  * for (auto it = iterable.begin(); it != iterable.end(); ++it ) { ... } // Note: it++ is deleted.
  * </pre>
  */
-template <typename NATIVE_ITER, typename NATIVE_T, typename T, typename HELPER = IteratorHelper<NATIVE_ITER, NATIVE_T, T>>
+template <typename T, typename TRAITS = StandardIteratorTraits<T>>
 class Iterable {
-    using SELF = Iterable<NATIVE_ITER, NATIVE_T, T>;
-    using ITERATOR = Iterator<NATIVE_ITER, NATIVE_T, T, HELPER>;
+    using SELF = Iterable<T, TRAITS>;
+    using ITERATOR = Iterator<T, TRAITS>;
+    using NATIVE_ITER = TRAITS::NativeIterator;
+    using HELPER = TRAITS::NativeInterface;
 
 public:
     Iterable(NATIVE_ITER* iteratorNative)
@@ -184,17 +189,14 @@ private:
 
 }  // namespace Impl
 
-template <typename A, typename B, typename T, typename C = void>
-using Iterator = Impl::Iterator<
-    typename StandardIteratorTraits<T>::NativeIterator,
-    typename StandardIteratorTraits<T>::NativeElement,
-    T>;
+// template <typename T>
+// using Iterator = Impl::Iterator<
+//     typename StandardIteratorTraits<T>::NativeIterator,
+//     typename StandardIteratorTraits<T>::NativeElement,
+//     T>;
 
-template <typename A, typename B, typename T, typename C = void>
-using Iterable = Impl::Iterable<
-    typename StandardIteratorTraits<T>::NativeIterator,
-    typename StandardIteratorTraits<T>::NativeElement,
-    T>;
+template <typename T>
+using Iterable = Impl::Iterable<T>;
 
 
 template <>

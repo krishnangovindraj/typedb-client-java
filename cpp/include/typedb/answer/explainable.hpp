@@ -56,10 +56,10 @@ template <>
 struct StandardIteratorTraits<OwnerAttributePair>  {
     using NativeIterator = _native::StringPairIterator;
     using NativeElement = _native::StringPair;
+    using NativeInterface = IteratorHelper<NativeIterator, NativeElement, OwnerAttributePair>;
 };
 
-using OwnerAttributePairIterator = Impl::Iterator<_native::StringPairIterator, _native::StringPair, OwnerAttributePair>;
-using OwnerAttributePairIterable = Impl::Iterable<_native::StringPairIterator, _native::StringPair, OwnerAttributePair>;
+using OwnerAttributePairIterable = Iterable<OwnerAttributePair>;
 
 
 /**

@@ -412,20 +412,10 @@ template <typename T>
 struct ConceptIteratorTraits {
     typedef ConceptIteratorWrapper NativeIterator;
     typedef _native::Concept NativeElement;
-    typedef IteratorHelper<NativeIterator, NativeElement, Concept> NativeInterface;
+    typedef IteratorHelper<NativeIterator, NativeElement, std::unique_ptr<Concept>> NativeInterface;
 };
 
-
 template <typename T>
-using ConceptIterable = Impl::Iterable<
-    typename ConceptIteratorTraits<T>::NativeIterator,
-    typename ConceptIteratorTraits<T>::NativeElement,
-    std::unique_ptr<T>>;
-
-// template <typename T>
-// using ConceptIterator = Impl::Iterator<
-//     typename ConceptIteratorTraits<T>::NativeIterator,
-//     typename ConceptIteratorTraits<T>::NativeElement,
-//     T>;
+using ConceptIterable = Impl::Iterable<std::unique_ptr<T>, ConceptIteratorTraits<T>>;
 
 }  // namespace TypeDB

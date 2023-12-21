@@ -91,8 +91,13 @@ ConceptPtrFuture<Attribute> ConceptManager::getAttribute(const std::string& iid)
     CONCEPTMANAGER_THING(Attribute, _native::concepts_get_attribute);
 }
 
-using SchemaExceptionIterator = Impl::Iterator<_native::SchemaExceptionIterator, _native::SchemaException, DriverException>;
-using SchemaExceptionIterable = Impl::Iterable<_native::SchemaExceptionIterator, _native::SchemaException, DriverException>;
+struct SchemaExceptionIteratorTraits {
+    using NativeIterator  = _native::SchemaExceptionIterator;
+    using NativeElement  = _native::SchemaException;
+    using NativeInterface = IteratorHelper<NativeIterator, NativeElement, DriverException>;
+};
+
+using SchemaExceptionIterable = Impl::Iterable<DriverException, SchemaExceptionIteratorTraits>;
 
 std::vector<DriverException> ConceptManager::getSchemaExceptions() {
     CHECK_NATIVE(transaction);
