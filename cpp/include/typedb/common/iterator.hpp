@@ -27,16 +27,20 @@
 
 #include "typedb/common/exception.hpp"
 #include "typedb/common/native.hpp"
+#include "typedb/common/traits.hpp"
 
 namespace TypeDB {
-template <typename NATIVE_ITER, typename NATIVE_T, typename T, typename HELPER>
-class Iterable;
 
 /**
  * \private
  */
 template <typename NATIVE_ITER, typename NATIVE_T, typename T>
 class IteratorHelper;
+
+namespace Impl {
+
+template <typename NATIVE_ITER, typename NATIVE_T, typename T, typename HELPER>
+class Iterable;
 
 /**
  * \brief A structure emulating std::iterator, used for streaming of query results from the server.
@@ -178,23 +182,29 @@ private:
     NativePointer<NATIVE_ITER> iteratorNative;
 };
 
-/**
- * \private
- */
-template <typename NATIVE_ITER, typename NATIVE_T, typename T>
-class IteratorHelper {
-    using SELF = IteratorHelper<NATIVE_ITER, NATIVE_T, T>;
+}  // namespace Impl
 
-private:
-    static void nativeIterDrop(NATIVE_ITER* it);
-    static NATIVE_T* nativeIterNext(NATIVE_ITER* it);
-    static T instantiate(NATIVE_T* element);
+template <typename A, typename B, typename T, typename C = void>
+using Iterator = Impl::Iterator<
+    typename StandardIteratorTraits<T>::NativeIterator,
+    typename StandardIteratorTraits<T>::NativeElement,
+    T>;
 
-    friend class Iterator<NATIVE_ITER, NATIVE_T, T, SELF>;
-    friend class Iterable<NATIVE_ITER, NATIVE_T, T, SELF>;
+template <typename A, typename B, typename T, typename C = void>
+using Iterable = Impl::Iterable<
+    typename StandardIteratorTraits<T>::NativeIterator,
+    typename StandardIteratorTraits<T>::NativeElement,
+    T>;
+
+
+template <>
+struct StandardIteratorTraits<std::string> {
+    typedef _native::StringIterator NativeIterator;
+    typedef char NativeElement;
+    typedef IteratorHelper<_native::StringIterator, char, std::string> NativeInterface;
 };
 
-using StringIterable = Iterable<_native::StringIterator, char, std::string>;
-using StringIterator = Iterator<_native::StringIterator, char, std::string>;
+using StringIterable = Iterable<std::string>;
+
 
 }  // namespace TypeDB

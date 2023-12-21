@@ -38,10 +38,13 @@ class Explainables;
  */
 class OwnerAttributePair {
 public:
+
     /// The owner concept
-    const std::string owner;
+    //const
+     std::string owner;
     /// The owned attribute
-    const std::string attribute;
+    //const
+     std::string attribute;
 
 private:
     OwnerAttributePair(_native::StringPair* stringPairNative);
@@ -49,11 +52,21 @@ private:
     friend class IteratorHelper<_native::StringPairIterator, _native::StringPair, OwnerAttributePair>;
 };
 
+template <>
+struct StandardIteratorTraits<OwnerAttributePair>  {
+    using NativeIterator = _native::StringPairIterator;
+    using NativeElement = _native::StringPair;
+};
+
+using OwnerAttributePairIterator = Impl::Iterator<_native::StringPairIterator, _native::StringPair, OwnerAttributePair>;
+using OwnerAttributePairIterable = Impl::Iterable<_native::StringPairIterator, _native::StringPair, OwnerAttributePair>;
+
 
 /**
  * \brief Contains an explainable object.
  */
 class Explainable {
+
 public:
     Explainable(const Explainable&) = delete;
     Explainable(Explainable&&) = default;
@@ -90,10 +103,6 @@ private:
     friend class Explainables;
     friend class QueryManager;
 };
-
-
-using OwnerAttributePairIterator = Iterator<_native::StringPairIterator, _native::StringPair, OwnerAttributePair>;
-using OwnerAttributePairIterable = Iterable<_native::StringPairIterator, _native::StringPair, OwnerAttributePair>;
 
 /**
  * \brief Contains explainable objects.

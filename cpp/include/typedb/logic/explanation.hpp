@@ -34,6 +34,10 @@ namespace TypeDB {
  */
 class Explanation {
 public:
+
+    using NativeIterator = _native::ExplanationIterator;
+    using NativeElement = _native::Explanation;
+
     Explanation(Explanation&&) = default;
     Explanation& operator=(Explanation&&) = default;
     ~Explanation() = default;
@@ -106,7 +110,6 @@ private:
     friend class IteratorHelper<_native::ExplanationIterator, _native::Explanation, Explanation>;
 };
 
-using ExplanationIterator = Iterator<_native::ExplanationIterator, _native::Explanation, Explanation>;
-using ExplanationIterable = Iterable<_native::ExplanationIterator, _native::Explanation, Explanation>;
+using ExplanationIterable = Iterable<Explanation>;
 
 }  // namespace TypeDB

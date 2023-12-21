@@ -35,7 +35,14 @@
 
 namespace TypeDB {
 
-using JSONIterable = Iterable<_native::StringIterator, char, JSON>;
+template<> 
+struct StandardIteratorTraits<JSON> {
+    typedef _native::StringIterator NativeIterator;
+    typedef char NativeElement;
+};
+
+using JSONIterable = Iterable<JSON>;
+
 
 class Transaction;
 

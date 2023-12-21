@@ -35,6 +35,9 @@ namespace TypeDB {
  */
 class ConceptMap {
 public:
+    using NativeIterator = _native::ConceptMapIterator;
+    using NativeElement = _native::ConceptMap;
+
     ConceptMap(const ConceptMap&) = delete;
     ConceptMap(ConceptMap&&) = default;
 
@@ -110,7 +113,6 @@ private:
 };
 
 // ConceptMapIterator
-using ConceptMapIterator = Iterator<_native::ConceptMapIterator, _native::ConceptMap, TypeDB::ConceptMap>;
-using ConceptMapIterable = Iterable<_native::ConceptMapIterator, _native::ConceptMap, TypeDB::ConceptMap>;
+using ConceptMapIterable = Iterable<TypeDB::ConceptMap>;
 
 }  // namespace TypeDB

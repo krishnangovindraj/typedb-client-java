@@ -409,8 +409,23 @@ template <typename T>
 using ConceptPtrFuture = Future<std::unique_ptr<T>, ConceptFutureWrapper>;
 
 template <typename T>
-using ConceptIterable = Iterable<ConceptIteratorWrapper, _native::Concept, std::unique_ptr<T>>;
+struct ConceptIteratorTraits {
+    typedef ConceptIteratorWrapper NativeIterator;
+    typedef _native::Concept NativeElement;
+    typedef IteratorHelper<NativeIterator, NativeElement, Concept> NativeInterface;
+};
+
+
 template <typename T>
-using ConceptIterator = Iterator<ConceptIteratorWrapper, _native::Concept, std::unique_ptr<T>>;
+using ConceptIterable = Impl::Iterable<
+    typename ConceptIteratorTraits<T>::NativeIterator,
+    typename ConceptIteratorTraits<T>::NativeElement,
+    std::unique_ptr<T>>;
+
+// template <typename T>
+// using ConceptIterator = Impl::Iterator<
+//     typename ConceptIteratorTraits<T>::NativeIterator,
+//     typename ConceptIteratorTraits<T>::NativeElement,
+//     T>;
 
 }  // namespace TypeDB

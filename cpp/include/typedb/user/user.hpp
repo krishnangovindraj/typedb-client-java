@@ -32,6 +32,9 @@ class UserManager;
  */
 class User {
 public:
+    using NativeIterator = _native::UserIterator;
+    using NativeElement = _native::User;
+
     User(_native::User*);
     User(User&&) = default;
     User& operator=(User&&) = default;

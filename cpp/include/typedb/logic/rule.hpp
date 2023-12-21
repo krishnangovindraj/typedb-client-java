@@ -35,9 +35,6 @@ class Transaction;
 using RuleFuture = Future<Rule, _native::RulePromise>;
 using OptionalRuleFuture = Future<std::optional<Rule>, _native::RulePromise>;
 
-using RuleIterable = Iterable<_native::RuleIterator, _native::Rule, Rule>;
-using RuleIterator = Iterator<_native::RuleIterator, _native::Rule, Rule>;
-
 /**
  * \brief Rules are a part of schema and define embedded logic.
  *
@@ -46,6 +43,9 @@ using RuleIterator = Iterator<_native::RuleIterator, _native::Rule, Rule>;
  */
 class Rule {
 public:
+    using NativeIterator = _native::RuleIterator;
+    using NativeElement = _native::Rule;
+
     Rule(Rule&&) = default;
     Rule& operator=(Rule&&) = default;
     ~Rule() = default;
@@ -120,5 +120,7 @@ private:
     friend class FutureHelper<Rule, _native::RulePromise>;
     friend class FutureHelper<std::optional<Rule>, _native::RulePromise>;
 };
+
+using RuleIterable = Iterable<Rule>;
 
 }  // namespace TypeDB

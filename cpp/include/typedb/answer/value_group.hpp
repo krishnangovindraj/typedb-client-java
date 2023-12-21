@@ -32,6 +32,9 @@ namespace TypeDB {
  */
 class ValueGroup {
 public:
+    using NativeIterator = _native::ValueGroupIterator;
+    using NativeElement= _native::ValueGroup;
+
     ValueGroup(const ValueGroup&) = delete;
     ValueGroup(ValueGroup&&) = default;
     ~ValueGroup() = default;
@@ -72,7 +75,6 @@ private:
 };
 
 // For ValueGroup
-using ValueGroupIterable = Iterable<_native::ValueGroupIterator, _native::ValueGroup, TypeDB::ValueGroup>;
-using ValueGroupIterator = Iterator<_native::ValueGroupIterator, _native::ValueGroup, TypeDB::ValueGroup>;
+using ValueGroupIterable = Iterable<TypeDB::ValueGroup>;
 
 }  // namespace TypeDB

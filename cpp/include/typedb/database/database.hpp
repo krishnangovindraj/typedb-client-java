@@ -35,6 +35,9 @@ class Database;
  */
 class ReplicaInfo {
 public:
+    using NativeIterator = _native::ReplicaInfoIterator;
+    using NativeElement = _native::ReplicaInfo;
+
     ReplicaInfo(const ReplicaInfo&) = delete;
     ReplicaInfo(ReplicaInfo&&) = default;
     ReplicaInfo& operator=(const ReplicaInfo&) = delete;
@@ -69,14 +72,16 @@ private:
     friend class IteratorHelper<_native::ReplicaInfoIterator, _native::ReplicaInfo, ReplicaInfo>;
 };
 
-using ReplicaInfoIterable = Iterable<_native::ReplicaInfoIterator, _native::ReplicaInfo, ReplicaInfo>;
-using ReplicaInfoIterator = Iterator<_native::ReplicaInfoIterator, _native::ReplicaInfo, ReplicaInfo>;
+using ReplicaInfoIterable = Iterable<ReplicaInfo>;
 
 /**
  * \brief A TypeDB database
  */
 class Database {
 public:
+    using NativeIterator = _native::DatabaseIterator;
+    using NativeElement = _native::Database;
+
     Database(const Database&) = delete;
     Database(Database&&) = default;
     ~Database() = default;

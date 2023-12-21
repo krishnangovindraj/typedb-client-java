@@ -32,6 +32,9 @@ namespace TypeDB {
  */
 class ConceptMapGroup {
 public:
+    using NativeIterator = _native::ConceptMapGroupIterator;
+    using NativeElement = _native::ConceptMapGroup;
+
     ConceptMapGroup(const ConceptMapGroup&) = delete;
     ConceptMapGroup(ConceptMapGroup&&) = default;
 
@@ -73,7 +76,6 @@ private:
 };
 
 // For ConceptMapGroup
-using ConceptMapGroupIterable = Iterable<_native::ConceptMapGroupIterator, _native::ConceptMapGroup, TypeDB::ConceptMapGroup>;
-using ConceptMapGroupIterator = Iterator<_native::ConceptMapGroupIterator, _native::ConceptMapGroup, TypeDB::ConceptMapGroup>;
+using ConceptMapGroupIterable = Iterable<TypeDB::ConceptMapGroup>;
 
 }  // namespace TypeDB

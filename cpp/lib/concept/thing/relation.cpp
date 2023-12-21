@@ -31,14 +31,16 @@ namespace TypeDB {
 
 // This doesn't have to be public
 struct RolePlayer {
+    using NativeIterator = _native::RolePlayerIterator;
+    using NativeElement = _native::RolePlayer;
+
     std::unique_ptr<RoleType> role;
     std::unique_ptr<Thing> player;
 
     RolePlayer(_native::RolePlayer* rolePlayerNative);  // frees rolePlayernative
 };
 
-using RolePlayerIterator = Iterator<_native::RolePlayerIterator, _native::RolePlayer, RolePlayer>;
-using RolePlayerIterable = Iterable<_native::RolePlayerIterator, _native::RolePlayer, RolePlayer>;
+using RolePlayerIterable = Iterable<RolePlayer>;
 
 Relation::Relation(_native::Concept* conceptNative)
     : Thing(ConceptType::RELATION, conceptNative) {}
