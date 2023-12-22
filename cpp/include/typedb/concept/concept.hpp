@@ -416,6 +416,6 @@ struct ConceptIteratorTraits {
 };
 
 template <typename T>
-using ConceptIterable = Impl::Iterable<std::unique_ptr<T>, ConceptIteratorTraits<T>>;
+using ConceptIterable = Iterable<std::unique_ptr<T>, ConceptIteratorTraits<T>>;
 
 }  // namespace TypeDB

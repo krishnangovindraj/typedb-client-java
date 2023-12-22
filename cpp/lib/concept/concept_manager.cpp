@@ -97,7 +97,7 @@ struct SchemaExceptionIteratorTraits {
     using NativeInterface = IteratorHelper<NativeIterator, NativeElement, DriverException>;
 };
 
-using SchemaExceptionIterable = Impl::Iterable<DriverException, SchemaExceptionIteratorTraits>;
+using SchemaExceptionIterable = Iterable<DriverException, SchemaExceptionIteratorTraits>;
 
 std::vector<DriverException> ConceptManager::getSchemaExceptions() {
     CHECK_NATIVE(transaction);

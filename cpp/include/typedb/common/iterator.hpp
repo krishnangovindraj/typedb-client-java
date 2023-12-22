@@ -28,6 +28,7 @@
 #include "typedb/common/exception.hpp"
 #include "typedb/common/native.hpp"
 #include "typedb/common/traits.hpp"
+#include "typedb/common/native_traits.hpp"
 
 namespace TypeDB {
 
@@ -36,8 +37,6 @@ namespace TypeDB {
  */
 template <typename NATIVE_ITER, typename NATIVE_T, typename T>
 class IteratorHelper;
-
-namespace Impl {
 
 template <typename T, typename TRAITS>
 class Iterable;
@@ -53,13 +52,14 @@ class Iterable;
  *
  * Also see <code>Iterable</code>
  */
-template <typename T, typename TRAITS = StandardIteratorTraits<T>>
+template <typename T, typename TRAITS = _native::NativeTraits<typename T::NativeElement>>
 class Iterator {  // Does not support range-based for loops yet.
 
-    using NATIVE_ITER = TRAITS::NativeIterator;
-    using NATIVE_T = TRAITS::NativeElement;
-    using HELPER = TRAITS::NativeInterface;
     using SELF = Iterator<T, TRAITS>;
+
+    using NATIVE_T = TRAITS::;
+    using HELPER = TRAITS::iterator;
+    using NATIVE_ITER = HELPER::ITERATOR;
 
 public:
     using value_type = T;
@@ -186,18 +186,6 @@ public:
 private:
     NativePointer<NATIVE_ITER> iteratorNative;
 };
-
-}  // namespace Impl
-
-// template <typename T>
-// using Iterator = Impl::Iterator<
-//     typename StandardIteratorTraits<T>::NativeIterator,
-//     typename StandardIteratorTraits<T>::NativeElement,
-//     T>;
-
-template <typename T>
-using Iterable = Impl::Iterable<T>;
-
 
 template <>
 struct StandardIteratorTraits<std::string> {

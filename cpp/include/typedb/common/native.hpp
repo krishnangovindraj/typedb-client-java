@@ -21,15 +21,9 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <utility>
-
-// Including these triggers the guards, Skipping them when we do the include in the _native namespace
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <functional>
 
 namespace TypeDB {
 
@@ -37,46 +31,52 @@ namespace _native {
 
 // Forward declare all relevant native types
 struct Annotation;
-struct BoolPromise;
 struct Concept;
-struct ConceptIterator;
 struct ConceptMap;
 struct ConceptMapGroup;
-struct ConceptMapGroupIterator;
-struct ConceptMapIterator;
-struct ConceptPromise;
 struct Connection;
 struct Credential;
 struct Database;
-struct DatabaseIterator;
 struct DatabaseManager;
 struct Error;
 struct Explainable;
 struct Explainables;
 struct Explanation;
-struct ExplanationIterator;
 struct Options;
 struct ReplicaInfo;
-struct ReplicaInfoIterator;
 struct RolePlayer;
-struct RolePlayerIterator;
 struct Rule;
-struct RuleIterator;
-struct RulePromise;
 struct SchemaException;
-struct SchemaExceptionIterator;
 struct Session;
-struct StringIterator;
-struct StringPairIterator;
-struct StringPromise;
 struct Transaction;
 struct User;
-struct UserIterator;
 struct UserManager;
 struct ValueGroup;
-struct ValueGroupIterator;
-struct VoidPromise;
 struct StringPair;
+
+// Promise
+struct ConceptPromise;
+struct RulePromise;
+struct StringPromise;
+
+struct VoidPromise;
+struct BoolPromise;
+
+// Iterators
+struct RolePlayerIterator;
+struct ReplicaInfoIterator;
+struct ConceptIterator;
+struct ConceptMapGroupIterator;
+struct ConceptMapIterator;
+struct DatabaseIterator;
+struct ExplanationIterator;
+struct RuleIterator;
+struct SchemaExceptionIterator;
+struct StringIterator;
+struct StringPairIterator;
+struct UserIterator;
+struct ValueGroupIterator;
+
 
 }  // namespace _native
 

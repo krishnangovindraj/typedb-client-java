@@ -26,6 +26,7 @@
 #include "typedb/common/future.hpp"
 #include "typedb/common/iterator.hpp"
 #include "typedb/common/native.hpp"
+#include "typedb/common/native_traits.hpp"
 
 #include "typedb/connection/database_manager.hpp"
 #include "typedb/connection/driver.hpp"
