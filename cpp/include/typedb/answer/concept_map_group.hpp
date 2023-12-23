@@ -72,7 +72,7 @@ private:
 
     ConceptMapGroup(_native::ConceptMapGroup*);
 
-    friend class IteratorHelper<_native::ConceptMapGroupIterator, _native::ConceptMapGroup, TypeDB::ConceptMapGroup>;
+    friend class Iterator<TypeDB::ConceptMapGroup, _native::NativeTraits<_native::ConceptMapGroup>, TypeDB::ConceptMapGroup>;
 };
 
 // For ConceptMapGroup

@@ -109,7 +109,7 @@ private:
     ConceptMap(_native::ConceptMap*);
 
     friend class Explanation;
-    friend class IteratorHelper<_native::ConceptMapIterator, _native::ConceptMap, ConceptMap>;
+    friend class Iterator<ConceptMap, _native::NativeTraits<_native::ConceptMap>, ConceptMap>;
 };
 
 // ConceptMapIterator

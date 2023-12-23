@@ -71,7 +71,7 @@ private:
     ValueGroup(_native::ValueGroup*);
     NativePointer<_native::ValueGroup> valueGroupNative;
 
-    friend class IteratorHelper<_native::ValueGroupIterator, _native::ValueGroup, TypeDB::ValueGroup>;
+    friend class Iterator<TypeDB::ValueGroup, _native::NativeTraits<_native::ValueGroup>, TypeDB::ValueGroup>;
 };
 
 // For ValueGroup

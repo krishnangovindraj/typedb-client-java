@@ -27,7 +27,7 @@
 
 #include "typedb/common/exception.hpp"
 #include "typedb/common/native.hpp"
-#include "typedb/common/traits.hpp"
+// #include "typedb/common/traits.hpp"
 #include "typedb/common/native_traits.hpp"
 
 namespace TypeDB {
@@ -35,10 +35,10 @@ namespace TypeDB {
 /**
  * \private
  */
-template <typename NATIVE_ITER, typename NATIVE_T, typename T>
-class IteratorHelper;
+// template <typename NATIVE_ITER, typename NATIVE_T, typename T>
+// class IteratorHelper;
 
-template <typename T, typename TRAITS>
+template <typename T, typename TRAITS, typename INSTANTIATE>
 class Iterable;
 
 /**
@@ -52,14 +52,14 @@ class Iterable;
  *
  * Also see <code>Iterable</code>
  */
-template <typename T, typename TRAITS = _native::NativeTraits<typename T::NativeElement>>
+template <typename T, typename TRAITS = _native::NativeTraits<typename T::NativeElement>, typename INSTANTIATE = T>
 class Iterator {  // Does not support range-based for loops yet.
 
-    using SELF = Iterator<T, TRAITS>;
+    using SELF = Iterator<T, TRAITS, INSTANTIATE>;
 
-    using NATIVE_T = TRAITS::;
+    using NATIVE_T = TRAITS::native_t;
     using HELPER = TRAITS::iterator;
-    using NATIVE_ITER = HELPER::ITERATOR;
+    using NATIVE_ITER = HELPER::iterator_t;
 
 public:
     using value_type = T;
@@ -69,7 +69,7 @@ public:
     using iterator_category = std::input_iterator_tag;
 
     Iterator(NATIVE_ITER* iteratorNative)
-        : iteratorNative(iteratorNative, &HELPER::nativeIterDrop),
+        : iteratorNative(iteratorNative, &HELPER::drop),
           obj() {}
 
     Iterator(const SELF& from) = delete;
@@ -96,14 +96,14 @@ public:
     SELF operator++(int) = delete;  // Just use ++it.
 
     SELF& operator++() {
-        NATIVE_T* p = HELPER::nativeIterNext(iteratorNative.get());
+        NATIVE_T* p = HELPER::next(iteratorNative.get());
         DriverException::check_and_throw();
 
         if (p == nullptr) {
             iteratorNative.reset();  // Makes it equal to end.
             obj.reset();
         } else {
-            obj = std::move(HELPER::instantiate(p));
+            obj = std::move(INSTANTIATE(p));
         }
         return *this;
     }
@@ -130,7 +130,7 @@ private:
     NativePointer<NATIVE_ITER> iteratorNative;
     std::optional<T> obj;
 
-    friend class Iterable<T, TRAITS>;
+    friend class Iterable<T, TRAITS, INSTANTIATE>;
 };
 
 /**
@@ -145,16 +145,17 @@ private:
  * for (auto it = iterable.begin(); it != iterable.end(); ++it ) { ... } // Note: it++ is deleted.
  * </pre>
  */
-template <typename T, typename TRAITS = StandardIteratorTraits<T>>
+template <typename T, typename TRAITS = _native::NativeTraits<typename T::NativeElement>, typename INSTANTIATE = T>
 class Iterable {
-    using SELF = Iterable<T, TRAITS>;
-    using ITERATOR = Iterator<T, TRAITS>;
-    using NATIVE_ITER = TRAITS::NativeIterator;
-    using HELPER = TRAITS::NativeInterface;
+    using SELF = Iterable<T, TRAITS, INSTANTIATE>;
+    using ITERATOR = Iterator<T, TRAITS, INSTANTIATE>;
+    using NATIVE_T = TRAITS::native_t;
+    using HELPER = TRAITS::iterator;
+    using NATIVE_ITER = HELPER::iterator_t;
 
 public:
     Iterable(NATIVE_ITER* iteratorNative)
-        : iteratorNative(iteratorNative, HELPER::nativeIterDrop) {}
+        : iteratorNative(iteratorNative, HELPER::drop) {}
     Iterable(SELF& from) = delete;
     Iterable(SELF&& from) {
         *this = std::move(from);
@@ -187,14 +188,7 @@ private:
     NativePointer<NATIVE_ITER> iteratorNative;
 };
 
-template <>
-struct StandardIteratorTraits<std::string> {
-    typedef _native::StringIterator NativeIterator;
-    typedef char NativeElement;
-    typedef IteratorHelper<_native::StringIterator, char, std::string> NativeInterface;
-};
-
-using StringIterable = Iterable<std::string>;
+using StringIterable = Iterable<std::string, _native::NativeTraits<char>>;
 
 
 }  // namespace TypeDB

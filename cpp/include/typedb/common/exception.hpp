@@ -33,7 +33,7 @@ namespace TypeDB {
  * \private
  */
 template <typename NATIVE_ITER, typename NATIVE_T, typename T>
-class IteratorHelper;
+class Iterator;
 
 /**
  *  \brief Exceptions raised by the driver.
@@ -81,7 +81,7 @@ private:
     size_t errorCodeLength;
     size_t messageLength;
 
-    friend class IteratorHelper<_native::SchemaExceptionIterator, _native::SchemaException, DriverException>;
+    friend class Iterator<DriverException, _native::NativeTraits<_native::SchemaException>, DriverException>;
 };
 
 

@@ -20,6 +20,7 @@
  */
 
 #include "typedb/common/exception.hpp"
+#include "typedb/common/native_traits.hpp"
 
 #include "../common/macros.hpp"
 #include "../common/native.hpp"
@@ -54,6 +55,9 @@ CONCEPT_ITERATOR_HELPER(Attribute, ConceptFactory::attribute);
 CONCEPT_ITERATOR_HELPER(Entity, ConceptFactory::entity);
 CONCEPT_ITERATOR_HELPER(Relation, ConceptFactory::relation);
 
+
+template <> _native::Concept* _native::IteratorImpl<_native::Concept, ConceptIteratorWrapper>::next(ConceptIteratorWrapper* p) { return conceptIteratorWrapperNext(p); }
+template <> void _native::IteratorImpl<_native::Concept, ConceptIteratorWrapper>::drop(ConceptIteratorWrapper* p) { conceptIteratorWrapperDrop(p); }
 
 // Wrapper implementations:
 ConceptIteratorWrapperSimple::ConceptIteratorWrapperSimple(_native::ConceptIterator* iterator)

@@ -41,62 +41,73 @@ struct FutureImpl {
 
 template <typename T, typename I>
 struct IteratorImpl {
-    using ITERATOR = I;
+    using iterator_t = I;
     static T* next(I*);
     static void drop(I*);
 };
 
 template <typename T>
 struct NativeTraits {
+    using native_t = T;
     // Optionally: using iterator = IteratorImpl<T, ?>;
     // Optionally: using future = FutureImpl<T, ?>;
-    typedef DropImpl<T> drop;
+    using drop = DropImpl<T>;
 };
 
 
 // Specialisations for the iteratos
 template <>
 struct NativeTraits<RolePlayer> {
+    using native_t = RolePlayer;
     using iterator = IteratorImpl<RolePlayer, RolePlayerIterator>;
 };
 template <>
 struct NativeTraits<ReplicaInfo> {
+    using native_t = ReplicaInfo;
     using iterator = IteratorImpl<ReplicaInfo, ReplicaInfoIterator>;
 };
 template <>
 struct NativeTraits<Concept> {
+    using native_t = Concept;
     using iterator = IteratorImpl<Concept, ConceptIterator>;
     using future = FutureImpl<Concept, ConceptPromise>;
 };
 template <>
 struct NativeTraits<ConceptMapGroup> {
+    using native_t = ConceptMapGroup;
     using iterator = IteratorImpl<ConceptMapGroup, ConceptMapGroupIterator>;
 };
 template <>
 struct NativeTraits<ConceptMap> {
+    using native_t = ConceptMap;
     using iterator = IteratorImpl<ConceptMap, ConceptMapIterator>;
 };
 template <>
 struct NativeTraits<Database> {
+    using native_t = Database;
     using iterator = IteratorImpl<Database, DatabaseIterator>;
 };
 template <>
 struct NativeTraits<Explanation> {
+    using native_t = Explanation;
     using iterator = IteratorImpl<Explanation, ExplanationIterator>;
 };
 
 template <>
 struct NativeTraits<Rule> {
+    using native_t = Rule;
     using iterator = IteratorImpl<Rule, RuleIterator>;
 };
 
 template <>
 struct NativeTraits<SchemaException> {
+    using native_t = SchemaException;
     using iterator = IteratorImpl<SchemaException, SchemaExceptionIterator>;
 };
 
 template <>
 struct NativeTraits<char> {
+    using native_t = char;
     using iterator = IteratorImpl<char, StringIterator>;
     using future = FutureImpl<char, StringPromise>;
     using drop = DropImpl<char>;
@@ -104,16 +115,19 @@ struct NativeTraits<char> {
 
 template <>
 struct NativeTraits<StringPair> {
+    using native_t = StringPair;
     using iterator = IteratorImpl<StringPair, StringPairIterator>;
 };
 
 template <>
 struct NativeTraits<User> {
+    using native_t = User;
     using iterator = IteratorImpl<User, UserIterator>;
 };
 
 template <>
 struct NativeTraits<ValueGroup> {
+    using native_t = ValueGroup;
     using iterator = IteratorImpl<ValueGroup, ValueGroupIterator>;
 };
 

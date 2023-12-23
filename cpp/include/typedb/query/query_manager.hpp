@@ -35,15 +35,15 @@
 
 namespace TypeDB {
 
-template<> 
-struct StandardIteratorTraits<JSON> {
-    using NativeIterator = _native::StringIterator;
-    using NativeElement = char;
-    using NativeInterface = IteratorHelper<NativeIterator, NativeElement, JSON>;
+// template<> 
+// struct StandardIteratorTraits<JSON> {
+//     using NativeIterator = _native::StringIterator;
+//     using NativeElement = char;
+//     using NativeInterface = IteratorHelper<NativeIterator, NativeElement, JSON>;
     
-};
+// };
 
-using JSONIterable = Iterable<JSON>;
+using JSONIterable = Iterable<JSON, _native::NativeTraits<char>>;
 
 
 class Transaction;

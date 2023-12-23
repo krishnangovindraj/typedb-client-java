@@ -69,7 +69,7 @@ private:
     ReplicaInfo(_native::ReplicaInfo*);
 
     friend class Database;
-    friend class IteratorHelper<_native::ReplicaInfoIterator, _native::ReplicaInfo, ReplicaInfo>;
+    friend class Iterator<ReplicaInfo, _native::NativeTraits<_native::ReplicaInfo>, ReplicaInfo>;
 };
 
 using ReplicaInfoIterable = Iterable<ReplicaInfo>;
@@ -174,7 +174,7 @@ private:
     Database(_native::Database*) noexcept;
 
     friend class DatabaseManager;
-    friend class IteratorHelper<_native::DatabaseIterator, _native::Database, Database>;
+    friend class Iterator<Database, _native::NativeTraits<_native::Database>, Database>;
 };
 
 }  // namespace TypeDB

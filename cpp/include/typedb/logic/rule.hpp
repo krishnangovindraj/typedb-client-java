@@ -116,7 +116,7 @@ private:
     NativePointer<_native::Rule> ruleNative;
 
     friend class Explanation;
-    friend class IteratorHelper<_native::RuleIterator, _native::Rule, Rule>;
+    friend class Iterator<Rule, _native::NativeTraits<_native::Rule>, Rule>;
     friend class FutureHelper<Rule, _native::RulePromise>;
     friend class FutureHelper<std::optional<Rule>, _native::RulePromise>;
 };

@@ -408,14 +408,13 @@ class ConceptIteratorWrapper;
 template <typename T>
 using ConceptPtrFuture = Future<std::unique_ptr<T>, ConceptFutureWrapper>;
 
-template <typename T>
 struct ConceptIteratorTraits {
-    typedef ConceptIteratorWrapper NativeIterator;
-    typedef _native::Concept NativeElement;
-    typedef IteratorHelper<NativeIterator, NativeElement, std::unique_ptr<Concept>> NativeInterface;
+    using native_t = _native::Concept; 
+    using iterator = _native::IteratorImpl<_native::Concept,ConceptIteratorWrapper>;
+    using future = _native::FutureImpl<_native::Concept, ConceptFutureWrapper>;
 };
 
 template <typename T>
-using ConceptIterable = Iterable<std::unique_ptr<T>, ConceptIteratorTraits<T>>;
+using ConceptIterable = Iterable<std::unique_ptr<T>, ConceptIteratorTraits>;
 
 }  // namespace TypeDB

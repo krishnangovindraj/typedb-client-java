@@ -84,3 +84,5 @@ template <typename T>
 using NativePointer = std::unique_ptr<T, std::function<void(T*)> >;
 
 }  // namespace TypeDB
+
+#include "typedb/common/native_traits.hpp"

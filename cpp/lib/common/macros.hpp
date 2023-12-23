@@ -45,19 +45,20 @@
 #define TYPEDB_FUTURE_HELPER(RETURN, NATIVE_PROMISE, NATIVE_PROMISE_RESOLVE) \
     TYPEDB_FUTURE_HELPER_1(RETURN, NATIVE_PROMISE, NATIVE_PROMISE_RESOLVE, RETURN_IDENTITY)
 
-#define TYPEDB_ITERATOR_HELPER_1(NATIVE_ITER, NATIVE_T, T, NATIVE_ITER_DROP, NATIVE_ITER_NEXT, NATIVE_T_DROP, INSTANTIATE) \
-    template <>                                                                                                            \
-    void IteratorHelper<NATIVE_ITER, NATIVE_T, T>::nativeIterDrop(NATIVE_ITER* it) {                                       \
-        NATIVE_ITER_DROP(it);                                                                                              \
-    }                                                                                                                      \
-    template <>                                                                                                            \
-    NATIVE_T* IteratorHelper<NATIVE_ITER, NATIVE_T, T>::nativeIterNext(NATIVE_ITER* it) {                                  \
-        return NATIVE_ITER_NEXT(it);                                                                                       \
-    }                                                                                                                      \
-    template <>                                                                                                            \
-    T IteratorHelper<NATIVE_ITER, NATIVE_T, T>::instantiate(NATIVE_T* tNative) {                                           \
-        return INSTANTIATE(tNative);                                                                                       \
-    }
+#define TYPEDB_ITERATOR_HELPER_1(NATIVE_ITER, NATIVE_T, T, NATIVE_ITER_DROP, NATIVE_ITER_NEXT, NATIVE_T_DROP, INSTANTIATE) // Nothing
+// #define TYPEDB_ITERATOR_HELPER_1(NATIVE_ITER, NATIVE_T, T, NATIVE_ITER_DROP, NATIVE_ITER_NEXT, NATIVE_T_DROP, INSTANTIATE) \
+    // template <>                                                                                                            \
+    // void IteratorHelper<NATIVE_ITER, NATIVE_T, T>::nativeIterDrop(NATIVE_ITER* it) {                                       \
+    //     NATIVE_ITER_DROP(it);                                                                                              \
+    // }                                                                                                                      \
+    // template <>                                                                                                            \
+    // NATIVE_T* IteratorHelper<NATIVE_ITER, NATIVE_T, T>::nativeIterNext(NATIVE_ITER* it) {                                  \
+    //     return NATIVE_ITER_NEXT(it);                                                                                       \
+    // }                                                                                                                      \
+    // template <>                                                                                                            \
+    // T IteratorHelper<NATIVE_ITER, NATIVE_T, T>::instantiate(NATIVE_T* tNative) {                                           \
+    //     return INSTANTIATE(tNative);                                                                                       \
+    // }
 
 #define TYPEDB_ITERATOR_HELPER(NATIVE_ITER, NATIVE_T, T, NATIVE_ITER_DROP, NATIVE_ITER_NEXT, NATIVE_T_DROP) \
     TYPEDB_ITERATOR_HELPER_1(NATIVE_ITER, NATIVE_T, T, NATIVE_ITER_DROP, NATIVE_ITER_NEXT, NATIVE_T_DROP, T)

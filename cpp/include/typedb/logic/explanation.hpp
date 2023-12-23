@@ -107,7 +107,7 @@ private:
     NativePointer<_native::Explanation> explanationNative;
 
 
-    friend class IteratorHelper<_native::ExplanationIterator, _native::Explanation, Explanation>;
+    friend class Iterator<Explanation, _native::NativeTraits<_native::Explanation>, Explanation>;
 };
 
 using ExplanationIterable = Iterable<Explanation>;

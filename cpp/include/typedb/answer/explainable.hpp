@@ -38,7 +38,7 @@ class Explainables;
  */
 class OwnerAttributePair {
 public:
-
+    using NativeElement = _native::StringPair;
     /// The owner concept
     //const
      std::string owner;
@@ -49,15 +49,15 @@ public:
 private:
     OwnerAttributePair(_native::StringPair* stringPairNative);
 
-    friend class IteratorHelper<_native::StringPairIterator, _native::StringPair, OwnerAttributePair>;
+    friend class Iterator<OwnerAttributePair, _native::NativeTraits<_native::StringPair>, OwnerAttributePair>;
 };
 
-template <>
-struct StandardIteratorTraits<OwnerAttributePair>  {
-    using NativeIterator = _native::StringPairIterator;
-    using NativeElement = _native::StringPair;
-    using NativeInterface = IteratorHelper<NativeIterator, NativeElement, OwnerAttributePair>;
-};
+// template <>
+// struct StandardIteratorTraits<OwnerAttributePair>  {
+//     using NativeIterator = _native::StringPairIterator;
+//     using NativeElement = _native::StringPair;
+//     using NativeInterface = IteratorHelper<NativeIterator, NativeElement, OwnerAttributePair>;
+// };
 
 using OwnerAttributePairIterable = Iterable<OwnerAttributePair>;
 
