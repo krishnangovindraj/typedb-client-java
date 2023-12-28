@@ -46,8 +46,8 @@ TypeDB::TransactionType parseTransactionType(const std::string& str);
 bool compareStringWithDouble(std::string& first, double second);
 bool compareStringWithDateTime(std::string&, TypeDB::DateTime);
 
-template <typename _1, typename _2, typename _3, typename T>
-std::vector<T> collect(Iterable<_1, _2, T, _3> it) {
+template <typename T, typename _1, typename _2>
+std::vector<T> collect(Iterable<T, _1, _2> it) {
     std::vector<T> v;
     for (auto& x : it)
         v.push_back(std::move(x));
@@ -67,8 +67,8 @@ bool containsInstance(const std::vector<std::unique_ptr<T1>>& instanceList, Conc
     return std::any_of(instanceList.begin(), instanceList.end(), [&](const std::unique_ptr<T1>& x) { return Concept::equals(x.get(), instanceToFind); });
 }
 
-template <typename _1, typename _2, typename _3, typename IN, typename OUT>
-std::vector<OUT> transform(TypeDB::Iterable<_1, _2, IN, _3> it, std::function<OUT(const IN&)> fn) {
+template <typename IN, typename OUT, typename _1, typename _2>
+std::vector<OUT> transform(TypeDB::Iterable<IN, _1, _2> it, std::function<OUT(const IN&)> fn) {
     std::vector<OUT> v;
     for (auto& in : it) {
         v.push_back(fn(in));
@@ -77,8 +77,8 @@ std::vector<OUT> transform(TypeDB::Iterable<_1, _2, IN, _3> it, std::function<OU
 }
 
 
-template <typename _1, typename _2, typename _3, typename IN, typename OUT>
-std::vector<OUT> transform(TypeDB::Iterable<_1, _2, IN, _3> it, OUT (*fn)(const IN&)) {
+template <typename IN, typename OUT, typename _1, typename _2>
+std::vector<OUT> transform(TypeDB::Iterable<IN, _1, _2> it, OUT (*fn)(const IN&)) {
     std::vector<OUT> v;
     for (auto& in : it)
         v.push_back(fn(in));

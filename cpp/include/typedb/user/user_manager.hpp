@@ -81,7 +81,7 @@ public:
      * driver.users().all();
      * </pre>
      */
-    UserIterable all() const;
+    Iterable<User> all() const;
 
     /**
      * Retrieves a user with the given name.

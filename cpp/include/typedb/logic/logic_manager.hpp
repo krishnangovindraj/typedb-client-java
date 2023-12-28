@@ -57,7 +57,7 @@ public:
      * transaction.logic().getRules()
      * </pre>
      */
-    RuleIterable getRules() const;
+    Iterable<Rule> getRules() const;
 
     /**
      * Creates a new Rule if none exists with the given label, or replaces the existing one.

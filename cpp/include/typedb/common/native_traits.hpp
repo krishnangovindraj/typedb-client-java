@@ -54,7 +54,6 @@ struct NativeTraits {
     using drop = DropImpl<T>;
 };
 
-
 // Specialisations for the iteratos
 template <>
 struct NativeTraits<RolePlayer> {

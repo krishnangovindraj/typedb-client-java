@@ -38,8 +38,10 @@ _native::Concept* conceptIteratorWrapperNext(ConceptIteratorWrapper* it) {
     return it->next();
 }
 
+// #define CONCEPT_ITERATOR_HELPER(T, CONCEPT_FACTORY_METHOD) \
+    // TYPEDB_ITERATOR_HELPER_1(ConceptIteratorWrapper, _native::Concept, std::unique_ptr<T>, conceptIteratorWrapperDrop, conceptIteratorWrapperNext, _native::concept_drop, CONCEPT_FACTORY_METHOD)
 #define CONCEPT_ITERATOR_HELPER(T, CONCEPT_FACTORY_METHOD) \
-    TYPEDB_ITERATOR_HELPER_1(ConceptIteratorWrapper, _native::Concept, std::unique_ptr<T>, conceptIteratorWrapperDrop, conceptIteratorWrapperNext, _native::concept_drop, CONCEPT_FACTORY_METHOD)
+    template<> std::unique_ptr<T> ConceptIteratorTraits::Instantiater<T>::instantiate(_native::Concept* c) { return CONCEPT_FACTORY_METHOD(c); }
 
 CONCEPT_ITERATOR_HELPER(Concept, ConceptFactory::ofNative);
 CONCEPT_ITERATOR_HELPER(Type, ConceptFactory::type);

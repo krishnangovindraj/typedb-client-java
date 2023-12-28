@@ -178,7 +178,7 @@ public:
      * conceptMap.explainables().ownerships();
      * </pre>
      */
-    OwnerAttributePairIterable ownerships();
+    Iterable<OwnerAttributePair> ownerships();
 
     /**
      * A string representation of this object.

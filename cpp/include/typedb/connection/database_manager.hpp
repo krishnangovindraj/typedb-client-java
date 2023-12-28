@@ -33,6 +33,7 @@ namespace TypeDB {
 
 class Driver;  // Forward declaration for friendship
 
+using DatabaseIterator = Iterator<TypeDB::Database>;
 using DatabaseIterable = Iterable<TypeDB::Database>;
 
 
@@ -89,7 +90,7 @@ public:
      * driver.databases().all()
      * </pre>
      */
-    DatabaseIterable all() const;
+    Iterable<Database> all() const;
 
 private:
     NativePointer<_native::DatabaseManager> databaseManagerNative;

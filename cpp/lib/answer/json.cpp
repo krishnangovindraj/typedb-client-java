@@ -45,6 +45,10 @@ const char* jsonTypeNames[] = {
 
 #define NAME(X) jsonTypeNames[(int)(X)]
 
+JSON::JSON(char* s) {
+    *this = JSON::parse(s);
+}
+
 JSON::JSON(const JSON& from) {
     *this = from;
 }

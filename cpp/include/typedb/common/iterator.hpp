@@ -38,7 +38,7 @@ namespace TypeDB {
 // template <typename NATIVE_ITER, typename NATIVE_T, typename T>
 // class IteratorHelper;
 
-template <typename T, typename TRAITS, typename INSTANTIATE>
+template <typename T, typename TRAITS, typename INSTANTIATER>
 class Iterable;
 
 /**
@@ -52,14 +52,14 @@ class Iterable;
  *
  * Also see <code>Iterable</code>
  */
-template <typename T, typename TRAITS = _native::NativeTraits<typename T::NativeElement>, typename INSTANTIATE = T>
+template <typename T, typename TRAITS = _native::NativeTraits<typename T::NativeElement>, typename INSTANTIATER = T>
 class Iterator {  // Does not support range-based for loops yet.
 
-    using SELF = Iterator<T, TRAITS, INSTANTIATE>;
+    using SELF = Iterator<T, TRAITS, INSTANTIATER>;
 
-    using NATIVE_T = TRAITS::native_t;
-    using HELPER = TRAITS::iterator;
-    using NATIVE_ITER = HELPER::iterator_t;
+    using NATIVE_T = typename TRAITS::native_t;
+    using HELPER = typename TRAITS::iterator;
+    using NATIVE_ITER = typename HELPER::iterator_t;
 
 public:
     using value_type = T;
@@ -103,7 +103,11 @@ public:
             iteratorNative.reset();  // Makes it equal to end.
             obj.reset();
         } else {
-            obj = std::move(INSTANTIATE(p));
+            if constexpr (std::is_same_v<T, INSTANTIATER>){
+                obj = std::move(INSTANTIATER(p));
+            } else {
+                obj = std::move(INSTANTIATER::instantiate(p));
+            }
         }
         return *this;
     }
@@ -130,7 +134,7 @@ private:
     NativePointer<NATIVE_ITER> iteratorNative;
     std::optional<T> obj;
 
-    friend class Iterable<T, TRAITS, INSTANTIATE>;
+    friend class Iterable<T, TRAITS, INSTANTIATER>;
 };
 
 /**
@@ -145,13 +149,13 @@ private:
  * for (auto it = iterable.begin(); it != iterable.end(); ++it ) { ... } // Note: it++ is deleted.
  * </pre>
  */
-template <typename T, typename TRAITS = _native::NativeTraits<typename T::NativeElement>, typename INSTANTIATE = T>
+template <typename T, typename TRAITS = _native::NativeTraits<typename T::NativeElement>, class INSTANTIATER = T>
 class Iterable {
-    using SELF = Iterable<T, TRAITS, INSTANTIATE>;
-    using ITERATOR = Iterator<T, TRAITS, INSTANTIATE>;
-    using NATIVE_T = TRAITS::native_t;
-    using HELPER = TRAITS::iterator;
-    using NATIVE_ITER = HELPER::iterator_t;
+    using SELF = Iterable<T, TRAITS, INSTANTIATER>;
+    using ITERATOR = Iterator<T, TRAITS, INSTANTIATER>;
+    using NATIVE_T = typename TRAITS::native_t;
+    using HELPER = typename TRAITS::iterator;
+    using NATIVE_ITER = typename HELPER::iterator_t;
 
 public:
     Iterable(NATIVE_ITER* iteratorNative)

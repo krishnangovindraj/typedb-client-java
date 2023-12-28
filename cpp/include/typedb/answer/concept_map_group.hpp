@@ -60,7 +60,7 @@ public:
      * conceptMapGroup.conceptMaps();
      * </pre>
      */
-    ConceptMapIterable conceptMaps();
+    Iterable<ConceptMap> conceptMaps();
 
     /**
      * A string representation of this ConceptMapGroup.

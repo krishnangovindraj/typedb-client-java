@@ -43,7 +43,7 @@ namespace TypeDB {
     
 // };
 
-using JSONIterable = Iterable<JSON, _native::NativeTraits<char>>;
+using JSONIterable = Iterable<JSON>;
 
 
 class Transaction;
@@ -92,7 +92,7 @@ public:
      * @param query The TypeQL Insert query to be executed
      * @param options Specify query options
      */
-    [[nodiscard]] ConceptMapIterable insert(const std::string& query, const Options& options = Options()) const;
+    [[nodiscard]] Iterable<ConceptMap> insert(const std::string& query, const Options& options = Options()) const;
 
     /**
      * Performs a TypeQL Delete query in the transaction.
@@ -118,7 +118,7 @@ public:
      * @param query The TypeQL Update query to be executed
      * @param options Specify query options
      */
-    [[nodiscard]] ConceptMapIterable update(const std::string& query, const Options& = Options()) const;
+    [[nodiscard]] Iterable<ConceptMap> update(const std::string& query, const Options& = Options()) const;
 
     /**
      * Performs a TypeQL Get query in the transaction.
@@ -131,7 +131,7 @@ public:
      * @param query The TypeQL Get query to be executed
      * @param options Specify query options
      */
-    [[nodiscard]] ConceptMapIterable get(const std::string& query, const Options& options = Options()) const;
+    [[nodiscard]] Iterable<ConceptMap> get(const std::string& query, const Options& options = Options()) const;
 
     /**
      * Performs a TypeQL Fetch query in the transaction.
@@ -144,7 +144,7 @@ public:
      * @param query The TypeQL Fetch query to be executed
      * @param options Specify query options
      */
-    [[nodiscard]] JSONIterable fetch(const std::string& query, const Options& options = Options()) const;
+    [[nodiscard]] Iterable<JSON> fetch(const std::string& query, const Options& options = Options()) const;
 
     /**
      * Performs a TypeQL Get Aggregate query in the transaction.
@@ -170,7 +170,7 @@ public:
      * @param query The TypeQL Get Group query to be executed
      * @param options Specify query options
      */
-    [[nodiscard]] ConceptMapGroupIterable getGroup(const std::string& query, const Options& = Options()) const;
+    [[nodiscard]] Iterable<ConceptMapGroup> getGroup(const std::string& query, const Options& = Options()) const;
 
     /**
      * Performs a TypeQL Get Group Aggregate query in the transaction.
@@ -183,7 +183,7 @@ public:
      * @param query The TypeQL Get Group Aggregate query to be executed
      * @param options Specify query options
      */
-    [[nodiscard]] ValueGroupIterable getGroupAggregate(const std::string& query, const Options& = Options()) const;
+    [[nodiscard]] Iterable<ValueGroup> getGroupAggregate(const std::string& query, const Options& = Options()) const;
 
     /**
      * Performs a TypeQL Explain query in the transaction.
@@ -196,7 +196,7 @@ public:
      * @param explainable The Explainable to be explained
      * @param options Specify query options
      */
-    [[nodiscard]] ExplanationIterable explain(const Explainable& explainable, const Options& = Options()) const;
+    [[nodiscard]] Iterable<Explanation> explain(const Explainable& explainable, const Options& = Options()) const;
 
 private:
     TypeDB::Transaction* const transaction;

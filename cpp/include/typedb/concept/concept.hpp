@@ -412,9 +412,14 @@ struct ConceptIteratorTraits {
     using native_t = _native::Concept; 
     using iterator = _native::IteratorImpl<_native::Concept,ConceptIteratorWrapper>;
     using future = _native::FutureImpl<_native::Concept, ConceptFutureWrapper>;
+
+    template <typename T>
+    struct Instantiater {
+        static std::unique_ptr<T> instantiate(_native::Concept* c);
+    };
 };
 
 template <typename T>
-using ConceptIterable = Iterable<std::unique_ptr<T>, ConceptIteratorTraits>;
+using ConceptIterable = Iterable<std::unique_ptr<T>, ConceptIteratorTraits, ConceptIteratorTraits::Instantiater<T>>;
 
 }  // namespace TypeDB

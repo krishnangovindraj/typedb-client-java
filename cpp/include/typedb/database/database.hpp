@@ -145,7 +145,7 @@ public:
      * database.replicas()
      * </pre>
      */
-    ReplicaInfoIterable replicas();
+    Iterable<ReplicaInfo> replicas();
 
     /**
      * Returns the primary replica for this database.

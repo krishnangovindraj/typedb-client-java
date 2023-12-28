@@ -24,6 +24,8 @@
 #include <string>
 #include <vector>
 
+#include "typedb/common/iterator.hpp"
+
 namespace TypeDB {
 
 
@@ -89,6 +91,7 @@ class JSONBuilder;
  */
 class JSON {
 public:
+    using NativeElement = char;
     /**
      * Parses a JSON string into a <code>JSON</code> object.
      */
@@ -170,6 +173,7 @@ public:
     const JSONString& asString() const;
 
 private:
+
     JSONType _type;
     const union {
         JSONMap mapValue;
@@ -179,6 +183,7 @@ private:
         JSONLong longValue;
         JSONDouble doubleValue;
     };
+    JSON(char*);
 
     JSON(JSONBoolean);
     JSON(JSONLong);
@@ -193,6 +198,7 @@ private:
     JSON(JSONArray&&);
 
     friend class JSONBuilder;
+    friend class Iterator<JSON>;
 };
 
 }  // namespace TypeDB
