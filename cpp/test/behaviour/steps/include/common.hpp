@@ -74,28 +74,28 @@ struct Context {
         lastAggregateResult = results.get();
     }
 
-    void setResult(TypeDB::ConceptMapIterable&& results) {
+    void setResult(TypeDB::Iterable<ConceptMap>&& results) {
         lastConceptMapResult.clear();
         for (TypeDB::ConceptMap& result : results) {
             lastConceptMapResult.push_back(std::move(result));
         }
     }
 
-    void setResult(TypeDB::ValueGroupIterable&& results) {
+    void setResult(TypeDB::Iterable<ValueGroup>&& results) {
         lastValueGroupResult.clear();
         for (TypeDB::ValueGroup& result : results) {
             lastValueGroupResult.push_back(std::move(result));
         }
     }
 
-    void setResult(TypeDB::ConceptMapGroupIterable&& results) {
+    void setResult(TypeDB::Iterable<ConceptMapGroup>&& results) {
         lastConceptMapGroupResult.clear();
         for (TypeDB::ConceptMapGroup& result : results) {
             lastConceptMapGroupResult.push_back(std::move(result));
         }
     }
 
-    void setResult(TypeDB::JSONIterable&& results) {
+    void setResult(TypeDB::Iterable<JSON>&& results) {
         lastFetchResult.clear();
         for (TypeDB::JSON& result : results) {
             lastFetchResult.push_back(result);

@@ -59,8 +59,6 @@ private:
 //     using NativeInterface = IteratorHelper<NativeIterator, NativeElement, OwnerAttributePair>;
 // };
 
-using OwnerAttributePairIterable = Iterable<OwnerAttributePair>;
-
 
 /**
  * \brief Contains an explainable object.

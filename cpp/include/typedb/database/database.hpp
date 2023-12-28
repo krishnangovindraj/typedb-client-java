@@ -72,8 +72,6 @@ private:
     friend class Iterator<ReplicaInfo, _native::NativeTraits<_native::ReplicaInfo>, ReplicaInfo>;
 };
 
-using ReplicaInfoIterable = Iterable<ReplicaInfo>;
-
 /**
  * \brief A TypeDB database
  */

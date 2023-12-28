@@ -41,7 +41,7 @@ cucumber_bdd::StepCollection<Context> connectionSteps = {
     }),
 
     BDD_STEP("connection does not have any database", {
-        DatabaseIterable databases = context.driver->databases.all();
+        Iterable<Database>  databases = context.driver->databases.all();
         ASSERT_TRUE(databases.begin() == databases.end());
     }),
 

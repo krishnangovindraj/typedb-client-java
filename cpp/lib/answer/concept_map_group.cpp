@@ -36,9 +36,9 @@ std::unique_ptr<Concept> ConceptMapGroup::owner() {
     WRAPPED_NATIVE_CALL(ConceptFactory::ofNative, _native::concept_map_group_get_owner(conceptMapGroupNative.get()));
 }
 
-ConceptMapIterable ConceptMapGroup::conceptMaps() {
+Iterable<ConceptMap> ConceptMapGroup::conceptMaps() {
     CHECK_NATIVE(conceptMapGroupNative);
-    WRAPPED_NATIVE_CALL(ConceptMapIterable, _native::concept_map_group_get_concept_maps(conceptMapGroupNative.get()));
+    WRAPPED_NATIVE_CALL(Iterable<ConceptMap>, _native::concept_map_group_get_concept_maps(conceptMapGroupNative.get()));
 }
 
 std::string ConceptMapGroup::toString() {

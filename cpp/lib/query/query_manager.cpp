@@ -52,16 +52,16 @@ VoidFuture QueryManager::undefine(const std::string& query, const Options& optio
     WRAPPED_NATIVE_CALL(VoidFuture, _native::query_undefine(transaction->getNative(), query.c_str(), options.getNative()));
 }
 
-ConceptMapIterable QueryManager::get(const std::string& query, const Options& options) const {
+Iterable<ConceptMap> QueryManager::get(const std::string& query, const Options& options) const {
     CHECK_NATIVE(transaction);
     CHECK_QUERY(query);
-    WRAPPED_NATIVE_CALL(ConceptMapIterable, _native::query_get(transaction->getNative(), query.c_str(), options.getNative()));
+    WRAPPED_NATIVE_CALL(Iterable<ConceptMap>, _native::query_get(transaction->getNative(), query.c_str(), options.getNative()));
 }
 
-JSONIterable QueryManager::fetch(const std::string& query, const Options& options) const {
+Iterable<JSON> QueryManager::fetch(const std::string& query, const Options& options) const {
     CHECK_NATIVE(transaction);
     CHECK_QUERY(query);
-    WRAPPED_NATIVE_CALL(JSONIterable, _native::query_fetch(transaction->getNative(), query.c_str(), options.getNative()));
+    WRAPPED_NATIVE_CALL(Iterable<JSON>, _native::query_fetch(transaction->getNative(), query.c_str(), options.getNative()));
 }
 
 AggregateFuture QueryManager::getAggregate(const std::string& query, const Options& options) const {
@@ -70,23 +70,23 @@ AggregateFuture QueryManager::getAggregate(const std::string& query, const Optio
     WRAPPED_NATIVE_CALL(AggregateFuture, _native::query_get_aggregate(transaction->getNative(), query.c_str(), options.getNative()));
 }
 
-ConceptMapGroupIterable QueryManager::getGroup(const std::string& query, const Options& options) const {
+Iterable<ConceptMapGroup> QueryManager::getGroup(const std::string& query, const Options& options) const {
     CHECK_NATIVE(transaction);
     CHECK_QUERY(query);
-    WRAPPED_NATIVE_CALL(ConceptMapGroupIterable, _native::query_get_group(transaction->getNative(), query.c_str(), options.getNative()));
+    WRAPPED_NATIVE_CALL(Iterable<ConceptMapGroup>, _native::query_get_group(transaction->getNative(), query.c_str(), options.getNative()));
 }
 
-ValueGroupIterable QueryManager::getGroupAggregate(const std::string& query, const Options& options) const {
+Iterable<ValueGroup> QueryManager::getGroupAggregate(const std::string& query, const Options& options) const {
     CHECK_NATIVE(transaction);
     CHECK_QUERY(query);
-    WRAPPED_NATIVE_CALL(ValueGroupIterable, _native::query_get_group_aggregate(transaction->getNative(), query.c_str(), options.getNative()));
+    WRAPPED_NATIVE_CALL(Iterable<ValueGroup>, _native::query_get_group_aggregate(transaction->getNative(), query.c_str(), options.getNative()));
 }
 
 
-ConceptMapIterable QueryManager::insert(const std::string& query, const Options& options) const {
+Iterable<ConceptMap> QueryManager::insert(const std::string& query, const Options& options) const {
     CHECK_NATIVE(transaction);
     CHECK_QUERY(query);
-    WRAPPED_NATIVE_CALL(ConceptMapIterable, _native::query_insert(transaction->getNative(), query.c_str(), options.getNative()));
+    WRAPPED_NATIVE_CALL(Iterable<ConceptMap>, _native::query_insert(transaction->getNative(), query.c_str(), options.getNative()));
 }
 
 VoidFuture QueryManager::matchDelete(const std::string& query, const Options& options) const {
@@ -95,15 +95,15 @@ VoidFuture QueryManager::matchDelete(const std::string& query, const Options& op
     WRAPPED_NATIVE_CALL(VoidFuture, _native::query_delete(transaction->getNative(), query.c_str(), options.getNative()));
 }
 
-ConceptMapIterable QueryManager::update(const std::string& query, const Options& options) const {
+Iterable<ConceptMap> QueryManager::update(const std::string& query, const Options& options) const {
     CHECK_NATIVE(transaction);
     CHECK_QUERY(query);
-    WRAPPED_NATIVE_CALL(ConceptMapIterable, _native::query_update(transaction->getNative(), query.c_str(), options.getNative()));
+    WRAPPED_NATIVE_CALL(Iterable<ConceptMap>, _native::query_update(transaction->getNative(), query.c_str(), options.getNative()));
 }
 
-ExplanationIterable QueryManager::explain(const Explainable& explainable, const Options& options) const {
+Iterable<Explanation> QueryManager::explain(const Explainable& explainable, const Options& options) const {
     CHECK_NATIVE(transaction);
-    WRAPPED_NATIVE_CALL(ExplanationIterable, _native::query_explain(transaction->getNative(), explainable.getNative(), options.getNative()));
+    WRAPPED_NATIVE_CALL(Iterable<Explanation>, _native::query_explain(transaction->getNative(), explainable.getNative(), options.getNative()));
 }
 
 }  // namespace TypeDB

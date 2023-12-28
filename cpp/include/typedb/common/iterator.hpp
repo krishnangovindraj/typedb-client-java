@@ -193,6 +193,6 @@ private:
 };
 
 using StringIterable = Iterable<std::string, _native::NativeTraits<char>>;
-
+using StringIterator = Iterable<std::string, _native::NativeTraits<char>>;
 
 }  // namespace TypeDB

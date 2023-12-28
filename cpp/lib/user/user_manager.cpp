@@ -53,9 +53,9 @@ void UserManager::deleteUser(const std::string& username) const {
     DriverException::check_and_throw();
 }
 
-UserIterable UserManager::all() const {
+Iterable<User> UserManager::all() const {
     CHECK_NATIVE(userManagerNative);
-    WRAPPED_NATIVE_CALL(UserIterable, _native::users_all(userManagerNative.get()));
+    WRAPPED_NATIVE_CALL(Iterable<User>, _native::users_all(userManagerNative.get()));
 }
 
 std::unique_ptr<User> UserManager::get(const std::string& username) const {

@@ -73,9 +73,9 @@ StringIterable Explainables::attributes() {
     WRAPPED_NATIVE_CALL(StringIterable, _native::explainables_get_attributes_keys(explainablesNative.get()));
 }
 
-OwnerAttributePairIterable Explainables::ownerships() {
+Iterable<OwnerAttributePair> Explainables::ownerships() {
     CHECK_NATIVE(explainablesNative);
-    WRAPPED_NATIVE_CALL(OwnerAttributePairIterable, _native::explainables_get_ownerships_keys(explainablesNative.get()));
+    WRAPPED_NATIVE_CALL(Iterable<OwnerAttributePair>, _native::explainables_get_ownerships_keys(explainablesNative.get()));
 }
 
 std::string Explainables::toString() {

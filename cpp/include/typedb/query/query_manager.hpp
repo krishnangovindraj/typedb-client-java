@@ -43,9 +43,6 @@ namespace TypeDB {
     
 // };
 
-using JSONIterable = Iterable<JSON>;
-
-
 class Transaction;
 
 /**

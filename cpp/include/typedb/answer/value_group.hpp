@@ -74,7 +74,4 @@ private:
     friend class Iterator<TypeDB::ValueGroup, _native::NativeTraits<_native::ValueGroup>, TypeDB::ValueGroup>;
 };
 
-// For ValueGroup
-using ValueGroupIterable = Iterable<TypeDB::ValueGroup>;
-
 }  // namespace TypeDB

@@ -87,9 +87,9 @@ std::string Database::ruleSchema() {
     WRAPPED_NATIVE_CALL(Utils::stringFromNative, _native::database_rule_schema(databaseNative.get()));
 }
 
-ReplicaInfoIterable Database::replicas() {
+Iterable<ReplicaInfo> Database::replicas() {
     CHECK_NATIVE(databaseNative);
-    WRAPPED_NATIVE_CALL(ReplicaInfoIterable, _native::database_get_replicas_info(databaseNative.get()));
+    WRAPPED_NATIVE_CALL(Iterable<ReplicaInfo>, _native::database_get_replicas_info(databaseNative.get()));
 }
 
 std::optional<ReplicaInfo> Database::primaryReplica() {

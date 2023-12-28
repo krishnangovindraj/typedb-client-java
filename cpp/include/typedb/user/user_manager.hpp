@@ -27,8 +27,6 @@ namespace TypeDB {
 
 class Driver;  // forward declaration for friendship
 
-using UserIterable = Iterable<User>;
-
 /**
  * \brief Provides access to all user management methods.
  */

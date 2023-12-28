@@ -75,7 +75,4 @@ private:
     friend class Iterator<TypeDB::ConceptMapGroup, _native::NativeTraits<_native::ConceptMapGroup>, TypeDB::ConceptMapGroup>;
 };
 
-// For ConceptMapGroup
-using ConceptMapGroupIterable = Iterable<TypeDB::ConceptMapGroup>;
-
 }  // namespace TypeDB

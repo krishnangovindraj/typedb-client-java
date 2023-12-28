@@ -56,9 +56,9 @@ Database DatabaseManager::get(const std::string& name) const {
     WRAPPED_NATIVE_CALL(Database, _native::databases_get(databaseManagerNative.get(), name.c_str()));
 }
 
-DatabaseIterable DatabaseManager::all() const {
+Iterable<Database> DatabaseManager::all() const {
     CHECK_NATIVE(databaseManagerNative);
-    WRAPPED_NATIVE_CALL(DatabaseIterable, _native::databases_all(databaseManagerNative.get()));
+    WRAPPED_NATIVE_CALL(Iterable<Database>, _native::databases_all(databaseManagerNative.get()));
 }
 
 // Private

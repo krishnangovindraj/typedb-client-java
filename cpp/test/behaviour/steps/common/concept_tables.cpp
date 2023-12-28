@@ -246,7 +246,7 @@ ResultTable<ConceptEntry> conceptMapResultToMap(Transaction& tx, std::vector<Con
 ResultTable<ConceptEntry> conceptMapGroupResultToMap(Transaction& tx, std::vector<ConceptMapGroup>& conceptMapGroups, std::vector<std::string>& varNames) {
     ResultTable<ConceptEntry> result;
     for (auto& group : conceptMapGroups) {
-        ConceptMapIterable conceptMapIterable = group.conceptMaps();
+        Iterable<ConceptMap>  conceptMapIterable = group.conceptMaps();
         std::vector<ConceptMap> groupConceptMaps;
         for (auto& groupConceptMap : conceptMapIterable) {
             groupConceptMaps.push_back(std::move(groupConceptMap));

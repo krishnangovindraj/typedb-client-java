@@ -35,9 +35,9 @@ OptionalRuleFuture LogicManager::getRule(const std::string& label) const {
     WRAPPED_NATIVE_CALL(OptionalRuleFuture, _native::logic_manager_get_rule(transaction->getNative(), label.c_str()));
 }
 
-RuleIterable LogicManager::getRules() const {
+Iterable<Rule> LogicManager::getRules() const {
     CHECK_NATIVE(transaction);
-    WRAPPED_NATIVE_CALL(RuleIterable, _native::logic_manager_get_rules(transaction->getNative()));
+    WRAPPED_NATIVE_CALL(Iterable<Rule>, _native::logic_manager_get_rules(transaction->getNative()));
 }
 
 RuleFuture LogicManager::putRule(const std::string& label, const std::string& when, const std::string& then) const {

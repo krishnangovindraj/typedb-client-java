@@ -121,6 +121,4 @@ private:
     friend class FutureHelper<std::optional<Rule>, _native::RulePromise>;
 };
 
-using RuleIterable = Iterable<Rule>;
-
 }  // namespace TypeDB

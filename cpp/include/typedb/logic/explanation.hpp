@@ -110,6 +110,4 @@ private:
     friend class Iterator<Explanation, _native::NativeTraits<_native::Explanation>, Explanation>;
 };
 
-using ExplanationIterable = Iterable<Explanation>;
-
 }  // namespace TypeDB
