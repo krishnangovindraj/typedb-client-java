@@ -46,8 +46,9 @@ fun replaceSymbolsForAnchor(name: String): String {
     return name
         .replace("['&{}?|;:=]".toRegex(), "")
         .replace("[\\.,\\(\\)\\s#<>\\[\\]]".toRegex(), "_")
-        .replace("*", "_ptr_")
-        .replace("&", "_amp_")
+        .replace("*", "PTR")
+        .replace("&", "AMP")
+        .replace("_[_]+".toRegex(), "_")
         .removeSuffix("_")
 }
 
