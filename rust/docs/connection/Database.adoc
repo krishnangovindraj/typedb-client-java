@@ -6,7 +6,7 @@
 * `Debug`
 
 // tag::methods[]
-[#_struct_Database_delete__]
+[#_struct_Database_delete]
 ==== delete
 
 [tabs]
@@ -66,7 +66,7 @@ database.delete();
 --
 ====
 
-[#_struct_Database_name__]
+[#_struct_Database_name]
 ==== name
 
 [source,rust]
@@ -83,7 +83,7 @@ Retrieves the database name as a string.
 &str
 ----
 
-[#_struct_Database_preferred_replica_info__]
+[#_struct_Database_preferred_replica_info]
 ==== preferred_replica_info
 
 [source,rust]
@@ -107,7 +107,7 @@ Option<ReplicaInfo>
 database.preferred_replica_info();
 ----
 
-[#_struct_Database_primary_replica_info__]
+[#_struct_Database_primary_replica_info]
 ==== primary_replica_info
 
 [source,rust]
@@ -131,7 +131,7 @@ Option<ReplicaInfo>
 database.primary_replica_info()
 ----
 
-[#_struct_Database_replicas_info__]
+[#_struct_Database_replicas_info]
 ==== replicas_info
 
 [source,rust]
@@ -155,7 +155,7 @@ Vec<ReplicaInfo>
 database.replicas_info()
 ----
 
-[#_struct_Database_rule_schema__]
+[#_struct_Database_rule_schema]
 ==== rule_schema
 
 [tabs]
@@ -215,7 +215,7 @@ database.rule_schema();
 --
 ====
 
-[#_struct_Database_schema__]
+[#_struct_Database_schema]
 ==== schema
 
 [tabs]
@@ -275,7 +275,7 @@ database.schema();
 --
 ====
 
-[#_struct_Database_type_schema__]
+[#_struct_Database_type_schema]
 ==== type_schema
 
 [tabs]
