@@ -11,4 +11,11 @@ group standard_deps
     # nuget Microsoft.NETCore.App.Runtime.win-x64 6.0.8
     # nuget Microsoft.NETCore.App.Runtime.linux-x64 6.0.8
     # nuget Microsoft.NETCore.App.Runtime.osx-x64 6.0.8
+
+group bdd_deps
+    framework: net6.0,netstandard2.0
+    storage: none
+    source https://api.nuget.org/v3/index.json
+
     nuget SpecFlow 3.9.74
+    nuget SpecFlow.NUnit 3.9.74

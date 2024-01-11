@@ -18,22 +18,18 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-load("@rules_dotnet//dotnet:defs.bzl", "csharp_binary", "csharp_library")
+
+load("@rules_dotnet//dotnet:defs.bzl", "csharp_test", "csharp_nunit_test")
 package(default_visibility = ["//visibility:public"])
 
-csharp_library(
-    name = "hello-lib",
-    srcs = ["HelloLib.cs"],
+csharp_nunit_test(
+    name = "hello-test",
+    srcs = ["HelloSteps.cs"],
     target_frameworks = ["net6.0"],
     runtime_identifier = "osx-arm64",
-    targeting_packs = ["@paket.standard_deps//microsoft.netcore.app.ref"]
-)
-
-csharp_binary(
-    name = "hello",
-    srcs = ["HelloWorld.cs"],
-    target_frameworks = ["net6.0"],
-    runtime_identifier = "osx-arm64",
-    targeting_packs = ["@paket.standard_deps//microsoft.netcore.app.ref"],
-    deps = [":hello-lib"]
+    targeting_packs = [
+        "@paket.standard_deps//microsoft.netcore.app.ref",
+        "@paket.bdd_deps//specflow"
+    ],
+    deps = ["//csharp:hello-lib"]
 )

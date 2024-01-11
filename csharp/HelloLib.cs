@@ -21,10 +21,10 @@
 
 namespace TypeDB
 {
-    class HelloWorld {
-        static void Main(string[] args)
+    public class HelloLib {
+        public static void SayHello(string to)
         {
-            HelloLib.SayHello("World");
+            System.Console.WriteLine("Hello, " + to + "!");
         }
     }
 }
