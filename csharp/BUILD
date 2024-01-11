@@ -26,5 +26,5 @@ csharp_binary(
     srcs = ["HelloWorld.cs"],
     target_frameworks = ["net6.0"],
     runtime_identifier = "osx-arm64",
-    targeting_packs = ["@nuget-repo//microsoft.netcore.app.ref"]
+    targeting_packs = ["@paket.standard_deps//microsoft.netcore.app.ref"]
 )
