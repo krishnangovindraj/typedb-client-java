@@ -1,8 +1,14 @@
 # Use `paket install` to generate the `paket.lock` file, Then generate the `paket.bzl` using
 # `bazel run @rules_dotnet//tools/paket2bazel:paket2bazel.exe -- --dependencies-file $(pwd)/paket.dependencies  --output-folder $(pwd)`
+#   (I had to run it a few times because the server was flaky)
 group standard_deps
     framework: net6.0,netstandard2.0
     storage: none
     source https://api.nuget.org/v3/index.json
 
+    nuget NETStandard.Library 2.0.3
     nuget Microsoft.NETCore.App.Ref 6.0.8
+    nuget Microsoft.NETCore.App.Runtime.win-x64 6.0.8
+    nuget Microsoft.NETCore.App.Runtime.linux-x64 6.0.8
+    nuget Microsoft.NETCore.App.Runtime.osx-x64 6.0.8
+    nuget SpecFlow 3.9.74
