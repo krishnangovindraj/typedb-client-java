@@ -7,6 +7,4 @@ group bdd_deps
     storage: none
     source https://api.nuget.org/v3/index.json
 
-    nuget NUnit3TestAdapter 4.5.0
-    nuget SpecFlow 3.9.74
-    nuget SpecFlow.NUnit 3.9.74
+    nuget MySql.Data 8.2.0

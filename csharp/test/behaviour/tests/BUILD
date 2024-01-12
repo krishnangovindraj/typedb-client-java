@@ -28,8 +28,10 @@ csharp_nunit_test(
     target_frameworks = ["net6.0"],
     runtime_identifier = "osx-arm64",
     targeting_packs = [
-        "@paket.standard_deps//microsoft.netcore.app.ref",
-        "@paket.bdd_deps//specflow"
+        "@paket.rules_dotnet_nuget_packages//microsoft.netcore.app.ref",
     ],
-    deps = ["//csharp:hello-lib"]
+    deps = [
+        "//csharp:hello-lib",
+        "@paket.bdd_deps//mysql.data"
+    ]
 )
