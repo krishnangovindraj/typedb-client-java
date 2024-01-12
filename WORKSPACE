@@ -38,11 +38,11 @@ dotnet_deps()
 load("@rules_dotnet//dotnet:repositories.bzl", "dotnet_register_toolchains", "rules_dotnet_dependencies")
 rules_dotnet_dependencies()
 dotnet_register_toolchains("dotnet", "7.0.101")
-load("@rules_dotnet//dotnet:rules_dotnet_nuget_packages.bzl", "rules_dotnet_nuget_packages")
+load("@rules_dotnet//dotnet:paket.rules_dotnet_nuget_packages.bzl", "rules_dotnet_nuget_packages")
 rules_dotnet_nuget_packages()
-load("@rules_dotnet//dotnet:paket2bazel_dependencies.bzl", "paket2bazel_dependencies")
+load("@rules_dotnet//dotnet:paket.paket2bazel_dependencies.bzl", "paket2bazel_dependencies")
 paket2bazel_dependencies() # tool which converts packages.lock from paket to bazel
-load("//csharp:paket.bzl", csharp_deps = "paket")
+load("//csharp:paket.bdd_deps.bzl", csharp_deps = "bdd_deps")
 csharp_deps()
 
 # Load //builder/python

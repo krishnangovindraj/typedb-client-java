@@ -19,21 +19,22 @@
 # under the License.
 #
 load("@rules_dotnet//dotnet:defs.bzl", "csharp_binary", "csharp_library")
+load(":build_opts.bzl", "target_frameworks", "targeting_packs")
 package(default_visibility = ["//visibility:public"])
 
 csharp_library(
     name = "hello-lib",
     srcs = ["HelloLib.cs"],
-    target_frameworks = ["net6.0"],
+    target_frameworks = target_frameworks,
     runtime_identifier = "osx-arm64",
-    targeting_packs = ["@paket.standard_deps//microsoft.netcore.app.ref"]
+    targeting_packs = targeting_packs
 )
 
 csharp_binary(
     name = "hello",
     srcs = ["HelloWorld.cs"],
-    target_frameworks = ["net6.0"],
+    target_frameworks = target_frameworks,
     runtime_identifier = "osx-arm64",
-    targeting_packs = ["@paket.standard_deps//microsoft.netcore.app.ref"],
-    deps = [":hello-lib"]
+    targeting_packs = targeting_packs,
+    deps = [":hello-lib"],
 )
