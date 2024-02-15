@@ -20,6 +20,7 @@
  */
 
 use std::{collections::HashMap, default::Default};
+use async_std::sync::Arc;
 
 use futures::TryStreamExt;
 use serial_test::serial;
@@ -27,13 +28,14 @@ use typedb_driver::{
     answer::{ConceptMap, Explainable},
     concept::{Attribute, Concept, Value},
     logic::Explanation,
-    transaction::concept::api::ThingAPI,
+    transaction::concept::api::{ThingAPI, ThingTypeAPI},
     Connection, DatabaseManager, Options, Result as TypeDBResult, Session,
     SessionType::{Data, Schema},
     Transaction,
     TransactionType::{Read, Write},
+    TransactionType,
+    SessionType
 };
-
 use super::common;
 use crate::test_for_each_arg;
 
@@ -42,6 +44,93 @@ test_for_each_arg! {
         core => common::new_core_connection().unwrap(),
         cloud => common::new_cloud_connection().unwrap(),
     }
+
+
+    async fn on_website_test_api(connection: Connection) -> TypeDBResult {
+        let mut access_management_schema = "define user sub entity;";
+        let mut access_management_data_batches: Vec<Vec<String>> = vec![
+            vec!["insert $u isa user;".to_string()]
+        ];
+
+        // ---- START WEBSITE SNIPPET ----
+        let connection = Connection::new_core("localhost:1729")?;
+        let databases = DatabaseManager::new(connection);
+
+        databases.create("access-management-db").await?;
+
+        let session = Session::new(databases.get("access-management-db").await?, SessionType::Schema).await?;
+        let tx = session.transaction(TransactionType::Write).await?;
+        tx.query().define(access_management_schema).await?;
+        tx.commit().await?;
+        drop(session);
+
+        let session = Arc::new(Session::new(databases.get("access-management-db").await?, SessionType::Data).await?);
+        futures::future::try_join_all(access_management_data_batches.into_iter().map(|batch| {
+            let session = session.clone();
+            async move {
+                let tx = session.transaction(TransactionType::Write).await?;
+                batch.iter().try_for_each(|query| tx.query().insert(query).map(|_| ()))?;
+                tx.commit().await
+            }
+        })).await?;
+
+        let tx = session.transaction(TransactionType::Read).await?;
+        let mut stream = tx.query().get("match $u isa user; get;")?;
+
+        // ---- END WEBSITE SNIPPET ----
+        Ok(())
+    }
+
+    async fn on_website_test_migration(connection: Connection) -> TypeDBResult {
+        let access_management_schema = "define employee sub entity, owns email, owns name; contractor sub entity; name sub attribute value string; email sub attribute value string;";
+        let connection_setup = Connection::new_core("localhost:1729")?;
+        let databases_setup = DatabaseManager::new(connection_setup);
+        databases_setup.create("access-management-db").await?;
+
+        let session_setup = Session::new(databases_setup.get("access-management-db").await?, SessionType::Schema).await?;
+        let tx_setup = session_setup.transaction(TransactionType::Write).await?;
+        tx_setup.query().define(access_management_schema).await?;
+        tx_setup.commit().await?;
+        drop(session_setup);
+
+
+        // ---- START WEBSITE SNIPPET ----
+        let connection = Connection::new_core("localhost:1729")?;
+
+        let databases = DatabaseManager::new(connection);
+        let session = Session::new(databases.get("access-management-db").await?, SessionType::Schema).await?;
+        let tx = session.transaction(TransactionType::Write).await?;
+
+        // create a new abstract type "user"
+        let user = tx.concept().put_entity_type("user".to_string()).await?;
+        user.set_abstract(&tx).await;
+
+        // change the supertype of "employee" to "user"
+        let employee = tx.concept().get_entity_type("employee").await?;
+        employee.set_supertype(&tx, user).await;
+
+        // change the supertype of "contractor" to "user"
+        let contractor = tx.concept().get_entity_type("contractor").await?;
+        contractor.set_supertype(&tx, user).await;
+
+        // move "email" and "name" attribute types to be owned by "user" instead of "employee"
+        let email = tx.concept().get_attribute_type("email").await?;
+        let name = tx.concept().get_attribute_type("name").await?;
+        employee.unset_owns(&tx, email).await;
+        employee.unset_owns(&tx, name).await;
+        user.set_owns(&tx, email, None, Vec::new()).await;
+        user.set_owns(&tx, name, None, Vec::new()).await;
+
+        // rename "name" attribute type to "full-name"
+        name.set_label(&tx, "full-name").await;
+
+        // commit all schema changes in one transaction, which will fail if we violate any data validation
+        tx.commit().await?;
+
+        // ---- END WEBSITE SNIPPET ----
+        Ok(())
+    }
+
 
     async fn test_disjunction_explainable(connection: Connection) -> TypeDBResult {
         let schema = r#"define
