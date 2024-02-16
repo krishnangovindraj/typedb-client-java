@@ -43,6 +43,10 @@ TEST(TestConceptAPI, TestData) {
     EXPECT_TRUE(test_concept_api_data());
 }
 
+TEST(TestDebug, TestDebug) {
+    EXPECT_TRUE(test_debug());
+}
+
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

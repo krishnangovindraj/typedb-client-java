@@ -67,8 +67,8 @@ TEST(TestExplanations, TestExplainableOwnership) {
     TypeDB::Options options;
 
     {
-        auto sess = driver.session(dbName, TypeDB::SessionType::SCHEMA, options);
-        auto tx = sess.transaction(TypeDB::TransactionType::WRITE, options);
+        auto session = driver.session(dbName, TypeDB::SessionType::SCHEMA, options);
+        auto tx = session.transaction(TypeDB::TransactionType::WRITE, options);
         std::string schema =
             " define attr sub attribute, value long, owns attr;"
             "rule " +
@@ -79,11 +79,11 @@ TEST(TestExplanations, TestExplainableOwnership) {
     }
 
     {
-        auto sess = driver.session(dbName, TypeDB::SessionType::DATA, options);
-        auto tx = sess.transaction(TypeDB::TransactionType::WRITE, options);
+        auto session = driver.session(dbName, TypeDB::SessionType::DATA, options);
+        auto tx = session.transaction(TypeDB::TransactionType::WRITE, options);
 
-        auto res = tx.query.insert("insert $o " + std::to_string(attrValue) + " isa attr;", options);
-        for (auto& it : res)
+        auto results = tx.query.insert("insert $o " + std::to_string(attrValue) + " isa attr;", options);
+        for (auto& it : results)
             ;
         tx.commit();
     }
@@ -92,11 +92,11 @@ TEST(TestExplanations, TestExplainableOwnership) {
         TypeDB::Options explainOptions;
         explainOptions.infer(true).explain(true);
 
-        auto sess = driver.session(dbName, TypeDB::SessionType::DATA, options);
-        auto tx = sess.transaction(TypeDB::TransactionType::READ, explainOptions);
+        auto session = driver.session(dbName, TypeDB::SessionType::DATA, options);
+        auto tx = session.transaction(TypeDB::TransactionType::READ, explainOptions);
 
-        auto res = tx.query.get("match $o1 has $o2; get;", options);
-        for (TypeDB::ConceptMap& cm : res) {
+        auto results = tx.query.get("match $o1 has $o2; get;", options);
+        for (TypeDB::ConceptMap& cm : results) {
             for (std::string& v : cm.variables()) {
                 ASSERT_TRUE(v == "o1" || v == "o2");
                 ASSERT_EQ(attrValue, cm.get(v)->asAttribute()->getValue()->asLong());
@@ -134,10 +134,10 @@ TEST(TestCallbacks, TestCallbacks) {
     bool txCalled = false;
     bool sessCalled = false;
     {
-        auto sess = driver.session(dbName, TypeDB::SessionType::DATA, options);
-        sess.onClose([&]() { sessCalled = true; });
+        auto session = driver.session(dbName, TypeDB::SessionType::DATA, options);
+        session.onClose([&]() { sessCalled = true; });
         {
-            auto tx = sess.transaction(TypeDB::TransactionType::READ, options);
+            auto tx = session.transaction(TypeDB::TransactionType::READ, options);
             tx.onClose([&](const std::optional<DriverException>& e) { txCalled = true; });
             ASSERT_FALSE(txCalled);
         }
@@ -158,6 +158,88 @@ TEST(TestConnection, TestMissingPort) {
     } catch (DriverException& e) {
         ASSERT_TRUE(e.message().find("missing port") != std::string::npos);
     }
+}
+
+TEST(TestDebug, TestRobustAPI) {
+    const char* accessManagementSchema = "define\n attr sub attribute, value string, owns attr;";
+    const char* accessManagementDataBatches[1][1] = {"insert $s \"o0_val\" isa attr; $s has attr \"o1_val\";"};
+    {
+    auto driver = TypeDB::Driver::coreDriver("localhost:1729");
+    delete_if_exists(driver, "access-management-db");
+    driver.databases.create("access-management-db");
+    }
+
+TypeDB::Driver driver = TypeDB::Driver::coreDriver("localhost:1729");
+TypeDB::Options options;
+{
+    TypeDB::Session session = driver.session("access-management-db", TypeDB::SessionType::SCHEMA, options);
+    TypeDB::Transaction tx = session.transaction(TypeDB::TransactionType::WRITE, options);
+    tx.query.define(accessManagementSchema, options).wait();
+    tx.commit();
+}
+{
+    TypeDB::Session session = driver.session("access-management-db", TypeDB::SessionType::DATA, options);
+
+    for (auto& batch: accessManagementDataBatches) {
+        TypeDB::Transaction tx = session.transaction(TypeDB::TransactionType::WRITE, options);
+        for (auto& query: batch) {
+            tx.query.insert(query, options);
+        }
+        tx.commit();
+    }
+    {
+        TypeDB::Transaction tx = session.transaction(TypeDB::TransactionType::READ, options);
+        ConceptMapIterable results = tx.query.get("match $u isa user; get;", options);
+    }
+}
+
+}
+
+TEST(TestDebug, TestSchemaMigration ) {
+    {
+    auto driver = TypeDB::Driver::coreDriver("localhost:1729");
+    delete_if_exists(driver, "access-management-db");
+    driver.databases.create("access-management-db");
+
+    const char* schema = "define name sub attribute, value string; email sub attribute, value string ; employee sub entity, owns name, owns email; contractor sub entity; ";
+    TypeDB::Options options;
+    TypeDB::Session session = driver.session("access-management-db", TypeDB::SessionType::SCHEMA, options);
+    TypeDB::Transaction tx = session.transaction(TypeDB::TransactionType::WRITE, options);
+    tx.query.define(schema);
+    tx.commit();
+    }
+
+TypeDB::Driver driver = TypeDB::Driver::coreDriver("localhost:1729");
+TypeDB::Options options;
+TypeDB::Session session = driver.session("access-management-db", TypeDB::SessionType::SCHEMA, options);
+TypeDB::Transaction tx = session.transaction(TypeDB::TransactionType::WRITE, options);
+
+// create a new abstract type "user"
+std::unique_ptr<EntityType> user = tx.concepts.putEntityType("user").get();
+user->setAbstract(tx).get();
+
+// change the supertype of "employee" to "user"
+auto employee = tx.concepts.getEntityType("employee").get();
+employee->setSupertype(tx, user.get()).get();
+
+// change the supertype of "contractor" to "user"
+auto contractor = tx.concepts.getEntityType("contractor").get();
+contractor->setSupertype(tx, user.get()).get();
+
+// move "email" and "name" attribute types to be owned by "user" instead of "employee"
+std::unique_ptr<AttributeType> email = tx.concepts.getAttributeType("email").get();
+std::unique_ptr<AttributeType> name = tx.concepts.getAttributeType("name").get();
+employee->unsetOwns(tx, email.get()).get();
+employee->unsetOwns(tx, name.get()).get();
+user->setOwns(tx, email.get()).get();
+user->setOwns(tx, name.get()).get();
+
+// rename "name" attribute type to "full-name"
+name->setLabel(tx, "full-name").get();
+
+// commit all schema changes in one transaction, which will fail if we violate any data validation
+tx.commit();
+
 }
 
 int main(int argc, char** argv) {

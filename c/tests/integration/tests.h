@@ -26,3 +26,5 @@ bool test_query_data();
 
 bool test_concept_api_schema();
 bool test_concept_api_data();
+
+bool test_debug();
