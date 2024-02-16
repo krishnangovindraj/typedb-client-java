@@ -63,8 +63,8 @@ class TestWebsite(TestCase):
 
                         tx.commit()
 
-                        with session.transaction(TransactionType.READ) as tx:
-                            results = tx.query.get("match $u isa user; get;")
+                    with session.transaction(TransactionType.READ) as tx:
+                        results = tx.query.get("match $u isa user; get;")
         # ---- END WEBSITE SNIPPET ---
 
     def test_website_docs_migration(self):
