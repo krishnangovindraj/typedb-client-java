@@ -66,6 +66,16 @@ py_test(
     python_version = "PY3"
 )
 
+py_test(
+    name = "test_website",
+    srcs = ["test_website.py"],
+    deps = [
+        "//python:driver_python",
+    ],
+    data = ["//python:native-driver-binary-link", "//python:native-driver-wrapper-link"],
+    python_version = "PY3"
+)
+
 checkstyle_test(
     name = "checkstyle",
     include = glob(["*"]),

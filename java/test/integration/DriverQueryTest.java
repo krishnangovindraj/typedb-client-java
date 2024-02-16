@@ -44,6 +44,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,6 +88,91 @@ public class DriverQueryTest {
     public static void closeSession() {
         typedbDriver.close();
         typedb.stop();
+    }
+
+
+    @Test
+    public void testWebsiteDocs_API() {
+        String accessManagementSchema = "define user sub entity;";
+        List<List<TypeQLInsert>> accessManagementDataBatches = Collections.singletonList(Collections.singletonList(TypeQL.parseQuery("insert $u isa user;").asInsert()));
+        try (TypeDBDriver driver = TypeDB.coreDriver("localhost:1729")) {
+            if (driver.databases().contains("access-management-db")) driver.databases().get("access-management-db").delete();
+            driver.databases().create("access-management-db");
+        }
+        // ---- START WEBSITE SNIPPET ----
+        try (TypeDBDriver driver = TypeDB.coreDriver("localhost:1729")) {
+            driver.databases().create("access-management-db");
+
+            try (TypeDBSession session = client.session("access-management-db", SessionType.SCHEMA)) {
+                try (TypeDBTransaction tx = session.transaction(TransactionType.WRITE)) {
+                    tx.query().define(accessManagementSchema);
+                    tx.commit();
+                }
+            }
+            try (TypeDBSession session = client.session("access-management-db", SessonType.DATA)) {
+                for (var batch of accessManagementDataBatches) {
+                    try (TypeDBTransaction tx = session.transaction(TransactionType.WRITE)) {
+                        for (var query of batch) {
+                            tx.query().insert(query);
+                        }
+                        tx.commit();
+                    }
+                }
+                try (TypeDBTransaction tx = session.transaction(TransactionType.READ)) {
+                    Stream<ConceptMap> results = tx.query().get(TypeQL.match(var("u").isa("user")).get());
+                }
+            }
+        }
+        // ---- END WEBSITE SNIPPET ----
+    }
+
+    @Test
+    public void testWebsiteDocs_SchemaMigration() {
+        String accessManagementSchema = "define employee sub entity, owns email, owns name; contractor sub entity; name sub attribute, value string; email sub attribute, value string;";
+
+        try (TypeDBDriver driver = TypeDB.coreDriver("localhost:1729")) {
+            if (driver.databases().contains("access-management-db")) driver.databases().get("access-management-db").delete();
+            driver.databases().create("access-management-db");
+            try (TypeDBSession session = driver.session("access-management-db", TypeDBSession.Type.SCHEMA)) {
+                try (TypeDBTransaction tx = session.transaction(TypeDBTransaction.Type.WRITE)) {
+                    tx.query().define(accessManagementSchema).resolve();
+                    tx.commit();
+                }
+            }
+        }
+        // ---- START WEBSITE SNIPPET ----
+        try (TypeDBDriver driver = TypeDB.coreDriver("localhost:1729")) {
+            try (TypeDBSession session = driver.session("access-management-db", SessionType.SCHEMA)) {
+                try (TypeDBTransaction tx = session.transaction(TransactionType.WRITE)) {
+                    // create a new abstract type "user"
+                    EntityType user = tx.concepts().putEntityType("user").resolve();
+                    user.setAbstract(tx).resolve();
+
+                    // change the supertype of "employee" to "user"
+                    EntityType employee = tx.concepts().getEntityType("employee").resolve();
+                    employee.setSupertype(tx, user).resolve();
+
+                    // change the supertype of "contractor" to "user"
+                    EntityType contractor = tx.concepts().getEntityType("contractor").resolve();
+                    contractor.setSupertype(tx, user).resolve();
+
+                    // move "email" and "name" attribute types to be owned by "user" instead of "employee"
+                    AttributeType email = tx.concepts().getAttributeType("email").resolve();
+                    AttributeType name = tx.concepts().getAttributeType("name").resolve();
+                    employee.unsetOwns(tx, email).resolve();
+                    employee.unsetOwns(tx, name).resolve();
+                    user.setOwns(tx, email).resolve();
+                    user.setOwns(tx, name).resolve();
+
+                    // rename "name" attribute type to "full-name"
+                    name.setLabel(tx, "full-name").resolve();
+
+                    // commit all schema changes in one transaction, which will fail if we violate any data validation
+                    tx.commit();
+                }
+            }
+        }
+        // ---- END WEBSITE SNIPPET ----
     }
 
     @Test
