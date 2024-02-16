@@ -21,14 +21,13 @@
 
 use std::{collections::HashMap, default::Default};
 use async_std::sync::Arc;
-
 use futures::TryStreamExt;
 use serial_test::serial;
 use typedb_driver::{
     answer::{ConceptMap, Explainable},
     concept::{Attribute, Concept, Value},
     logic::Explanation,
-    transaction::concept::api::{ThingAPI, ThingTypeAPI},
+    transaction::concept::api::{ThingAPI, ThingTypeAPI, EntityTypeAPI},
     Connection, DatabaseManager, Options, Result as TypeDBResult, Session,
     SessionType::{Data, Schema},
     Transaction,
@@ -47,8 +46,8 @@ test_for_each_arg! {
 
 
     async fn on_website_test_api(connection: Connection) -> TypeDBResult {
-        let mut access_management_schema = "define user sub entity;";
-        let mut access_management_data_batches: Vec<Vec<String>> = vec![
+        let access_management_schema = "define user sub entity;";
+        let access_management_data_batches: Vec<Vec<String>> = vec![
             vec!["insert $u isa user;".to_string()]
         ];
 
@@ -81,10 +80,11 @@ test_for_each_arg! {
         Ok(())
     }
 
-    async fn on_website_test_migration(connection: Connection) -> TypeDBResult {
-        let access_management_schema = "define employee sub entity, owns email, owns name; contractor sub entity; name sub attribute value string; email sub attribute value string;";
+    async fn on_website_test_migration(_connection_unused: Connection) -> TypeDBResult {
+        let access_management_schema = "define employee sub entity, owns email, owns name; contractor sub entity; name sub attribute, value string; email sub attribute, value string;";
         let connection_setup = Connection::new_core("localhost:1729")?;
         let databases_setup = DatabaseManager::new(connection_setup);
+        if (databases_setup.contains("access-management-db").await? ) { databases_setup.get("access-management-db").await?.delete().await?; }
         databases_setup.create("access-management-db").await?;
 
         let session_setup = Session::new(databases_setup.get("access-management-db").await?, SessionType::Schema).await?;
@@ -96,33 +96,32 @@ test_for_each_arg! {
 
         // ---- START WEBSITE SNIPPET ----
         let connection = Connection::new_core("localhost:1729")?;
-
         let databases = DatabaseManager::new(connection);
         let session = Session::new(databases.get("access-management-db").await?, SessionType::Schema).await?;
         let tx = session.transaction(TransactionType::Write).await?;
 
         // create a new abstract type "user"
-        let user = tx.concept().put_entity_type("user".to_string()).await?;
-        user.set_abstract(&tx).await;
+        let mut user = tx.concept().put_entity_type("user".to_owned()).await?;
+        user.set_abstract(&tx).await?;
 
         // change the supertype of "employee" to "user"
-        let employee = tx.concept().get_entity_type("employee").await?;
-        employee.set_supertype(&tx, user).await;
+        let mut employee = tx.concept().get_entity_type("employee".to_owned()).await?.unwrap();
+        employee.set_supertype(&tx, user.clone()).await?;
 
         // change the supertype of "contractor" to "user"
-        let contractor = tx.concept().get_entity_type("contractor").await?;
-        contractor.set_supertype(&tx, user).await;
+        let mut contractor = tx.concept().get_entity_type("contractor".to_owned()).await?.unwrap();
+        contractor.set_supertype(&tx, user.clone()).await?;
 
         // move "email" and "name" attribute types to be owned by "user" instead of "employee"
-        let email = tx.concept().get_attribute_type("email").await?;
-        let name = tx.concept().get_attribute_type("name").await?;
-        employee.unset_owns(&tx, email).await;
-        employee.unset_owns(&tx, name).await;
-        user.set_owns(&tx, email, None, Vec::new()).await;
-        user.set_owns(&tx, name, None, Vec::new()).await;
+        let email = tx.concept().get_attribute_type("email".to_owned()).await?.unwrap();
+        let mut name = tx.concept().get_attribute_type("name".to_owned()).await?.unwrap();
+        employee.unset_owns(&tx, email.clone()).await?;
+        employee.unset_owns(&tx, name.clone()).await?;
+        user.set_owns(&tx, email, None, Vec::new()).await?;
+        user.set_owns(&tx, name.clone(), None, Vec::new()).await?;
 
         // rename "name" attribute type to "full-name"
-        name.set_label(&tx, "full-name").await;
+        name.set_label(&tx, "full-name".to_owned()).await?;
 
         // commit all schema changes in one transaction, which will fail if we violate any data validation
         tx.commit().await?;
