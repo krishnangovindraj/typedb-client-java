@@ -103,11 +103,12 @@ public class Loader {
         Path tempPath = Files.createTempDirectory("typedb-driver-lib");
         tempPath.toFile().deleteOnExit();
 
-        FileSystem fs = FileSystems.newFileSystem(resourceURI, Collections.emptyMap());
-        Path p = fs.provider().getPath(resourceURI);
-        Path newPath = tempPath.resolve(p.getParent().relativize(p).toString());
-        Files.copy(p, newPath);
-        newPath.toFile().deleteOnExit();
+        try (FileSystem fs = FileSystems.newFileSystem(resourceURI, Collections.emptyMap())) {
+            Path p = fs.provider().getPath(resourceURI);
+            Path newPath = tempPath.resolve(p.getParent().relativize(p).toString());
+            Files.copy(p, newPath);
+            newPath.toFile().deleteOnExit();
+        }
         return tempPath;
     }
 
