@@ -69,7 +69,7 @@ public class Loader {
             throw new TypeDBDriverException(UNRECOGNISED_OS_ARCH, platform.first(), platform.second());
         }
         String platformString = DRIVER_JNI_JAR_NAME.get(platform);
-        ClassLoader loader = Loader.class.getClassLoader();
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
         Iterator<URL> resourceIterator = loader.getResources(DRIVER_JNI_LIBRARY_NAME).asIterator();
 
         if (!resourceIterator.hasNext()) {
