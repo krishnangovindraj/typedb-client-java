@@ -577,6 +577,18 @@ jobs:
 
       - deploy-dotnet-runtime-snapshot-unix
 
+  one-off-windows-java-driver-krishnan-20240509:
+    executor:
+      name: win/default
+      size: xlarge
+      shell: cmd.exe
+    working_directory: ~/typedb-driver
+    steps:
+      - checkout
+      - run: .circleci\windows\prepare.bat
+      - run: .circleci\windows\java\deploy_snapshot.bat
+
+
   deploy-snapshot-windows-x86_64:
     executor:
       name: win/default
@@ -822,6 +834,11 @@ jobs:
 workflows:
   typedb-driver-snapshot:
     jobs:
+      - one-off-windows-java-driver-krishnan-20240509:
+          filters:
+            branches:
+              only: [ java-use-thread-context-class-loader ]
+
       - deploy-snapshot-linux-arm64:
           filters:
             branches:
