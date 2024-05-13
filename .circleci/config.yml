@@ -587,9 +587,9 @@ jobs:
       - checkout
       - run: .circleci\windows\prepare.bat
 
-      - run: .circleci\windows\python\deploy_snapshot.bat
-
       - run: .circleci\windows\java\deploy_snapshot.bat
+
+      - run: .circleci\windows\python\deploy_snapshot.bat
 
       - run: .circleci\windows\clib\deploy_snapshot.bat
       - run: .circleci\windows\clib\test_assembly.bat
