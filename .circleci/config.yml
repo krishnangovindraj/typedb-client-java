@@ -578,7 +578,7 @@ jobs:
       - deploy-dotnet-runtime-snapshot-unix
 
   one-off-linux-x86_64-java-driver-krishnan-20240509:
-    executor: linux-x86_64-amazonlinux-2
+    executor: linux-x86_64-ubuntu-2204
     working_directory: ~/typedb-driver
     steps:
       - checkout
