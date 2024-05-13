@@ -846,12 +846,12 @@ workflows:
       - one-off-windows-java-driver-krishnan-20240509:
           filters:
             branches:
-              only: [ java-use-thread-context-class-loader ]
+              only: [ copy-jni-lib-asResourceStream ]
 
       - one-off-linux-x86_64-java-driver-krishnan-20240509:
           filters:
             branches:
-              only: [ java-use-thread-context-class-loader ]
+              only: [ copy-jni-lib-asResourceStream ]
 
       - deploy-snapshot-linux-arm64:
           filters:
