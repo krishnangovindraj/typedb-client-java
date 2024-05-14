@@ -23,6 +23,7 @@ import com.vaticle.typedb.common.collection.Pair;
 import com.vaticle.typedb.driver.common.exception.TypeDBDriverException;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -102,12 +103,10 @@ public class Loader {
     private static Path unpackNativeResources(URI resourceURI) throws IOException {
         Path tempPath = Files.createTempDirectory("typedb-driver-lib");
         tempPath.toFile().deleteOnExit();
-        try (FileSystem fs = FileSystems.newFileSystem(resourceURI, Collections.emptyMap())) {
-            Path p = fs.provider().getPath(resourceURI);
-            Path newPath = tempPath.resolve(p.getParent().relativize(p).toString());
-            Files.copy(p, newPath);
-            newPath.toFile().deleteOnExit();
-        }
+        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceURI.getPath());
+        Path newPath = tempPath.resolve(Path.of(resourceURI).getFileName());
+        Files.copy(inputStream, newPath);
+        newPath.toFile().deleteOnExit();
         return tempPath;
     }
 
