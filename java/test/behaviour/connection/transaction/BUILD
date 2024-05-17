@@ -39,7 +39,6 @@ java_library(
         # External Maven Dependencies
         "@maven//:junit_junit",
         "@maven//:io_cucumber_cucumber_java",
-        "@maven//:org_hamcrest_hamcrest_library",
     ],
 )
 

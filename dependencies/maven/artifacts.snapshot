@@ -34,6 +34,7 @@
 @maven//:io_grpc_grpc_context_1_22_1
 @maven//:io_opencensus_opencensus_api_0_24_0
 @maven//:io_opencensus_opencensus_contrib_http_util_0_24_0
+@maven//:javax_annotation_javax_annotation_api_1_3_2
 @maven//:junit_junit_4_12
 @maven//:net_jcip_jcip_annotations_1_0
 @maven//:org_antlr_antlr4_runtime_4_8

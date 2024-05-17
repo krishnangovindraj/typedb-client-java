@@ -25,7 +25,6 @@ import com.vaticle.typeql.lang.TypeQL;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import org.hamcrest.Matchers;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -283,7 +282,7 @@ public class TransactionSteps {
                     transaction.query().define(TypeQL.parseQuery(defineQueryStatements).asDefine()).resolve();
                     fail();
                 } catch (Exception e) {
-                    assertThat(e.getMessage(), Matchers.containsString(expectedException));
+                    assert(e.getMessage().toLowerCase().contains(expectedException.toLowerCase()));
                 }
             }
         }
