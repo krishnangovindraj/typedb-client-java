@@ -46,14 +46,16 @@ class TestWebsite(TestCase):
 
         # ---- START WEBSITE SNIPPET ---
         with TypeDB.core_driver("localhost:1729") as driver:
+
+
             driver.databases.create("access-management-db")
 
-            with client.session("access-management-db", SessionType.SCHEMA) as session:
+            with driver.session("access-management-db", SessionType.SCHEMA) as session:
                 with session.transaction(TransactionType.WRITE) as tx:
                     tx.query.define(access_management_schema)
                     tx.commit()
 
-            with client.session("access-management-db", SessionType.DATA) as session:
+            with driver.session("access-management-db", SessionType.DATA) as session:
                 for batch in access_management_data_batches:
                     with session.transaction(TransactionType.WRITE) as tx:
                         for query in batch:
@@ -61,8 +63,8 @@ class TestWebsite(TestCase):
 
                         tx.commit()
 
-                        with session.transaction(TransactionType.READ) as tx:
-                            results = tx.query.get("match $u isa user; get;")
+                    with session.transaction(TransactionType.READ) as tx:
+                        results = tx.query.get("match $u isa user; get;")
         # ---- END WEBSITE SNIPPET ---
 
     def test_website_docs_migration(self):
@@ -105,7 +107,6 @@ class TestWebsite(TestCase):
 
                     # commit all schema changes in one transaction, which will fail if we violate any data validation
                     tx.commit()
-
         # ---- END WEBSITE SNIPPET ---
 
 

@@ -103,23 +103,23 @@ public class DriverQueryTest {
         try (TypeDBDriver driver = TypeDB.coreDriver("localhost:1729")) {
             driver.databases().create("access-management-db");
 
-            try (TypeDBSession session = client.session("access-management-db", SessionType.SCHEMA)) {
-                try (TypeDBTransaction tx = session.transaction(TransactionType.WRITE)) {
+            try (TypeDBSession session = driver.session("access-management-db", TypeDBSession.Type.SCHEMA)) {
+                try (TypeDBTransaction tx = session.transaction(TypeDBTransaction.Type.WRITE)) {
                     tx.query().define(accessManagementSchema);
                     tx.commit();
                 }
             }
-            try (TypeDBSession session = client.session("access-management-db", SessonType.DATA)) {
-                for (var batch of accessManagementDataBatches) {
-                    try (TypeDBTransaction tx = session.transaction(TransactionType.WRITE)) {
-                        for (var query of batch) {
+            try (TypeDBSession session = driver.session("access-management-db", TypeDBSession.Type.DATA)) {
+                for (List<TypeQLInsert> batch: accessManagementDataBatches) {
+                    try (TypeDBTransaction tx = session.transaction(TypeDBTransaction.Type.WRITE)) {
+                        for (TypeQLInsert query: batch) {
                             tx.query().insert(query);
                         }
                         tx.commit();
                     }
                 }
-                try (TypeDBTransaction tx = session.transaction(TransactionType.READ)) {
-                    Stream<ConceptMap> results = tx.query().get(TypeQL.match(var("u").isa("user")).get());
+                try (TypeDBTransaction tx = session.transaction(TypeDBTransaction.Type.READ)) {
+                    Stream<ConceptMap> results = tx.query().get(TypeQL.match(TypeQL.cVar("u").isa("user")).get());
                 }
             }
         }
@@ -142,8 +142,8 @@ public class DriverQueryTest {
         }
         // ---- START WEBSITE SNIPPET ----
         try (TypeDBDriver driver = TypeDB.coreDriver("localhost:1729")) {
-            try (TypeDBSession session = driver.session("access-management-db", SessionType.SCHEMA)) {
-                try (TypeDBTransaction tx = session.transaction(TransactionType.WRITE)) {
+            try (TypeDBSession session = driver.session("access-management-db", TypeDBSession.Type.SCHEMA)) {
+                try (TypeDBTransaction tx = session.transaction(TypeDBTransaction.Type.WRITE)) {
                     // create a new abstract type "user"
                     EntityType user = tx.concepts().putEntityType("user").resolve();
                     user.setAbstract(tx).resolve();
@@ -172,6 +172,7 @@ public class DriverQueryTest {
                 }
             }
         }
+
         // ---- END WEBSITE SNIPPET ----
     }
 

@@ -40,29 +40,30 @@ async function run() {
         let driver, session, tx;
         try {
             driver = await TypeDB.coreDriver("localhost:1729");
-            await driver.databases().create("access-management-db");
+            await driver.databases.create("access-management-db");
 
-            session = await client.session("access-management-db", SessionType.SCHEMA);
+            session = await driver.session("access-management-db", SessionType.SCHEMA);
             tx = await session.transaction(TransactionType.WRITE);
-            tx.query().define(accessManagementSchema);
+            tx.query.define(accessManagementSchema);
             await tx.commit();
             await session.close();
 
-            session = await client.session("access-management-db", SessionType.DATA);
+            session = await driver.session("access-management-db", SessionType.DATA);
             for (const batch of accessManagementDataBatches) {
                 tx = await session.transaction(TransactionType.WRITE);
                 for (const query of batch) {
-                    tx.query().insert(query);
+                    tx.query.insert(query);
                 }
                 await tx.commit();
             }
             tx = await session.transaction(TransactionType.READ);
-            const results = tx.query().get("match $u isa user; get;");
+            const results = tx.query.get("match $u isa user; get;");
         } finally {
             if (tx) await tx.close();
             if (session) await session.close();
             if (driver) await driver.close();
         }
+
         // ---- END WEBSITE SNIPPET ----
 
     } catch (err) {
@@ -89,27 +90,26 @@ async function run() {
         }
 
         // ---- START WEBSITE SNIPPET ----
-        let driver, session, tx;
         try {
             driver = await TypeDB.coreDriver("localhost:1729");
             session = await driver.session("access-management-db", SessionType.SCHEMA);
             tx = await session.transaction(TransactionType.WRITE);
 
             // create a new abstract type "user"
-            let user = await tx.concepts().putEntityType("user");
+            let user = await tx.concepts.putEntityType("user");
             await user.setAbstract(tx);
 
             // change the supertype of "employee" to "user"
-            let employee = await tx.concepts().getEntityType("employee");
+            let employee = await tx.concepts.getEntityType("employee");
             await employee.setSupertype(tx, user);
 
             // change the supertype of "contractor" to "user"
-            let contractor = await tx.concepts().getEntityType("contractor");
+            let contractor = await tx.concepts.getEntityType("contractor");
             await contractor.setSupertype(tx, user);
 
             // move "email" and "name" attribute types to be owned by "user" instead of "employee"
-            let email = await tx.concepts().getAttributeType("email");
-            let name = await tx.concepts().getAttributeType("name");
+            let email = await tx.concepts.getAttributeType("email");
+            let name = await tx.concepts.getAttributeType("name");
             await employee.unsetOwns(tx, email);
             await employee.unsetOwns(tx, name);
             await user.setOwns(tx, email);
@@ -120,7 +120,7 @@ async function run() {
 
             // commit all schema changes in one transaction, which will fail if we violate any data validation
             await tx.commit()
-        } finally {
+        }  finally {
             if (tx) await tx.close();
             if (session) await session.close();
             if (driver) await driver.close();
