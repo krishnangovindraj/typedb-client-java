@@ -257,3 +257,43 @@ rustfmt_test(
     targets = [":typedb_driver_clib"],
     size = "small",
 )
+
+# MUSL experiments
+load("@aspect_bazel_lib//lib:transitions.bzl", "platform_transition_binary")
+
+platform_transition_binary(
+    name = "typedb-driver-clib-linux-x86_64-musl",
+    binary = ":typedb-driver-clib",
+    target_platform = ":linux_x86_64_musl",
+)
+
+platform(
+     name = "linux_x86_64_musl",
+     constraint_values = [
+         ":linker_config_musl",
+         "@platforms//cpu:x86_64",
+         "@platforms//os:linux",
+     ],
+     visibility = ["//visibility:public"],
+ )
+
+
+constraint_setting(
+    name = "linker",
+    default_constraint_value = ":linker_config_unknown",
+    visibility = ["//visibility:public"],
+)
+
+constraint_value(
+    name = "linker_config_musl",
+    constraint_setting = ":linker",
+    visibility = ["//visibility:public"],
+)
+
+# Default linker for anyone not setting the linker to `musl`.
+# You shouldn't ever need to set this value manually.
+constraint_value(
+    name = "linker_config_unknown",
+    constraint_setting = ":linker",
+    visibility = ["//visibility:public"],
+)

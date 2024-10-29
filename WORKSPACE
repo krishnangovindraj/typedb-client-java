@@ -88,19 +88,24 @@ com_github_grpc_grpc_deps()
 load("@vaticle_dependencies//builder/rust:deps.bzl", rust_deps = "deps")
 rust_deps()
 
-load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains", "rust_analyzer_toolchain_tools_repository")
+load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains", "rust_analyzer_toolchain_tools_repository", "rust_repository_set")
 rules_rust_dependencies()
 load("@rules_rust//tools/rust_analyzer:deps.bzl", "rust_analyzer_dependencies")
 rust_analyzer_dependencies()
 load("@rules_rust//rust:defs.bzl", "rust_common")
+RUST_EDITION = "2021"
+RUST_VERSION = "1.76.0"
 rust_register_toolchains(
-    edition = "2021",
+    edition = RUST_EDITION,
     extra_target_triples = [
         "aarch64-apple-darwin",
         "aarch64-unknown-linux-gnu",
         "x86_64-apple-darwin",
         "x86_64-pc-windows-msvc",
         "x86_64-unknown-linux-gnu",
+        # MUSL
+        "x86_64-unknown-linux-musl",
+        "aarch64-unknown-linux-musl",
     ],
     rust_analyzer_version = rust_common.default_version,
 )
@@ -292,3 +297,29 @@ load("@vaticle_bazel_distribution//common:rules.bzl", "workspace_refs")
 workspace_refs(
     name = "vaticle_typedb_driver_workspace_refs"
 )
+
+# MUSL
+rust_repository_set(
+    name = "linux_x86_64_to_musl_tuple",
+    edition = RUST_EDITION,
+    exec_triple = "x86_64-unknown-linux-gnu",
+    # Setting this extra_target_triples allows differentiating the musl case from the non-musl case, in case multiple linux-targeting toolchains are registered.
+    extra_target_triples = {"x86_64-unknown-linux-musl": [
+        "@//c:linker_config_musl",
+        "@platforms//cpu:x86_64",
+        "@platforms//os:linux",
+    ]},
+    versions = [RUST_VERSION],
+)
+# TODO
+#rust_repository_set(
+#    name = "linux_arm64_to_musl_tuple",
+#    edition = EDITION,
+#    exec_triple = "aarch64-unknown-linux-gnu",
+#    extra_target_triples = {"aarch64-unknown-linux-musl": [
+#        "//c:linker_config_musl",
+#        "@platforms//cpu:arm64",
+#        "@platforms//os:linux",
+#    ]},
+#    versions = [RUST_VERSION],
+#)
