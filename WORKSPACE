@@ -116,10 +116,32 @@ rust_analyzer_toolchain_tools_repository(
     version = rust_common.default_version
 )
 
-load("@vaticle_dependencies//library/crates:crates.bzl", "fetch_crates")
-fetch_crates()
-load("@crates//:defs.bzl", "crate_repositories")
-crate_repositories()
+#load("@vaticle_dependencies//library/crates:crates.bzl", "fetch_crates")
+#fetch_crates()
+#load("@crates//:defs.bzl", "crate_repositories")
+#crate_repositories()
+load("@rules_rust//crate_universe:deps_bootstrap.bzl", "cargo_bazel_bootstrap")
+load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_repository", "render_config")
+
+
+crates_repository(
+    name = "crates",
+    cargo_lockfile = "@vaticle_dependencies//library/crates:Cargo.lock",
+    manifests = ["@vaticle_dependencies//library/crates:Cargo.toml"],
+    annotations = {
+        "cbindgen": [crate.annotation(gen_binaries = True)],
+    },
+    supported_platform_triples = [
+        "aarch64-apple-darwin",
+        "aarch64-unknown-linux-gnu",
+        "aarch64-unknown-linux-musl",
+        "x86_64-apple-darwin",
+        "x86_64-pc-windows-msvc",
+        "x86_64-unknown-linux-gnu",
+        "x86_64-unknown-linux-musl",
+    ],
+)
+
 
 load("@vaticle_dependencies//tool/swig:deps.bzl", swig_deps = "deps")
 swig_deps()
