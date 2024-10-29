@@ -299,6 +299,30 @@ workspace_refs(
 )
 
 # MUSL
+
+
+load("@aspect_bazel_lib//lib:repositories.bzl", "aspect_bazel_lib_dependencies", "aspect_bazel_lib_register_toolchains")
+
+aspect_bazel_lib_dependencies()
+
+aspect_bazel_lib_register_toolchains()
+
+http_archive(
+    name = "musl_toolchains",
+    sha256 = "f9f077b9ae74a0545f7cb7108462cb061593eef10fd09d25db4554e281ee880b",
+    url = "https://github.com/bazel-contrib/musl-toolchain/releases/download/v0.1.7/musl_toolchain-v0.1.7.tar.gz",
+)
+
+load("@musl_toolchains//:repositories.bzl", "load_musl_toolchains")
+
+# Setting this extra_target_triples allows differentiating the musl case from the non-musl case, in case multiple linux-targeting toolchains are registered.
+load_musl_toolchains(extra_target_compatible_with = ["@//linker_config:musl"])
+
+load("@musl_toolchains//:toolchains.bzl", "register_musl_toolchains")
+
+register_musl_toolchains()
+
+# define rust repository
 rust_repository_set(
     name = "linux_x86_64_to_musl_tuple",
     edition = RUST_EDITION,
@@ -323,3 +347,4 @@ rust_repository_set(
 #    ]},
 #    versions = [RUST_VERSION],
 #)
+
