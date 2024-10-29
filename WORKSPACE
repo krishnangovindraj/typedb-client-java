@@ -95,19 +95,19 @@ load("@rules_rust//tools/rust_analyzer:deps.bzl", "rust_analyzer_dependencies")
 rust_analyzer_dependencies()
 load("@rules_rust//rust:defs.bzl", "rust_common")
 RUST_EDITION = "2021"
-RUST_VERSION = "1.76.0"
+RUST_VERSION = "1.81.0"
 rust_register_toolchains(
     edition = RUST_EDITION,
-    extra_target_triples = [
-        "aarch64-apple-darwin",
-        "aarch64-unknown-linux-gnu",
-        "x86_64-apple-darwin",
-        "x86_64-pc-windows-msvc",
-        "x86_64-unknown-linux-gnu",
-        # MUSL
-        "x86_64-unknown-linux-musl",
-        "aarch64-unknown-linux-musl",
-    ],
+#    extra_target_triples = [
+#        "aarch64-apple-darwin",
+#        "aarch64-unknown-linux-gnu",
+#        "x86_64-apple-darwin",
+#        "x86_64-pc-windows-msvc",
+#        "x86_64-unknown-linux-gnu",
+#        # MUSL
+#        "x86_64-unknown-linux-musl",
+#        "aarch64-unknown-linux-musl",
+#    ],
     rust_analyzer_version = rust_common.default_version,
 )
 
@@ -300,13 +300,9 @@ workspace_refs(
 )
 
 # MUSL
-
-
-load("@aspect_bazel_lib//lib:repositories.bzl", "aspect_bazel_lib_dependencies", "aspect_bazel_lib_register_toolchains")
-
-aspect_bazel_lib_dependencies()
-
-aspect_bazel_lib_register_toolchains()
+#load("@aspect_bazel_lib//lib:repositories.bzl", "aspect_bazel_lib_dependencies", "aspect_bazel_lib_register_toolchains")
+#aspect_bazel_lib_dependencies()
+#aspect_bazel_lib_register_toolchains()
 
 http_archive(
     name = "musl_toolchains",
@@ -329,11 +325,24 @@ rust_repository_set(
     edition = RUST_EDITION,
     exec_triple = "x86_64-unknown-linux-gnu",
     # Setting this extra_target_triples allows differentiating the musl case from the non-musl case, in case multiple linux-targeting toolchains are registered.
-    extra_target_triples = {"x86_64-unknown-linux-musl": [
-        "@//linker_config:musl",
-        "@platforms//cpu:x86_64",
-        "@platforms//os:linux",
-    ]},
+    extra_target_triples = {
+        "x86_64-unknown-linux-musl": [
+            "@//linker_config:musl",
+            "@platforms//cpu:x86_64",
+            "@platforms//os:linux",
+        ],
+        "x86_64-unknown-linux-musl": [
+            "@//linker_config:musl",
+            "@platforms//cpu:x86_64",
+            "@platforms//os:linux",
+        ],
+        "x86_64-unknown-linux-gnu": [
+            "@//linker_config:gnu",
+            "@platforms//cpu:x86_64",
+            "@platforms//os:linux",
+        ]
+    },
+
     versions = [RUST_VERSION],
 )
 # TODO

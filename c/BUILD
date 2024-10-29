@@ -261,11 +261,11 @@ rustfmt_test(
 # MUSL experiments
 load("@aspect_bazel_lib//lib:transitions.bzl", "platform_transition_binary")
 
-platform_transition_binary(
-    name = "typedb-driver-clib-linux-x86_64-musl",
-    binary = ":typedb-driver-clib",
-    target_platform = ":linux_x86_64_musl",
-)
+#platform_transition_binary(
+#    name = "typedb-driver-clib-linux-x86_64-musl",
+#    binary = ":typedb-driver-clib",
+#    target_platform = ":linux_x86_64_musl",
+#)
 
 platform(
      name = "linux_x86_64_musl",
