@@ -132,12 +132,12 @@ crates_repository(
         "cbindgen": [crate.annotation(gen_binaries = True)],
     },
     supported_platform_triples = [
-        "aarch64-apple-darwin",
-        "aarch64-unknown-linux-gnu",
-        "aarch64-unknown-linux-musl",
-        "x86_64-apple-darwin",
-        "x86_64-pc-windows-msvc",
-        "x86_64-unknown-linux-gnu",
+#        "aarch64-apple-darwin",
+#        "aarch64-unknown-linux-gnu",
+#        "aarch64-unknown-linux-musl",
+#        "x86_64-apple-darwin",
+#        "x86_64-pc-windows-msvc",
+#        "x86_64-unknown-linux-gnu",
         "x86_64-unknown-linux-musl",
     ],
 )
@@ -353,11 +353,11 @@ rust_repository_set(
             "@platforms//cpu:x86_64",
             "@platforms//os:linux",
         ],
-        "x86_64-unknown-linux-gnu": [
-            "@//linker_config:gnu",
-            "@platforms//cpu:x86_64",
-            "@platforms//os:linux",
-        ]
+#        "x86_64-unknown-linux-gnu": [
+#            "@//linker_config:gnu",
+#            "@platforms//cpu:x86_64",
+#            "@platforms//os:linux",
+#        ]
     },
 
     versions = [RUST_VERSION],
