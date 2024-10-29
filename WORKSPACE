@@ -329,7 +329,7 @@ rust_repository_set(
     exec_triple = "x86_64-unknown-linux-gnu",
     # Setting this extra_target_triples allows differentiating the musl case from the non-musl case, in case multiple linux-targeting toolchains are registered.
     extra_target_triples = {"x86_64-unknown-linux-musl": [
-        "@//c:linker_config_musl",
+        "@//linker_config:musl",
         "@platforms//cpu:x86_64",
         "@platforms//os:linux",
     ]},
@@ -341,7 +341,7 @@ rust_repository_set(
 #    edition = EDITION,
 #    exec_triple = "aarch64-unknown-linux-gnu",
 #    extra_target_triples = {"aarch64-unknown-linux-musl": [
-#        "//c:linker_config_musl",
+#        "//linker_config:musl",
 #        "@platforms//cpu:arm64",
 #        "@platforms//os:linux",
 #    ]},

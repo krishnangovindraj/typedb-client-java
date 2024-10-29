@@ -270,30 +270,9 @@ platform_transition_binary(
 platform(
      name = "linux_x86_64_musl",
      constraint_values = [
-         ":linker_config_musl",
+         "//linker_config:musl",
          "@platforms//cpu:x86_64",
          "@platforms//os:linux",
      ],
      visibility = ["//visibility:public"],
  )
-
-
-constraint_setting(
-    name = "linker",
-    default_constraint_value = ":linker_config_unknown",
-    visibility = ["//visibility:public"],
-)
-
-constraint_value(
-    name = "linker_config_musl",
-    constraint_setting = ":linker",
-    visibility = ["//visibility:public"],
-)
-
-# Default linker for anyone not setting the linker to `musl`.
-# You shouldn't ever need to set this value manually.
-constraint_value(
-    name = "linker_config_unknown",
-    constraint_setting = ":linker",
-    visibility = ["//visibility:public"],
-)
