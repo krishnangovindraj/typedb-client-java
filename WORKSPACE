@@ -16,6 +16,7 @@
 # under the License.
 
 workspace(name = "vaticle_typedb_driver")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 ##############################
 # Load @vaticle_dependencies #
