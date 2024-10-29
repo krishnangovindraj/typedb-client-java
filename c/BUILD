@@ -77,6 +77,7 @@ rust_shared_library(
         "@crates//:env_logger",
         "@crates//:log",
     ],
+#    target_compatible_with = [":linux_x86_64_musl"]
 )
 
 filegroup(

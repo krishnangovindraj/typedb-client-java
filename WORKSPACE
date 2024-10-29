@@ -96,20 +96,20 @@ rust_analyzer_dependencies()
 load("@rules_rust//rust:defs.bzl", "rust_common")
 RUST_EDITION = "2021"
 RUST_VERSION = "1.81.0"
-rust_register_toolchains(
-    edition = RUST_EDITION,
-#    extra_target_triples = [
-#        "aarch64-apple-darwin",
-#        "aarch64-unknown-linux-gnu",
-#        "x86_64-apple-darwin",
-#        "x86_64-pc-windows-msvc",
-#        "x86_64-unknown-linux-gnu",
-#        # MUSL
-#        "x86_64-unknown-linux-musl",
-#        "aarch64-unknown-linux-musl",
-#    ],
-    rust_analyzer_version = rust_common.default_version,
-)
+#rust_register_toolchains(
+#    edition = RUST_EDITION,
+##    extra_target_triples = [
+##        "aarch64-apple-darwin",
+##        "aarch64-unknown-linux-gnu",
+##        "x86_64-apple-darwin",
+##        "x86_64-pc-windows-msvc",
+##        "x86_64-unknown-linux-gnu",
+##        # MUSL
+##        "x86_64-unknown-linux-musl",
+##        "aarch64-unknown-linux-musl",
+##    ],
+#    rust_analyzer_version = rust_common.default_version,
+#)
 
 rust_analyzer_toolchain_tools_repository(
     name = "rust_analyzer_toolchain_tools",
