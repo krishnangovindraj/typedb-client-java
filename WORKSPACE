@@ -101,7 +101,13 @@ rust_register_toolchains(
         "x86_64-apple-darwin",
         "x86_64-pc-windows-msvc",
         "x86_64-unknown-linux-gnu",
+
+        "x86_64-unknown-linux-musl",
     ],
+    extra_rustc_flags = {
+        "x86_64-unknown-linux-musl": "--target=x86_64-unknown-linux-musl",
+        "x86_64-unknown-linux-gnu": "--target=x86_64-unknown-linux-musl", # Pray this works.
+    },
     rust_analyzer_version = rust_common.default_version,
 )
 
