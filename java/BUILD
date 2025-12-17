@@ -125,7 +125,7 @@ genrule(
     srcs = [":driver_docs_library"],
     outs = ["driver_docs_javadoc"],
     cmd = "mkdir $@ && unzip $< -d $@",
-    tags = ["no-remote-cache"],
+    tags = ["manual", "no-remote-cache"],
 )
 
 javadoc_to_adoc(
