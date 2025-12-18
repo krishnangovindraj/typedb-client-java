@@ -161,7 +161,6 @@ typedoc_docs(
         "tool/**/*.json",
     ]),
     out = "driver_docs_typedoc",
-    tags = ["no-remote-cache"],
 )
 
 typedoc_to_adoc(
