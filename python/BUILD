@@ -54,12 +54,14 @@ sphinx_docs(
     sphinx_conf = "conf.py",
     sphinx_rst = "index.rst",
     package_subdir = "typedb",
+#    tags = ["no-remote-cache"],
 )
 
 sphinx_to_adoc(
     name = "docs_adoc",
     data = [":docs_html"],
     docs_dirs = dir_mapping,
+#    tags = ["no-remote-cache"],
 )
 
 test_to_example(

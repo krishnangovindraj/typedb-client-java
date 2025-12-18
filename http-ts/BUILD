@@ -161,6 +161,7 @@ typedoc_docs(
         "tool/**/*.json",
     ]),
     out = "driver_docs_typedoc",
+    tags = ["no-remote-cache"],
 )
 
 typedoc_to_adoc(
@@ -168,5 +169,6 @@ typedoc_to_adoc(
     data = [":docs_html"],
     docs_dirs = dir_mapping,
     static_functions = static_function_mapping,
-    nested_classes = class_nesting_prefixes
+    nested_classes = class_nesting_prefixes,
+    tags = ["no-remote-cache"],
 )
