@@ -170,5 +170,4 @@ typedoc_to_adoc(
     docs_dirs = dir_mapping,
     static_functions = static_function_mapping,
     nested_classes = class_nesting_prefixes,
-    tags = ["no-remote-cache"],
 )

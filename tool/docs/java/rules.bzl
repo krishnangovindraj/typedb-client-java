@@ -38,3 +38,22 @@ def javadoc_to_adoc(name, data, docs_dirs):
         data = data,
         visibility = ["//visibility:public"],
     )
+
+def _unzip_to_directory_impl(ctx):
+#    ctx.actions.declare_directory(ctx.outputs.out)
+    ctx.actions.run_shell(
+        inputs = [ctx.file.zip],
+        outputs = [ctx.outputs.out],
+        command = "mkdir {} && unzip {} -d {}".format(ctx.outputs.out.path, ctx.file.zip.path, ctx.outputs.out.path),
+    )
+    return [
+        DefaultInfo(files = depset([ctx.outputs.out]))
+    ]
+
+unzip_javadoc_to_directory = rule(
+    implementation = _unzip_to_directory_impl,
+    attrs = {
+        "zip": attr.label(allow_single_file = True, mandatory = True),
+        "out": attr.output(mandatory = True, doc = "Output directory",),
+    },
+)
