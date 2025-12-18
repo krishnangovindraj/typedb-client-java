@@ -24,7 +24,7 @@ def _copy_to_bin(ctx, src, dst):
 
 
 def _typedoc_doc_impl(ctx):
-    ctx.actions.declare_directory(ctx.outputs.out)
+    ctx.actions.declare_directory(ctx.outputs.out.path)
     dsts = []
     for src in ctx.files.srcs:
         dst = ctx.actions.declare_file(src.short_path)
