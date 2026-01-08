@@ -21,7 +21,7 @@ use std::fmt;
 
 use super::ValueType;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Hash, PartialEq)]
 pub enum Type {
     EntityType(EntityType),
     RelationType(RelationType),
@@ -42,7 +42,7 @@ impl Type {
 
 /// Entity types represent the classification of independent objects in the data model
 /// of the business domain.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct EntityType {
     pub label: String,
 }
@@ -72,7 +72,7 @@ impl fmt::Display for EntityType {
 /// Other types can play roles in relations if it’s mentioned in their definition.
 ///
 /// A relation type must specify at least one role.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct RelationType {
     pub label: String,
 }
@@ -107,7 +107,7 @@ impl fmt::Display for RelationType {
 ///
 /// Multiple types can own the same attribute type, and different instances of the same type
 /// or different types can share ownership of the same attribute instance.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Hash, PartialEq)]
 pub struct AttributeType {
     pub label: String,
     pub value_type: Option<ValueType>,
@@ -148,7 +148,7 @@ impl fmt::Display for AttributeType {
 /// to play a role in a particular instance of a relation type.
 ///
 /// Roles allow a schema to enforce logical constraints on types of role players.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct RoleType {
     pub label: String,
 }

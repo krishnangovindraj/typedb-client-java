@@ -30,7 +30,7 @@ use chrono_tz::Tz;
 use crate::Error;
 
 /// Represents the type of primitive value is held by a Value or Attribute.
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone, Hash, PartialEq, Eq)]
 pub enum ValueType {
     Boolean,
     Integer,
