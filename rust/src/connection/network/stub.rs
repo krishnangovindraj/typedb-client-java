@@ -17,35 +17,48 @@
  * under the License.
  */
 
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
-use futures::{future::BoxFuture, FutureExt, TryFutureExt};
-use tokio::sync::mpsc::{unbounded_channel as unbounded_async, UnboundedSender};
+use futures::{FutureExt, TryFutureExt, future::BoxFuture};
+use tokio::sync::mpsc::{UnboundedSender, unbounded_channel as unbounded_async};
 use tokio_stream::wrappers::UnboundedReceiverStream;
 use tonic::{Response, Status, Streaming};
-use tracing::{debug, trace};
+use tracing::debug;
 use typedb_protocol::{
-    connection, database, database_manager, migration, server_manager, transaction,
+    connection, database, database_manager, migration, server, server_manager, transaction,
     type_db_client::TypeDbClient as GRPC, user, user_manager,
 };
 
 use super::channel::{CallCredentials, GRPCChannel};
 use crate::{
-    common::{error::ConnectionError, Error, Result, StdResult},
+    common::{Error, Result, StdResult, error::ConnectionError},
     connection::network::proto::TryIntoProto,
 };
 
 type TonicResult<T> = StdResult<Response<T>, Status>;
 
+const GRPC_MAX_MESSAGE_SIZE: usize = 1024 * 1024 * 1024;
+
 #[derive(Clone, Debug)]
 pub(super) struct RPCStub<Channel: GRPCChannel> {
     grpc: GRPC<Channel>,
     call_credentials: Option<Arc<CallCredentials>>,
+    request_timeout: Duration,
 }
 
 impl<Channel: GRPCChannel> RPCStub<Channel> {
-    pub(super) async fn new(channel: Channel, call_credentials: Option<Arc<CallCredentials>>) -> Self {
-        Self { grpc: GRPC::new(channel), call_credentials }
+    pub(super) async fn new(
+        channel: Channel,
+        call_credentials: Option<Arc<CallCredentials>>,
+        request_timeout: Duration,
+    ) -> Self {
+        Self {
+            grpc: GRPC::new(channel)
+                .max_decoding_message_size(GRPC_MAX_MESSAGE_SIZE)
+                .max_encoding_message_size(GRPC_MAX_MESSAGE_SIZE),
+            call_credentials,
+            request_timeout,
+        }
     }
 
     async fn call_with_auto_renew_token<F, R>(&mut self, call: F) -> Result<R>
@@ -76,24 +89,32 @@ impl<Channel: GRPCChannel> RPCStub<Channel> {
 
     pub(super) async fn connection_open(&mut self, req: connection::open::Req) -> Result<connection::open::Res> {
         let result = self.single(|this| Box::pin(this.grpc.connection_open(req.clone()))).await;
-        if let Ok(response) = &result {
-            if let Some(call_credentials) = &self.call_credentials {
-                call_credentials
-                    .set_token(response.authentication.as_ref().expect("Expected authentication token").token.clone());
-            }
+        if let Ok(response) = &result
+            && let Some(call_credentials) = &self.call_credentials
+        {
+            call_credentials
+                .set_token(response.authentication.as_ref().expect("Expected authentication token").token.clone());
         }
         result
     }
 
     pub(super) async fn servers_all(&mut self, req: server_manager::all::Req) -> Result<server_manager::all::Res> {
-        self.single(|this| Box::pin(this.grpc.servers_all(req.clone()))).await
+        self.single(|this| Box::pin(this.grpc.servers_all(req))).await
+    }
+
+    pub(super) async fn servers_get(&mut self, req: server_manager::get::Req) -> Result<server_manager::get::Res> {
+        self.single(|this| Box::pin(this.grpc.servers_get(req.clone()))).await
+    }
+
+    pub(super) async fn server_version(&mut self, req: server::version::Req) -> Result<server::version::Res> {
+        self.single(|this| Box::pin(this.grpc.server_version(req.clone()))).await
     }
 
     pub(super) async fn databases_all(
         &mut self,
         req: database_manager::all::Req,
     ) -> Result<database_manager::all::Res> {
-        self.single(|this| Box::pin(this.grpc.databases_all(req.clone()))).await
+        self.single(|this| Box::pin(this.grpc.databases_all(req))).await
     }
 
     pub(super) async fn databases_get(
@@ -178,7 +199,7 @@ impl<Channel: GRPCChannel> RPCStub<Channel> {
     }
 
     pub(super) async fn users_all(&mut self, req: user_manager::all::Req) -> Result<user_manager::all::Res> {
-        self.single(|this| Box::pin(this.grpc.users_all(req.clone()))).await
+        self.single(|this| Box::pin(this.grpc.users_all(req))).await
     }
 
     pub(super) async fn users_get(&mut self, req: user_manager::get::Req) -> Result<user_manager::get::Res> {
@@ -204,11 +225,21 @@ impl<Channel: GRPCChannel> RPCStub<Channel> {
         self.single(|this| Box::pin(this.grpc.users_delete(req.clone()))).await
     }
 
+    pub(super) fn request_timeout(&self) -> Duration {
+        self.request_timeout
+    }
+
     async fn single<F, R>(&mut self, call: F) -> Result<R>
     where
         for<'a> F: Fn(&'a mut Self) -> BoxFuture<'a, TonicResult<R>> + Send + Sync,
         R: 'static,
     {
-        self.call_with_auto_renew_token(|this| Box::pin(call(this).map(|r| Ok(r?.into_inner())))).await
+        let timeout = self.request_timeout;
+        tokio::time::timeout(
+            timeout,
+            self.call_with_auto_renew_token(|this| Box::pin(call(this).map(|r| Ok(r?.into_inner())))),
+        )
+        .await
+        .map_err(|_| ConnectionError::request_timeout(timeout))?
     }
 }

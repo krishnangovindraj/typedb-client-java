@@ -42,7 +42,6 @@ extern "C" {
 
 %nodefaultctor;
 
-%ignore driver_open; // use `driver_open_with_description`
 
 %define %dropproxy(Type, function_prefix)
 struct Type {};
@@ -59,20 +58,22 @@ struct Type {};
 
 %dropproxy(Credentials, credentials)
 %dropproxy(DriverOptions, driver_options)
+%dropproxy(DriverTlsConfig, driver_tls_config)
 %dropproxy(TransactionOptions, transaction_options)
 %dropproxy(QueryOptions, query_options)
+%dropproxydefined(ServerVersion, server_version)
 
-#define typedb_driver_drop driver_close
-#define transaction_drop transaction_submit_close
+#define transaction_drop transaction_drop_sync
 #define database_drop database_close
 
+#define typedb_driver_drop driver_close
 %dropproxy(TypeDBDriver, typedb_driver)
 %dropproxy(Transaction, transaction)
 
 %dropproxy(Database, database)
 %dropproxy(DatabaseIterator, database_iterator)
-//%dropproxy(ReplicaInfo, replica_info)
-//%dropproxy(ReplicaInfoIterator, replica_info_iterator)
+%dropproxy(Server, server)
+%dropproxy(ServerIterator, server_iterator)
 
 %dropproxy(User, user)
 %dropproxy(UserIterator, user_iterator)
@@ -82,11 +83,11 @@ struct Type {};
 
 %dropproxy(ConceptRow, concept_row)
 %dropproxy(ConceptRowIterator, concept_row_iterator)
+%dropproxydefined(ServerRouting, server_routing)
 
 %dropproxydefined(DatetimeAndTimeZone, datetime_and_time_zone)
 %dropproxydefined(StringAndOptValue, string_and_opt_value)
 %dropproxy(StringAndOptValueIterator, string_and_opt_value_iterator)
-
 %dropproxy(StringIterator, string_iterator)
 
 %dropproxy(QueryAnswer, query_answer)
@@ -129,7 +130,6 @@ struct Type {};
 
 %promiseproxy(AnalyzedQueryPromise, analyzed_query_promise)
 %promiseproxy(BoolPromise, bool_promise)
-%promiseproxy(ConceptPromise, concept_promise)
 %promiseproxy(StringPromise, string_promise)
 %promiseproxy(QueryAnswerPromise, query_answer_promise)
 %promiseproxy(VoidPromise, void_promise)
@@ -147,76 +147,48 @@ struct TransactionCallbackDirector {
 #include <memory>
 #include <iostream>
 #include <mutex>
+#include <atomic>
 #include <unordered_map>
 
+// Thread-safe map for transaction callback directors
 class ThreadSafeTransactionCallbacks {
 private:
-    // 1. The static map to protect
-    static std::unordered_map<size_t, TransactionCallbackDirector*> s_transactionOnCloseCallbacks;
-
-    // 2. The static mutex to manage access
+    static std::unordered_map<size_t, TransactionCallbackDirector*> s_callbacks;
     static std::mutex s_mutex;
 
 public:
-    // Delete copy/move constructors and assignment operators
-    // to prevent accidental copying of the singleton-like structure
     ThreadSafeTransactionCallbacks(const ThreadSafeTransactionCallbacks&) = delete;
     ThreadSafeTransactionCallbacks& operator=(const ThreadSafeTransactionCallbacks&) = delete;
 
-    // --- Core Operations ---
-
-    /**
-     * @brief Inserts a key-value pair into the map in a thread-safe manner.
-     */
     static void insert(size_t key, TransactionCallbackDirector* value) {
-        // Lock the mutex for the duration of this scope
         std::lock_guard<std::mutex> lock(s_mutex);
-
-        // Thread-safe insertion
-        s_transactionOnCloseCallbacks[key] = value;
+        s_callbacks[key] = value;
     }
 
-    /**
-     * @brief Retrieves a value associated with a key in a thread-safe manner.
-     * @returns The value pointer, or nullptr if the key is not found.
-     */
     static TransactionCallbackDirector* find(size_t key) {
-        // Lock the mutex for the duration of this scope
         std::lock_guard<std::mutex> lock(s_mutex);
-
-        // Thread-safe lookup
-        auto it = s_transactionOnCloseCallbacks.find(key);
-        if (it != s_transactionOnCloseCallbacks.end()) {
-            return it->second;
-        }
-        return nullptr; // Return nullptr if not found
+        auto it = s_callbacks.find(key);
+        return (it != s_callbacks.end()) ? it->second : nullptr;
     }
 
-    /**
-     * @brief Removes a key-value pair from the map in a thread-safe manner.
-     */
     static void remove(size_t key) {
-        // Lock the mutex for the duration of this scope
         std::lock_guard<std::mutex> lock(s_mutex);
-
-        // Thread-safe removal
-        s_transactionOnCloseCallbacks.erase(key);
+        s_callbacks.erase(key);
     }
-
-    // Add other necessary map operations (e.g., size(), contains(), clear()) here...
 };
 
-// Initialize the static members
-std::unordered_map<size_t, TransactionCallbackDirector*> ThreadSafeTransactionCallbacks::s_transactionOnCloseCallbacks;
+std::unordered_map<size_t, TransactionCallbackDirector*> ThreadSafeTransactionCallbacks::s_callbacks;
 std::mutex ThreadSafeTransactionCallbacks::s_mutex;
 
 static void transaction_callback_execute(size_t ID, Error* error) {
     try {
         auto cb = ThreadSafeTransactionCallbacks::find(ID);
-        cb->callback(error);
+        if (cb != nullptr) {
+            cb->callback(error);
+        }
         ThreadSafeTransactionCallbacks::remove(ID);
     } catch (std::exception const& e) {
-        std::cerr << "[ERROR] " << e.what() << std::endl;
+        std::cerr << "[ERROR] Exception in transaction callback: " << e.what() << std::endl;
     }
 }
 %}
@@ -224,7 +196,6 @@ static void transaction_callback_execute(size_t ID, Error* error) {
 %rename(transaction_on_close) transaction_on_close_register;
 %ignore transaction_on_close;
 %inline %{
-#include <atomic>
 VoidPromise* transaction_on_close_register(const Transaction* transaction, TransactionCallbackDirector* handler) {
     static std::atomic_size_t nextID;
     std::size_t ID = nextID.fetch_add(1);
@@ -233,8 +204,8 @@ VoidPromise* transaction_on_close_register(const Transaction* transaction, Trans
 }
 %}
 
-%delobject database_delete;
-
+%newobject transaction_new;
+%newobject transaction_query;
 %delobject transaction_commit;
 
 %typemap(newfree) char* "string_free($1);";
@@ -249,9 +220,6 @@ VoidPromise* transaction_on_close_register(const Transaction* transaction, Trans
 %newobject concept_row_get_index;
 %newobject concept_row_get_query_structure;
 %newobject concept_row_to_string;
-
-%newobject value_get_string;
-%newobject value_get_datetime_tz;
 
 %newobject query_answer_into_rows;
 %newobject query_answer_into_documents;
@@ -270,20 +238,28 @@ VoidPromise* transaction_on_close_register(const Transaction* transaction, Trans
 %newobject concept_try_get_value_type;
 %newobject concept_try_get_value;
 %newobject credentials_new;
+%newobject server_routing_auto;
+%newobject server_routing_direct;
 
-%newobject driver_open_with_description;
+%newobject driver_new;
+%newobject driver_new_with_addresses;
+%newobject driver_new_with_address_translation;
+%newobject driver_server_version;
+%newobject driver_primary_server;
+%newobject driver_servers;
+
 %newobject driver_options_new;
-
+%newobject driver_options_get_tls_config;
+%newobject driver_tls_config_new_disabled;
+%newobject driver_tls_config_new_enabled_with_native_root_ca;
+%newobject driver_tls_config_new_enabled_with_root_ca_path;
+%newobject driver_tls_config_get_root_ca_path;
 %newobject database_get_name;
 %newobject database_schema;
 %newobject database_type_schema;
+%delobject database_delete;
 
-//%newobject database_get_preferred_replica_info;
-//%newobject database_get_primary_replica_info;
-//%newobject database_get_replicas_info;
-//
-//%newobject replica_info_get_server;
-//%newobject replica_info_iterator_next;
+%newobject server_get_address;
 
 %newobject databases_all;
 %newobject databases_get;
@@ -404,19 +380,15 @@ VoidPromise* transaction_on_close_register(const Transaction* transaction, Trans
 %newobject concept_iterator_next;
 %newobject concept_row_iterator_next;
 %newobject database_iterator_next;
+%newobject server_iterator_next;
 %newobject string_iterator_next;
 %newobject string_and_opt_value_iterator_next;
 %newobject user_iterator_next;
 %newobject variable_iterator_next;
 
-%newobject transaction_new;
-%newobject transaction_query;
-%newobject transaction_analyze;
-
 %newobject users_all;
-%newobject users_get_current_user;
+%newobject users_get_current;
 %newobject users_get;
-
 %newobject user_get_name;
 %delobject user_delete;
 

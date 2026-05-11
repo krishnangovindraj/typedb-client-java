@@ -19,9 +19,9 @@
 
 use std::{borrow::Cow, collections::HashMap, sync::Arc};
 
-use super::{QueryType, JSON};
+use super::{JSON, QueryType};
 use crate::concept::{
-    value::Struct, Attribute, AttributeType, Concept, EntityType, Kind, RelationType, RoleType, Value, ValueType,
+    Attribute, AttributeType, Concept, EntityType, Kind, RelationType, RoleType, Value, ValueType, value::Struct,
 };
 
 #[derive(Debug, PartialEq)]
@@ -49,7 +49,7 @@ impl ConceptDocument {
         }
     }
 
-    /// Retrieve the executed query's type (shared by all elements in this stream).
+    /// Retrieves the executed query's type (shared by all elements in this stream).
     ///
     /// # Examples
     ///

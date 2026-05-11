@@ -32,7 +32,10 @@ rustfmt_test(
         "//rust/tests/behaviour/driver:test_query",
         "//rust/tests/behaviour/driver:test_user",
 
+        "//rust/tests/integration:test_driver",
         "//rust/tests/integration:test_example",
+        "//rust/tests/integration:test_values",
+        "//rust/tests/integration/cluster:test_failover",
     ],
     size = "small",
 )
@@ -40,7 +43,7 @@ rustfmt_test(
 checkstyle_test(
     name = "checkstyle",
     include = glob(["*", "**/*"]),
-    exclude = glob(["**/Cargo.*"]),
+    exclude = glob(["**/Cargo.*"], allow_empty = True),
     license_type = "apache-header",
     size = "small",
 )

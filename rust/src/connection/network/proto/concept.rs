@@ -19,15 +19,14 @@
 
 use std::{collections::HashMap, str::FromStr};
 
-use chrono::{DateTime, FixedOffset, NaiveDate, NaiveDateTime, TimeZone as ChronoTimeZone};
+use chrono::{Date, DateTime, Datelike, FixedOffset, NaiveDate, NaiveDateTime, TimeZone as ChronoTimeZone, Timelike};
 use chrono_tz::Tz;
-use futures::TryFutureExt;
 use itertools::Itertools;
 use typedb_protocol::{
     concept,
     concept_document::{self, node::leaf::Leaf as LeafProto},
     row_entry::Entry,
-    value::{datetime_tz::Timezone as TimezoneProto, Value as ValueProtoInner},
+    value::{self as value_proto, datetime_tz::Timezone as TimezoneProto, Value as ValueProtoInner},
     value_type::ValueType as ValueTypeProto,
     Attribute as AttributeProto, AttributeType as AttributeTypeProto, Concept as ConceptProto,
     ConceptDocument as ConceptDocumentProto, ConceptRow as ConceptRowProto, Entity as EntityProto,
@@ -35,13 +34,13 @@ use typedb_protocol::{
     RoleType as RoleTypeProto, Type as TypeProto, Value as ValueProto, ValueType as ValueTypeStructProto,
 };
 
-use super::{FromProto, TryFromProto};
+use super::{FromProto, IntoProto, TryFromProto};
+use crate::concept::value;
 use crate::{
     answer::concept_document::{Leaf, Node},
     concept::{
-        type_,
         type_::Type,
-        value::{Decimal, TimeZone},
+        value::{Decimal, Duration, TimeZone},
         Attribute, AttributeType, Concept, Entity, EntityType, Kind, Relation, RelationType, RoleType, Value,
         ValueType,
     },
@@ -254,24 +253,21 @@ impl TryFromProto<ValueTypeStructProto> for ValueType {
 impl TryFromProto<EntityProto> for Entity {
     fn try_from_proto(proto: EntityProto) -> Result<Self> {
         let EntityProto { iid, entity_type } = proto;
-        Ok(Self { iid: iid.into(), type_: entity_type.map(|type_| EntityType::from_proto(type_)) })
+        Ok(Self { iid: iid.into(), type_: entity_type.map(EntityType::from_proto) })
     }
 }
 
 impl TryFromProto<RelationProto> for Relation {
     fn try_from_proto(proto: RelationProto) -> Result<Self> {
         let RelationProto { iid, relation_type } = proto;
-        Ok(Self { iid: iid.into(), type_: relation_type.map(|type_| RelationType::from_proto(type_)) })
+        Ok(Self { iid: iid.into(), type_: relation_type.map(RelationType::from_proto) })
     }
 }
 
 impl TryFromProto<AttributeProto> for Attribute {
     fn try_from_proto(proto: AttributeProto) -> Result<Self> {
         let AttributeProto { iid, attribute_type, value } = proto;
-        let type_ = match attribute_type {
-            None => None,
-            Some(attribute_type) => Some(AttributeType::from_proto(attribute_type)),
-        };
+        let type_ = attribute_type.map(AttributeType::from_proto);
         Ok(Self {
             iid: iid.into(),
             type_,
@@ -349,4 +345,77 @@ impl TryFromProto<i32> for Kind {
 
 fn naive_datetime_from_timestamp(seconds: i64, nanos: u32) -> NaiveDateTime {
     DateTime::from_timestamp(seconds, nanos).unwrap().naive_utc()
+}
+
+// Into proto for selected concepts
+impl IntoProto<ValueProto> for Value {
+    fn into_proto(self) -> ValueProto {
+        let value = match self {
+            Value::Boolean(v) => ValueProtoInner::Boolean(v),
+            Value::Integer(v) => ValueProtoInner::Integer(v),
+            Value::Double(v) => ValueProtoInner::Double(v),
+            Value::Decimal(v) => ValueProtoInner::Decimal(v.into_proto()),
+            Value::String(v) => ValueProtoInner::String(v),
+            Value::Date(v) => ValueProtoInner::Date(v.into_proto()),
+            Value::Datetime(v) => ValueProtoInner::Datetime(v.into_proto()),
+            Value::DatetimeTZ(v) => ValueProtoInner::DatetimeTz(v.into_proto()),
+            Value::Duration(v) => ValueProtoInner::Duration(v.into_proto()),
+            Value::Struct(_, _) => unreachable!("Unimplemented struct inputs"),
+        };
+        ValueProto { value: Some(value) }
+    }
+}
+
+impl IntoProto<EntityProto> for Entity {
+    fn into_proto(self) -> EntityProto {
+        EntityProto { iid: self.iid.bytes_cloned(), entity_type: None }
+    }
+}
+impl IntoProto<RelationProto> for Relation {
+    fn into_proto(self) -> RelationProto {
+        RelationProto { iid: self.iid.bytes_cloned(), relation_type: None }
+    }
+}
+
+impl IntoProto<AttributeProto> for Attribute {
+    fn into_proto(self) -> AttributeProto {
+        AttributeProto { iid: self.iid.bytes_cloned(), attribute_type: None, value: None }
+    }
+}
+
+impl IntoProto<value_proto::Decimal> for Decimal {
+    fn into_proto(self) -> value_proto::Decimal {
+        let Self { integer, fractional } = self;
+        value_proto::Decimal { integer, fractional }
+    }
+}
+
+impl IntoProto<value_proto::Duration> for Duration {
+    fn into_proto(self) -> value_proto::Duration {
+        let Self { months, days, nanos } = self;
+        value_proto::Duration { months, days, nanos }
+    }
+}
+
+impl IntoProto<value_proto::Date> for NaiveDate {
+    fn into_proto(self) -> value_proto::Date {
+        value_proto::Date { num_days_since_ce: Datelike::num_days_from_ce(&self) }
+    }
+}
+
+impl IntoProto<value_proto::Datetime> for NaiveDateTime {
+    fn into_proto(self) -> value_proto::Datetime {
+        value_proto::Datetime { seconds: self.and_utc().timestamp(), nanos: self.nanosecond() }
+    }
+}
+
+impl IntoProto<value_proto::DatetimeTz> for DateTime<TimeZone> {
+    fn into_proto(self) -> value_proto::DatetimeTz {
+        let date_time = self.naive_utc().into_proto();
+        let timezone = match self.timezone() {
+            TimeZone::IANA(tz) => value_proto::datetime_tz::Timezone::Named(tz.name().to_string()),
+            TimeZone::Fixed(fixed) => value_proto::datetime_tz::Timezone::Offset(fixed.local_minus_utc()),
+        };
+        value_proto::DatetimeTz { datetime: Some(date_time), timezone: Some(timezone) }
+    }
 }

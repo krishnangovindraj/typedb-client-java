@@ -19,7 +19,7 @@ package(default_visibility = ["//csharp/Test/Behaviour:__subpackages__"])
 
 load("//csharp:build_opts.bzl", "nullable_context", "target_frameworks", "targeting_packs")
 load("//csharp/Test:build_opts.bzl", "behaviour_tests_deps")
-load("//csharp/Test:rules.bzl", "csharp_behaviour_test")
+load("//csharp/Test:rules.bzl", "csharp_behaviour_test_all")
 load("@typedb_dependencies//tool/checkstyle:rules.bzl", "checkstyle_test")
 
 filegroup(
@@ -28,37 +28,25 @@ filegroup(
     visibility = ["//csharp/Test/Behaviour:__subpackages__"],
 )
 
-csharp_behaviour_test(
-    name = "test-core",
+csharp_behaviour_test_all(
+    name = "test",
     test_files = ["DatabaseTest.cs"],
-    steps_files = [
+    step_files = [
         ":steps",
-        "//csharp/Test/Behaviour/Connection:steps-core",
+        "//csharp/Test/Behaviour/Util:steps",
+        "//csharp/Test/Behaviour/Query:steps",
+        "//csharp/Test/Behaviour/Connection/Transaction:steps",
     ],
     features = ["@typedb_behaviour//connection:database.feature"],
     deps = [
         "//csharp/Api:api",
+        "//csharp/Answer:answer",
         "//csharp/Common:common",
+        "//csharp/Concept:concept",
         "//csharp:driver-csharp",
+        "//csharp/Test/Behaviour/Util:util",
+        "@paket.csharp_deps//newtonsoft.json",
     ],
-    target_frameworks = target_frameworks,
-    targeting_packs = targeting_packs,
-)
-
-csharp_behaviour_test(
-    name = "test-cloud",
-    test_files = ["DatabaseTest.cs"],
-    steps_files = [
-        ":steps",
-        "//csharp/Test/Behaviour/Connection:steps-cloud",
-    ],
-    features = ["@typedb_behaviour//connection:database.feature"],
-    deps = [
-        "//csharp/Api:api",
-        "//csharp/Common:common",
-        "//csharp:driver-csharp",
-    ],
-    add_certificates = True,
     target_frameworks = target_frameworks,
     targeting_packs = targeting_packs,
 )

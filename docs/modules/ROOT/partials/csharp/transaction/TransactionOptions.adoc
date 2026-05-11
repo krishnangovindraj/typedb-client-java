@@ -1,0 +1,84 @@
+[#_TransactionOptions]
+[.doc-api-reference-driver]
+=== TransactionOptions
+
+`class`
+
+*Package*: `TypeDB.Driver.Api`
+
+
+
+TypeDB transaction options. ``TransactionOptions`` can be used to override the default server behaviour for opened transactions.
+
+// tag::methods[]
+[#_long_TypeDB_Driver_Api_TransactionOptions_SchemaLockAcquireTimeoutMillis]
+==== method ``SchemaLockAcquireTimeoutMillis``
+
+[source,cs]
+----
+long? TypeDB.Driver.Api.TransactionOptions.SchemaLockAcquireTimeoutMillis
+----
+
+
+
+Gets or sets the schema lock acquire timeout in milliseconds. If set, specifies how long the driver should wait if opening a transaction is blocked by an exclusive schema write lock.
+
+[caption=""]
+.Returns
+`long?`
+
+[caption=""]
+.Code examples
+[source,cs]
+----
+options.SchemaLockAcquireTimeoutMillis = 3000;
+----
+
+[#_TypeDB_Driver_Api_TransactionOptions_TransactionOptions_]
+==== method ``TransactionOptions``
+
+[source,cs]
+----
+TransactionOptions()
+----
+
+
+
+Produces a new ``TransactionOptions`` object.
+
+[caption=""]
+.Returns
+`TransactionOptions`
+
+[caption=""]
+.Code examples
+[source,cs]
+----
+TransactionOptions options = new TransactionOptions { TransactionTimeoutMillis = 10_000, SchemaLockAcquireTimeoutMillis = 3000 }; TypeDB.Driver.Api.TransactionOptions TypeDB transaction options. TransactionOptions can be used to override the default server behaviour f... Definition TransactionOptions.cs:30
+----
+
+[#_long_TypeDB_Driver_Api_TransactionOptions_TransactionTimeoutMillis]
+==== method ``TransactionTimeoutMillis``
+
+[source,cs]
+----
+long? TypeDB.Driver.Api.TransactionOptions.TransactionTimeoutMillis
+----
+
+
+
+Gets or sets the transaction timeout in milliseconds. If set, specifies a timeout for killing transactions automatically, preventing memory leaks in unclosed transactions.
+
+[caption=""]
+.Returns
+`long?`
+
+[caption=""]
+.Code examples
+[source,cs]
+----
+options.TransactionTimeoutMillis = 5000;
+----
+
+// end::methods[]
+

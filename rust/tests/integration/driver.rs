@@ -18,18 +18,18 @@
  */
 
 use std::sync::{
-    atomic::{AtomicBool, Ordering},
     Arc,
+    atomic::{AtomicBool, Ordering},
 };
 
 use serial_test::serial;
-use typedb_driver::{Credentials, DriverOptions, TransactionType, TypeDBDriver};
+use typedb_driver::{Addresses, Credentials, DriverOptions, DriverTlsConfig, TransactionType, TypeDBDriver};
 
 async fn cleanup() {
     let driver = TypeDBDriver::new(
-        TypeDBDriver::DEFAULT_ADDRESS,
+        Addresses::try_from_address_str(TypeDBDriver::DEFAULT_ADDRESS).unwrap(),
         Credentials::new("admin", "password"),
-        DriverOptions::new(false, None).unwrap(),
+        DriverOptions::new(DriverTlsConfig::disabled()),
     )
     .await
     .unwrap();
@@ -40,13 +40,13 @@ async fn cleanup() {
 
 #[test]
 #[serial]
-fn transaction_callback() {
+fn transaction_on_close_callback() {
     async_std::task::block_on(async {
         cleanup().await;
         let driver = TypeDBDriver::new(
-            TypeDBDriver::DEFAULT_ADDRESS,
+            Addresses::try_from_address_str(TypeDBDriver::DEFAULT_ADDRESS).unwrap(),
             Credentials::new("admin", "password"),
-            DriverOptions::new(false, None).unwrap(),
+            DriverOptions::new(DriverTlsConfig::disabled()),
         )
         .await
         .unwrap();
@@ -60,13 +60,12 @@ fn transaction_callback() {
         transaction
             .on_close(Box::new({
                 let clone = close_called.clone();
-                move |error| {
-                    clone.store(true, Ordering::SeqCst);
-                }
+                move |_| clone.store(true, Ordering::SeqCst)
             }))
-            .await;
+            .await
+            .unwrap();
 
-        transaction.close().await;
+        transaction.close().await.unwrap();
         drop(transaction);
 
         while !close_called.load(Ordering::Acquire) {

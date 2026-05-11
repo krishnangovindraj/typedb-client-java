@@ -25,24 +25,29 @@ use typedb_protocol::{database, database_manager, migration::Item, transaction};
 use uuid::Uuid;
 
 use crate::{
+    Credentials, QueryOptions, TransactionOptions, TransactionType,
     analyze::AnalyzedQuery,
     answer::{
+        QueryType,
         concept_document::{ConceptDocumentHeader, Node},
         concept_row::ConceptRowHeader,
-        QueryType,
     },
-    common::{address::Address, info::DatabaseInfo, RequestID},
+    common::{RequestID, info::DatabaseInfo},
     concept::Concept,
+    connection::server::{Server, server_version::ServerVersion},
     error::ServerError,
     info::UserInfo,
-    Credentials, QueryOptions, TransactionOptions, TransactionType,
 };
+use crate::concept::{Attribute, Entity, Relation, Value};
+use crate::transaction::QueryInputs;
 
 #[derive(Debug)]
 pub(super) enum Request {
     ConnectionOpen { driver_lang: String, driver_version: String, credentials: Credentials },
 
     ServersAll,
+    ServersGet,
+    ServerVersion,
 
     DatabasesAll,
     DatabaseGet { database_name: String },
@@ -70,11 +75,17 @@ pub(super) enum Response {
     ConnectionOpen {
         connection_id: Uuid,
         server_duration_millis: u64,
-        databases: Vec<DatabaseInfo>,
+        servers: Vec<Server>,
     },
 
     ServersAll {
-        servers: Vec<Address>,
+        servers: Vec<Server>,
+    },
+    ServersGet {
+        server: Server,
+    },
+    ServerVersion {
+        server_version: ServerVersion,
     },
 
     DatabasesContains {
@@ -168,7 +179,7 @@ pub(super) enum AnalyzeResponse {
 
 #[derive(Debug)]
 pub(super) enum QueryRequest {
-    Query { query: String, options: QueryOptions },
+    Query { query: String, options: QueryOptions, inputs: Option<QueryInputs> },
 }
 
 #[derive(Debug)]

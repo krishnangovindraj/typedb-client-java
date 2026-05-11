@@ -29,7 +29,7 @@ import org.junit.runner.RunWith;
         strict = true,
         plugin = "pretty",
         glue = "com.typedb.driver.test.behaviour",
-        features = "external/typedb_behaviour/driver/query.feature",
+        features = "../typedb_behaviour+/driver/query.feature",
         tags = "not @ignore and not @ignore-typedb-driver and not @ignore-typedb-driver-java"
 )
 public class QueryTest extends BehaviourTest {
@@ -42,7 +42,7 @@ public class QueryTest extends BehaviourTest {
     // 3) Select 'Bazel test DefineTest'
     //
     // 4) Ensure 'Target Expression' is set correctly:
-    //    a) Use '//<this>/<package>/<name>:test-community' to test against typedb (TypeDB Community Edition)
+    //    a) Use '//<this>/<package>/<name>:test-core' to test against typedb (TypeDB Community Edition)
     //    b) Use '//<this>/<package>/<name>:test-cluster' to test against typedb-cluster (TypeDB Cloud / Enterprise)
     //
     // 5) Update 'Bazel Flags':

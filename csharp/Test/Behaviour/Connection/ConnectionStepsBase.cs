@@ -19,6 +19,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Gherkin.Quick;
@@ -31,124 +34,190 @@ namespace TypeDB.Driver.Test.Behaviour
 {
     public abstract class ConnectionStepsBase : Feature, IDisposable
     {
-        public static ITypeDBDriver? Driver;
+        public static IDriver? Driver;
+        public static IDriver? BackgroundDriver;
 
-        public static List<ITypeDBSession> Sessions = new List<ITypeDBSession>();
-        public static List<Task<ITypeDBSession>> ParallelSessions = new List<Task<ITypeDBSession>>();
+        public static List<ITransaction> Transactions = new List<ITransaction>();
+        public static List<ITransaction> BackgroundTransactions = new List<ITransaction>();
+        public static List<Task<ITransaction>> TransactionsParallel = new List<Task<ITransaction>>();
 
-        public static Dictionary<ITypeDBSession, List<ITypeDBTransaction>> SessionsToTransactions =
-            new Dictionary<ITypeDBSession, List<ITypeDBTransaction>>();
-        public static Dictionary<ITypeDBSession, List<Task<ITypeDBTransaction>>> SessionsToParallelTransactions =
-            new Dictionary<ITypeDBSession, List<Task<ITypeDBTransaction>>>();
-        public static Dictionary<Task<ITypeDBSession>, List<Task<ITypeDBTransaction>>> ParallelSessionsToParallelTransactions =
-            new Dictionary<Task<ITypeDBSession>, List<Task<ITypeDBTransaction>>>();
+        public static TransactionOptions? CurrentTransactionOptions;
 
-        public static TypeDBOptions SessionOptions = new TypeDBOptions();
-        public static TypeDBOptions TransactionOptions = new TypeDBOptions();
+        private static string? _tempDir;
 
-        public static readonly Dictionary<string, Action<TypeDBOptions, string>> OptionSetters =
-            new Dictionary<string, Action<TypeDBOptions, string>>(){
-                {"session-idle-timeout-millis", (option, val) => option.SessionIdleTimeoutMillis(Int32.Parse(val))},
-                {"transaction-timeout-millis", (option, val) => option.TransactionTimeoutMillis(Int32.Parse(val))}
-        };
+        public static readonly string AdminUsername = "admin";
+        public static readonly string AdminPassword = "password";
+        public static readonly Credentials DefaultCredentials = new Credentials("admin", "password");
 
-        // TODO: implement configuration and remove skips when @ignore-typedb-driver is removed from .feature.
-        protected bool _requiredConfiguration = false;
+        protected static DriverOptions DriverOptions = new DriverOptions(DriverTlsConfig.Disabled());
+        protected static ServerRouting? OperationServerRouting;
 
-        public ConnectionStepsBase() // "Before"
+        private const int BeforeTimeoutMillis = 50;
+
+        public static ITransaction Tx => Transactions[0];
+
+        public static string TempDir
         {
-            CleanInCaseOfPreviousFail();
-
-            SessionOptions = SessionOptions.Infer(true);
-            TransactionOptions = TransactionOptions.Infer(true);
-        }
-
-        public virtual void Dispose() // "After"
-        {
-            foreach (var (session, transactions) in SessionsToParallelTransactions)
+            get
             {
-                Task.WaitAll(transactions.ToArray());
-            }
-            SessionsToParallelTransactions.Clear();
-
-            foreach (var session in Sessions)
-            {
-                session.Close();
-            }
-
-            Sessions.Clear();
-            SessionsToTransactions.Clear();
-
-            Task.WaitAll(ParallelSessions.ToArray());
-            ParallelSessions.Clear();
-
-            foreach (var (session, transactions) in ParallelSessionsToParallelTransactions)
-            {
-                session.Wait();
-                Task.WaitAll(transactions.ToArray());
-            }
-            
-            ParallelSessionsToParallelTransactions.Clear();
-
-            if (Driver != null)
-            {
-                foreach (var db in Driver!.Databases.GetAll())
+                if (_tempDir == null || !Directory.Exists(_tempDir))
                 {
-                    db.Delete();
+                    _tempDir = Path.Combine(Path.GetTempPath(), "typedb-test-" + Guid.NewGuid().ToString("N"));
+                    Directory.CreateDirectory(_tempDir);
                 }
-
-                if (Driver.IsOpen())
-                {
-                    Driver!.Close();
-                }
+                return _tempDir;
             }
         }
 
-        public static ITypeDBTransaction Tx
+        public static string FullPath(string fileName) => Path.Combine(TempDir, fileName);
+
+        public static ITransaction TxPop()
         {
-            get { return SessionsToTransactions[Sessions[0]][0]; }
+            var tx = Transactions[0];
+            Transactions.RemoveAt(0);
+            return tx;
         }
 
-        public abstract ITypeDBDriver CreateTypeDBDriver(string address);
+        public ConnectionStepsBase()
+        {
+            Thread.Sleep(BeforeTimeoutMillis);
+            Cleanup();
+            BackgroundDriver = CreateDefaultTypeDBDriver();
+        }
+
+        public virtual void Dispose()
+        {
+            CleanupTempDir();
+            Cleanup();
+        }
+
+        public abstract IDriver CreateDefaultTypeDBDriver();
+
+        public abstract IDriver CreateTypeDBDriver(string address);
 
         public abstract void TypeDBStarts();
 
         public abstract void ConnectionOpensWithDefaultAuthentication();
 
-        [Given(@"connection has been opened")]
         public virtual void ConnectionHasBeenOpened()
         {
-            if (_requiredConfiguration) return; // Skip tests with configuration
-
             Assert.NotNull(Driver);
-            Assert.True(Driver.IsOpen());
+            Assert.True(Driver!.IsOpen());
         }
 
-        [When(@"connection closes")]
-        [Then(@"connection closes")]
         public virtual void ConnectionCloses()
         {
-            if (_requiredConfiguration) return; // Skip tests with configuration
-
-            Driver!.Close();
+            CleanupTransactions();
+            Driver?.Close();
             Driver = null;
         }
 
-        public static void ClearTransactions(ITypeDBSession session)
+        public static ITransaction OpenTransaction(
+            IDriver driver, string databaseName, TransactionType type, TransactionOptions? options = null)
         {
-            if (SessionsToTransactions.ContainsKey(session))
+            return options != null
+                ? driver.Transaction(databaseName, type, options)
+                : driver.Transaction(databaseName, type);
+        }
+
+        protected ServerVersion GetServerVersion()
+        {
+            return Driver!.GetServerVersion(OperationServerRouting);
+        }
+
+        protected ISet<IServer> GetServers()
+        {
+            return Driver!.GetServers(OperationServerRouting);
+        }
+
+        protected IServer? GetPrimaryServer()
+        {
+            return Driver!.GetPrimaryServer(OperationServerRouting);
+        }
+
+        protected virtual void InitializeDriverOptions()
+        {
+            DriverOptions = new DriverOptions(DriverTlsConfig.Disabled());
+        }
+
+        private void Cleanup()
+        {
+            CleanupTransactions();
+            CleanupBackgroundTransactions();
+            CurrentTransactionOptions = null;
+            OperationServerRouting = null;
+
+            if (Driver != null && Driver.IsOpen())
             {
-                SessionsToTransactions[session].Clear();
+                Driver.Close();
+            }
+
+            BackgroundDriver?.Close();
+            BackgroundDriver = null;
+            Driver = null;
+
+            InitializeDriverOptions();
+
+            try
+            {
+                var cleanupDriver = CreateDefaultTypeDBDriver();
+                try
+                {
+                    foreach (var user in cleanupDriver.Users.GetAll())
+                    {
+                        if (user.Name != AdminUsername)
+                        {
+                            try { cleanupDriver.Users.Get(user.Name)?.Delete(); } catch { }
+                        }
+                    }
+
+                    cleanupDriver.Users.Get(AdminUsername)?.UpdatePassword(AdminPassword);
+
+                    foreach (var db in cleanupDriver.Databases.GetAll())
+                    {
+                        try { cleanupDriver.Databases.Get(db.Name).Delete(); } catch { }
+                    }
+                }
+                catch { }
+                finally
+                {
+                    cleanupDriver.Close();
+                }
+            }
+            catch { }
+        }
+
+        private static void CleanupTempDir()
+        {
+            if (_tempDir != null && Directory.Exists(_tempDir))
+            {
+                try { Directory.Delete(_tempDir, recursive: true); } catch { }
+                _tempDir = null;
             }
         }
 
-        private void CleanInCaseOfPreviousFail() // Fails are exceptions which do not clean resources
+        public static void CleanupTransactions()
         {
-            TypeDBStarts();
-            ConnectionOpensWithDefaultAuthentication();
-            ConnectionHasBeenOpened();
-            Dispose();
-            ConnectionCloses();
+            foreach (var tx in Transactions)
+            {
+                try { tx.Close(); } catch { }
+            }
+            Transactions.Clear();
+
+            foreach (var futureTx in TransactionsParallel)
+            {
+                try { futureTx.Result.Close(); } catch { }
+            }
+            TransactionsParallel.Clear();
+        }
+
+        public static void CleanupBackgroundTransactions()
+        {
+            foreach (var tx in BackgroundTransactions)
+            {
+                try { tx.Close(); } catch { }
+            }
+            BackgroundTransactions.Clear();
         }
     }
 }

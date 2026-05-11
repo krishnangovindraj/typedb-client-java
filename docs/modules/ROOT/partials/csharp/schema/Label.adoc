@@ -1,5 +1,8 @@
 [#_Label]
+[.doc-api-reference-driver]
 === Label
+
+`class`
 
 *Package*: `TypeDB.Driver.Common`
 
@@ -37,7 +40,7 @@ label.Scope;
 
 // tag::methods[]
 [#_override_bool_TypeDB_Driver_Common_Label_Equals_object_obj_]
-==== Equals
+==== method ``Equals``
 
 [source,cs]
 ----
@@ -69,8 +72,24 @@ a| `obj` a| Object to compare with a| `object?`
 label.Equals(obj);
 ----
 
+[#_override_int_TypeDB_Driver_Common_Label_GetHashCode_]
+==== method ``GetHashCode``
+
+[source,cs]
+----
+override int GetHashCode()
+----
+
+
+
+
+
+[caption=""]
+.Returns
+`override int`
+
 [#_TypeDB_Driver_Common_Label_Label_string_scope_string_name_]
-==== Label
+==== method ``Label``
 
 [source,cs]
 ----
@@ -104,7 +123,7 @@ new Label("relation", "role");
 ----
 
 [#_TypeDB_Driver_Common_Label_Label_string_name_]
-==== Label
+==== method ``Label``
 
 [source,cs]
 ----
@@ -137,7 +156,7 @@ new Label("entity");
 ----
 
 [#_string_TypeDB_Driver_Common_Label_ScopedName]
-==== ScopedName
+==== method ``ScopedName``
 
 [source,cs]
 ----
@@ -161,7 +180,7 @@ label.ScopedName;
 ----
 
 [#_override_string_TypeDB_Driver_Common_Label_ToString_]
-==== ToString
+==== method ``ToString``
 
 [source,cs]
 ----

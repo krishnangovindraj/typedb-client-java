@@ -15,16 +15,48 @@
 # specific language governing permissions and limitations
 # under the License.
 
-load("@rules_dotnet//dotnet:defs.bzl", "csharp_library", "csharp_test")
-load("@rules_dotnet//dotnet:defs.bzl", "csharp_nunit_test")
+load("@rules_dotnet//dotnet:defs.bzl", "csharp_nunit_test", "csharp_test")
 load("//csharp:build_opts.bzl", "nullable_context")
 load("//csharp/Test:build_opts.bzl", "behaviour_tests_deps")
+
+
+def csharp_behaviour_test_all(name, test_files, step_files, features, deps, target_frameworks, targeting_packs, **kwargs):
+    csharp_behaviour_test_core(name, test_files, step_files, features, deps, target_frameworks, targeting_packs, **kwargs)
+    csharp_behaviour_test_cluster(name, test_files, step_files, features, deps, target_frameworks, targeting_packs, **kwargs)
+
+
+def csharp_behaviour_test_core(name, test_files, step_files, features, deps, target_frameworks, targeting_packs, **kwargs):
+    csharp_behaviour_test(
+        name = name + "-core",
+        test_files = test_files,
+        step_files = step_files + ["//csharp/Test/Behaviour/Connection:steps-core"],
+        features = features,
+        deps = deps,
+        target_frameworks = target_frameworks,
+        targeting_packs = targeting_packs,
+        add_certificates = False,
+        **kwargs,
+    )
+
+
+def csharp_behaviour_test_cluster(name, test_files, step_files, features, deps, target_frameworks, targeting_packs, **kwargs):
+    csharp_behaviour_test(
+        name = name + "-cluster",
+        test_files = test_files,
+        step_files = step_files + ["//csharp/Test/Behaviour/Connection:steps-cluster"],
+        features = features,
+        deps = deps,
+        target_frameworks = target_frameworks,
+        targeting_packs = targeting_packs,
+        add_certificates = True,
+        **kwargs,
+    )
 
 
 def csharp_behaviour_test(
         name,
         test_files,
-        steps_files,
+        step_files,
         features,
         deps,
         target_frameworks,
@@ -35,7 +67,10 @@ def csharp_behaviour_test(
 
     csharp_test(
         name = name,
-        srcs = test_files + steps_files + ["//csharp/Test/Behaviour/Util:TestRunner.cs"],
+        srcs = test_files + step_files + [
+            "//csharp/Test/Behaviour/Util:TestRunner.cs",
+            "//csharp/Test/Behaviour:TestValueHelper.cs",
+        ],
         data = features + certificates,
         deps = deps + behaviour_tests_deps,
         target_frameworks = target_frameworks,

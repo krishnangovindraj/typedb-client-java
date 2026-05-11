@@ -79,7 +79,7 @@ impl TryFromProto<typedb_protocol::analyze::res::AnalyzedQuery> for AnalyzedQuer
             source,
             query: expect_try_from_proto(query, "AnalyzedQuery.query")?,
             preamble: vec_from_proto(preamble)?,
-            fetch: fetch.map(|f| Fetch::try_from_proto(f)).transpose()?,
+            fetch: fetch.map(Fetch::try_from_proto).transpose()?,
         })
     }
 }

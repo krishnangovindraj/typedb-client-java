@@ -4,21 +4,22 @@ use std::time::Duration;
 
 use futures::{StreamExt, TryStreamExt};
 use typedb_driver::{
-    answer::{
-        concept_document::{Leaf, Node},
-        ConceptRow, QueryAnswer,
-    },
-    concept::{Concept, ValueType},
     Credentials, DriverOptions, Error, QueryOptions, TransactionOptions, TransactionType, TypeDBDriver,
+    answer::{
+        ConceptRow, QueryAnswer,
+        concept_document::{Leaf, Node},
+    },
+    concept::{Concept},
+    Addresses, DriverTlsConfig,
 };
 
-fn typedb_example() {
+fn main() {
     async_std::task::block_on(async {
         // Open a driver connection. Specify your parameters if needed
         let driver = TypeDBDriver::new(
-            TypeDBDriver::DEFAULT_ADDRESS,
+            Addresses::try_from_address_str(TypeDBDriver::DEFAULT_ADDRESS).unwrap(),
             Credentials::new("admin", "password"),
-            DriverOptions::new(false, None).unwrap(),
+            DriverOptions::new(DriverTlsConfig::disabled()),
         )
         .await
         .unwrap();
@@ -63,7 +64,9 @@ fn typedb_example() {
 
         // Work with the driver's enums in a classic way or using helper methods
         if answer.is_ok() && matches!(answer, QueryAnswer::Ok(_)) {
-            println!("OK results do not give any extra interesting information, but they mean that the query is successfully executed!");
+            println!(
+                "OK results do not give any extra interesting information, but they mean that the query is successfully executed!"
+            );
         }
 
         // Commit automatically closes the transaction (don't forget to await the result!)
@@ -76,12 +79,12 @@ fn typedb_example() {
 
         // Collect concept rows that represent the answer as a table
         let rows: Vec<ConceptRow> = answer.into_rows().try_collect().await.unwrap();
-        let row = rows.get(0).unwrap();
+        let row = &rows[0];
 
         // Retrieve column names to get concepts by index if the variable names are lost
         let column_names = row.get_column_names();
 
-        let column_name = column_names.get(0).unwrap();
+        let column_name = &column_names[0];
 
         // Get concept by the variable name (column name)
         let concept_by_name = row.get(column_name).unwrap().unwrap();
@@ -105,7 +108,7 @@ fn typedb_example() {
         // Concept rows can be used as a stream of results
         let mut rows_stream = answer.into_rows();
         while let Some(Ok(row)) = rows_stream.next().await {
-            let mut column_names_iter = row.get_column_names().into_iter();
+            let mut column_names_iter = row.get_column_names().iter();
             let column_name = column_names_iter.next().unwrap();
 
             let concept_by_name = row.get(column_name).unwrap().unwrap();
@@ -133,7 +136,7 @@ fn typedb_example() {
         while let Some(Ok(row)) = rows_stream.next().await {
             rows.push(row);
         }
-        let row = rows.get(0).unwrap();
+        let row = &rows[0];
 
         for column_name in row.get_column_names() {
             let inserted_concept = row.get(column_name).unwrap().unwrap();
@@ -161,7 +164,7 @@ fn typedb_example() {
         // just call `commit`, which will wait for all ongoing operations to finish before executing.
         let queries = ["insert $a isa person, has name \"Alice\";", "insert $b isa person, has name \"Bob\";"];
         for query in queries {
-            transaction.query(query);
+            let _unawaited_future = transaction.query(query);
         }
         transaction.commit().await.unwrap();
 
@@ -250,7 +253,7 @@ fn typedb_example() {
 
             // The document can be converted to a JSON
             count += 1;
-            println!("JSON representation of the fetched document:\n{}", document.into_json().to_string());
+            println!("JSON representation of the fetched document:\n{}", document.into_json());
         }
         println!("Total documents fetched: {}", count);
         println!("More examples can be found in the API reference and the documentation.\nWelcome to TypeDB!");

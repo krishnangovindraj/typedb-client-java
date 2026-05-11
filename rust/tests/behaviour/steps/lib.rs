@@ -19,6 +19,7 @@
 
 #![deny(unused_must_use)]
 #![deny(elided_lifetimes_in_paths)]
+#![allow(clippy::too_many_arguments, reason = "too many false positives")]
 
 use std::{
     collections::{HashSet, VecDeque},
@@ -29,23 +30,24 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use cucumber::{gherkin::Feature, StatsWriter, World};
+use cucumber::{StatsWriter, World, gherkin::Feature};
 use futures::{
-    future::{try_join_all, Either},
+    future::{Either, try_join_all},
     stream::{self, StreamExt},
 };
 use itertools::Itertools;
-use tokio::time::{sleep, Duration};
+use tokio::time::{Duration, sleep};
 use typedb_driver::{
+    Addresses, BoxStream, Credentials, DriverOptions, DriverTlsConfig, QueryOptions, Result as TypeDBResult,
+    ServerRouting, Transaction, TransactionOptions, TypeDBDriver,
     analyze::AnalyzedQuery,
     answer::{ConceptDocument, ConceptRow, QueryAnswer, QueryType},
-    BoxStream, Credentials, DriverOptions, QueryOptions, Result as TypeDBResult, Transaction, TransactionOptions,
-    TypeDBDriver,
+    transaction::QueryInputs,
 };
 
 use crate::{
     params::QueryAnswerType,
-    util::{create_temp_dir, TempDir},
+    util::{TempDir, create_temp_dir},
 };
 
 mod analyze;
@@ -99,7 +101,9 @@ impl<I: AsRef<Path>> cucumber::Parser<I> for SingletonParser {
 #[derive(World)]
 pub struct Context {
     pub is_cluster: bool,
-    pub tls_root_ca: PathBuf,
+    pub tls_root_ca: Option<PathBuf>,
+    pub operation_server_routing: Option<ServerRouting>,
+    pub driver_options: Option<DriverOptions>,
     pub transaction_options: Option<TransactionOptions>,
     pub query_options: Option<QueryOptions>,
     pub driver: Option<TypeDBDriver>,
@@ -107,9 +111,10 @@ pub struct Context {
     pub temp_dir: Option<TempDir>,
     pub transactions: VecDeque<Transaction>,
     pub background_transactions: VecDeque<Transaction>,
+    pub given_rows: Option<QueryInputs>,
     pub analyzed: Option<AnalyzedQuery>,
     pub answer: Option<QueryAnswer>,
-    pub answer_type: Option<QueryAnswerType>,
+    pub(crate) answer_type: Option<QueryAnswerType>,
     pub answer_query_type: Option<QueryType>,
     pub collected_rows: Option<Vec<ConceptRow>>,
     pub collected_documents: Option<Vec<ConceptDocument>>,
@@ -122,6 +127,8 @@ impl fmt::Debug for Context {
         f.debug_struct("Context")
             .field("is_cluster", &self.is_cluster)
             .field("tls_root_ca", &self.tls_root_ca)
+            .field("operation_server_routing", &self.operation_server_routing)
+            .field("driver_options", &self.driver_options)
             .field("transaction_options", &self.transaction_options)
             .field("query_options", &self.query_options)
             .field("driver", &self.driver)
@@ -145,8 +152,7 @@ impl fmt::Debug for Context {
 
 impl Context {
     const DEFAULT_ADDRESS: &'static str = "127.0.0.1:1729";
-    // TODO when multiple nodes are available: "127.0.0.1:11729", "127.0.0.1:21729", "127.0.0.1:31729"
-    const DEFAULT_CLUSTER_ADDRESSES: [&'static str; 1] = ["127.0.0.1:1729"];
+    const DEFAULT_CLUSTER_ADDRESSES: [&'static str; 3] = ["127.0.0.1:11729", "127.0.0.1:21729", "127.0.0.1:31729"];
     const ADMIN_USERNAME: &'static str = "admin";
     const ADMIN_PASSWORD: &'static str = "password";
     const STEP_REATTEMPT_SLEEP: Duration = Duration::from_millis(250);
@@ -190,6 +196,8 @@ impl Context {
 
     pub async fn after_scenario(&mut self) -> TypeDBResult {
         sleep(Context::STEP_REATTEMPT_SLEEP).await;
+        self.driver_options = None;
+        self.operation_server_routing = None;
         self.transaction_options = None;
         self.query_options = None;
         self.set_driver(self.create_default_driver().await.unwrap());
@@ -255,7 +263,7 @@ impl Context {
                 .await
                 .expect("Expected all users")
                 .into_iter()
-                .filter(|user| user.name != Context::ADMIN_USERNAME)
+                .filter(|user| user.name() != Context::ADMIN_USERNAME)
                 .map(|user| user.delete()),
         )
         .await
@@ -284,12 +292,28 @@ impl Context {
         self.concurrent_rows_streams = None;
     }
 
+    pub fn driver_options(&self) -> Option<DriverOptions> {
+        self.driver_options.clone()
+    }
+
+    pub fn driver_options_mut(&mut self) -> Option<&mut DriverOptions> {
+        self.driver_options.as_mut()
+    }
+
+    pub fn transaction_options(&self) -> Option<TransactionOptions> {
+        self.transaction_options.clone()
+    }
+
+    pub fn transaction_options_mut(&mut self) -> Option<&mut TransactionOptions> {
+        self.transaction_options.as_mut()
+    }
+
     pub fn transaction_opt(&self) -> Option<&Transaction> {
-        self.transactions.get(0)
+        self.transactions.front()
     }
 
     pub fn transaction(&self) -> &Transaction {
-        self.transactions.get(0).unwrap()
+        &self.transactions[0]
     }
 
     pub fn take_transaction(&mut self) -> Transaction {
@@ -317,6 +341,12 @@ impl Context {
     pub async fn set_transactions(&mut self, transactions: VecDeque<Transaction>) {
         self.cleanup_transactions().await;
         self.transactions = transactions;
+    }
+
+    pub fn init_driver_options_if_needed(&mut self) {
+        if self.driver_options.is_none() {
+            self.driver_options = Some(DriverOptions::default());
+        }
     }
 
     pub fn init_transaction_options_if_needed(&mut self) {
@@ -395,10 +425,6 @@ impl Context {
         self.answer_query_type
     }
 
-    pub async fn get_answer_type(&self) -> Option<QueryAnswerType> {
-        self.answer_type
-    }
-
     pub async fn try_get_collected_rows(&mut self) -> Option<&Vec<ConceptRow>> {
         self.unwrap_answer_if_needed().await;
         self.collected_rows.as_ref()
@@ -437,25 +463,35 @@ impl Context {
         self.create_driver(Some(Self::ADMIN_USERNAME), Some(Self::ADMIN_PASSWORD)).await
     }
 
+    async fn create_default_single_driver(&self) -> TypeDBResult<TypeDBDriver> {
+        self.create_single_driver(Some(Self::ADMIN_USERNAME), Some(Self::ADMIN_PASSWORD)).await
+    }
+
+    async fn create_single_driver(&self, username: Option<&str>, password: Option<&str>) -> TypeDBResult<TypeDBDriver> {
+        let username = username.unwrap_or(Self::ADMIN_USERNAME);
+        let password = password.unwrap_or(Self::ADMIN_USERNAME);
+        match self.is_cluster {
+            false => self.create_driver_core(Self::DEFAULT_ADDRESS, username, password).await,
+            true => self.create_driver_cluster(&[Self::DEFAULT_CLUSTER_ADDRESSES[0]], username, password).await,
+        }
+    }
+
     async fn create_driver(&self, username: Option<&str>, password: Option<&str>) -> TypeDBResult<TypeDBDriver> {
         let username = username.unwrap_or(Self::ADMIN_USERNAME);
         let password = password.unwrap_or(Self::ADMIN_USERNAME);
         match self.is_cluster {
-            false => self.create_driver_community(Self::DEFAULT_ADDRESS, username, password).await,
+            false => self.create_driver_core(Self::DEFAULT_ADDRESS, username, password).await,
             true => self.create_driver_cluster(&Self::DEFAULT_CLUSTER_ADDRESSES, username, password).await,
         }
     }
 
-    async fn create_driver_community(
-        &self,
-        address: &str,
-        username: &str,
-        password: &str,
-    ) -> TypeDBResult<TypeDBDriver> {
-        assert!(!self.is_cluster);
+    async fn create_driver_core(&self, address: &str, username: &str, password: &str) -> TypeDBResult<TypeDBDriver> {
+        assert!(!self.is_cluster, "Only non-cluster drivers are available in this mode");
+        let addresses = Addresses::try_from_address_str(address).expect("Expected addresses");
         let credentials = Credentials::new(username, password);
-        let conn_settings = DriverOptions::new(false, None)?;
-        TypeDBDriver::new(address, credentials, conn_settings).await
+        // TLS is always off for a core driver test
+        let options = self.driver_options().unwrap_or_default().tls_config(DriverTlsConfig::disabled());
+        TypeDBDriver::new(addresses, credentials, options).await
     }
 
     async fn create_driver_cluster(
@@ -464,14 +500,18 @@ impl Context {
         username: &str,
         password: &str,
     ) -> TypeDBResult<TypeDBDriver> {
-        assert!(self.is_cluster);
-        // TODO: Change when multiple addresses are introduced
-        let address = addresses.iter().next().expect("Expected at least one address");
+        assert!(self.is_cluster, "Only cluster drivers are available in this mode");
+        let addresses = Addresses::try_from_addresses_str(addresses).expect("Expected addresses");
 
-        // TODO: We probably want to add encryption to cluster tests
         let credentials = Credentials::new(username, password);
-        let conn_settings = DriverOptions::new(false, None)?;
-        TypeDBDriver::new(address, credentials, conn_settings).await
+        // TLS is disabled when no ROOT_CA is provided (for local testing without TLS)
+        let driver_options = match &self.tls_root_ca {
+            Some(root_ca) if root_ca.exists() => {
+                self.driver_options().unwrap_or_default().tls_config(DriverTlsConfig::enabled_with_root_ca(root_ca)?)
+            }
+            _ => self.driver_options().unwrap_or_default().tls_config(DriverTlsConfig::disabled()),
+        };
+        TypeDBDriver::new(addresses, credentials, driver_options).await
     }
 
     pub fn set_driver(&mut self, driver: TypeDBDriver) {
@@ -487,13 +527,12 @@ impl Context {
 
 impl Default for Context {
     fn default() -> Self {
-        let tls_root_ca = match std::env::var("ROOT_CA") {
-            Ok(root_ca) => PathBuf::from(root_ca),
-            Err(_) => PathBuf::new(),
-        };
+        let tls_root_ca = std::env::var("ROOT_CA").ok().map(|root_ca| PathBuf::from(root_ca));
         Self {
             is_cluster: false,
             tls_root_ca,
+            operation_server_routing: None,
+            driver_options: None,
             transaction_options: None,
             query_options: None,
             driver: None,
@@ -501,6 +540,7 @@ impl Default for Context {
             transactions: VecDeque::new(),
             background_transactions: VecDeque::new(),
             temp_dir: None,
+            given_rows: None,
             analyzed: None,
             answer: None,
             answer_type: None,

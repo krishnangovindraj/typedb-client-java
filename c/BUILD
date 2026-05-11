@@ -22,7 +22,7 @@ load("@typedb_dependencies//builder/rust:rules.bzl", "rust_cbindgen")
 load("@typedb_dependencies//tool/checkstyle:rules.bzl", "checkstyle_test")
 
 load("@typedb_bazel_distribution//common:rules.bzl", "assemble_targz", "assemble_zip", "checksum", "assemble_versioned")
-load("@typedb_bazel_distribution//docs:doxygen/rules.bzl", "doxygen_docs")
+load("@typedb_bazel_distribution//docs/doxygen:rules.bzl", "doxygen_docs")
 load("@typedb_bazel_distribution//artifact:rules.bzl", "deploy_artifact")
 load("@typedb_dependencies//distribution:deployment.bzl", "deployment")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
@@ -36,7 +36,7 @@ load("//tool/docs:examples/rules.bzl", "test_to_example", "update_markdown_examp
 clib_srcs = glob(["src/**/*.rs"])
 
 rust_static_library(
-    name = "typedb_driver_clib",
+    name = "_typedb_driver_clib",
     srcs = clib_srcs,
     aliases = {
         "//rust:typedb_driver_sync": "typedb_driver",
@@ -50,15 +50,25 @@ rust_static_library(
         "@crates//:tracing-subscriber",
     ],
     tags = ["crate-name=typedb_driver_clib"],
+    visibility = ["//visibility:private"],
+)
+
+cc_import(
+    name = "typedb_driver_clib",
+    hdrs = [":typedb_driver_clib_headers"],
+    static_library = ":_typedb_driver_clib",
+    linkopts = select({
+        "@typedb_bazel_distribution//platform:is_mac": ["-framework", "Security"],
+        "//conditions:default": [],
+    }),
 )
 
 rust_cbindgen(
     name = "typedb_driver_clib_headers",
-    lib = ":typedb_driver_clib",
+    lib = ":_typedb_driver_clib",
     header_name = "typedb_driver.h",
     config = "cbindgen.toml",
 )
-
 
 # Assembly & distribution
 rust_shared_library(
@@ -265,7 +275,6 @@ cc_library(
     name = "driver-example-lib",
     srcs = ["example.c"],
     deps = [
-        ":typedb_driver_clib_headers",
         ":typedb_driver_clib",
     ],
     includes = ["."],
@@ -279,12 +288,12 @@ checkstyle_test(
         "src/**/*",
         "swig/*",
     ]),
-    exclude = [".clang-format", "README.md", "Cargo.lock", "Cargo.toml", "example.c"] + glob(["docs/**/*.adoc"]),
+    exclude = [".clang-format", "README.md", "Cargo.lock", "Cargo.toml", "example.c"] + glob(["docs/**/*.adoc"], allow_empty = True),
     license_type = "apache-header",
 )
 
 rustfmt_test(
     name = "rustfmt_test",
-    targets = [":typedb_driver_clib"],
+    targets = [":_typedb_driver_clib"],
     size = "small",
 )

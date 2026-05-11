@@ -20,22 +20,23 @@
 use std::{fmt, iter, pin::Pin, sync::Arc};
 
 #[cfg(not(feature = "sync"))]
-use futures::{stream, StreamExt};
-use tracing::trace;
+use futures::{StreamExt, stream};
 
 use super::network::transmitter::TransactionTransmitter;
 use crate::{
+    Error, QueryOptions, TransactionOptions, TransactionType,
     analyze::AnalyzedQuery,
-    answer::{concept_document::ConceptDocument, ConceptRow, QueryAnswer},
+    answer::{ConceptRow, QueryAnswer, concept_document::ConceptDocument},
     box_stream,
     common::{
-        stream::{BoxStream, Stream},
         Promise, Result,
+        stream::{BoxStream, Stream},
     },
     connection::message::{AnalyzeResponse, QueryRequest, QueryResponse, TransactionRequest, TransactionResponse},
-    error::{AnalyzeError, ConnectionError, InternalError, ServerError},
-    promisify, resolve, Error, QueryOptions, TransactionOptions, TransactionType,
+    error::{ConnectionError, InternalError},
+    promisify, resolve,
 };
+use crate::transaction::QueryInputs;
 
 macro_rules! require_transaction_response {
     ($response:expr, $variant:ident(_)) => {
@@ -84,8 +85,8 @@ impl TransactionStream {
         self.type_
     }
 
-    pub(crate) fn options(&self) -> TransactionOptions {
-        self.options
+    pub(crate) fn options(&self) -> &TransactionOptions {
+        &self.options
     }
 
     pub(crate) fn on_close(
@@ -114,7 +115,7 @@ impl TransactionStream {
         }
     }
 
-    pub(crate) fn analyze(&self, query: &str) -> impl Promise<'static, Result<AnalyzedQuery>> {
+    pub(crate) fn analyze(&self, query: &str) -> impl Promise<'static, Result<AnalyzedQuery>> + use<> {
         let stream = self.stream(TransactionRequest::Analyze { query: query.to_owned() });
         promisify! {
             let mut stream = stream?;
@@ -138,8 +139,13 @@ impl TransactionStream {
         }
     }
 
-    pub(crate) fn query(&self, query: &str, options: QueryOptions) -> impl Promise<'static, Result<QueryAnswer>> {
-        let stream = self.query_stream(QueryRequest::Query { query: query.to_owned(), options });
+    pub(crate) fn query(
+        &self,
+        query: &str,
+        options: QueryOptions,
+        inputs: Option<QueryInputs>,
+    ) -> impl Promise<'static, Result<QueryAnswer>> + use<> {
+        let stream = self.query_stream(QueryRequest::Query { query: query.to_owned(), options, inputs });
         promisify! {
             let mut stream = stream?;
 
@@ -206,15 +212,15 @@ impl TransactionStream {
         }
     }
 
-    fn single(&self, req: TransactionRequest) -> impl Promise<'static, Result<TransactionResponse>> {
+    fn single(&self, req: TransactionRequest) -> impl Promise<'static, Result<TransactionResponse>> + use<> {
         self.transaction_transmitter.single(req)
     }
 
-    fn stream(&self, req: TransactionRequest) -> Result<impl Stream<Item = Result<TransactionResponse>>> {
+    fn stream(&self, req: TransactionRequest) -> Result<impl Stream<Item = Result<TransactionResponse>> + use<>> {
         self.transaction_transmitter.stream(req)
     }
 
-    fn query_stream(&self, req: QueryRequest) -> Result<impl Stream<Item = Result<QueryResponse>>> {
+    fn query_stream(&self, req: QueryRequest) -> Result<impl Stream<Item = Result<QueryResponse>> + use<>> {
         Ok(self
             .stream(TransactionRequest::Query(req))?
             .map(|response| require_transaction_response!(response, Query(_))))

@@ -19,7 +19,7 @@
 
 use itertools::Itertools;
 use typedb_protocol::{
-    authentication, connection, database, database_manager, migration, query::initial_res::Res, server_manager,
+    authentication, connection, database, database_manager, migration, query::initial_res::Res, server, server_manager,
     transaction, user, user_manager, ExtensionVersion::Extension, Version::Version,
 };
 use uuid::Uuid;
@@ -29,13 +29,17 @@ use crate::{
     analyze::pipeline::Pipeline,
     answer::{concept_document::ConceptDocumentHeader, concept_row::ConceptRowHeader, QueryType},
     common::{info::DatabaseInfo, RequestID, Result},
-    connection::message::{
-        AnalyzeResponse, DatabaseExportResponse, DatabaseImportRequest, QueryRequest, QueryResponse, Request, Response,
-        TransactionRequest, TransactionResponse,
+    connection::{
+        message::{
+            AnalyzeResponse, DatabaseExportResponse, DatabaseImportRequest, QueryRequest, QueryResponse, Request,
+            Response, TransactionRequest, TransactionResponse,
+        },
+        server::{server_version::ServerVersion, Server},
     },
     error::{ConnectionError, InternalError, ServerError},
     info::UserInfo,
-    Credentials, Error,
+    transaction::{QueryInputEntry, QueryInputRow, QueryInputs},
+    Credentials,
 };
 
 impl TryIntoProto<connection::open::Req> for Request {
@@ -57,6 +61,24 @@ impl TryIntoProto<server_manager::all::Req> for Request {
     fn try_into_proto(self) -> Result<server_manager::all::Req> {
         match self {
             Self::ServersAll => Ok(server_manager::all::Req {}),
+            other => Err(InternalError::UnexpectedRequestType { request_type: format!("{other:?}") }.into()),
+        }
+    }
+}
+
+impl TryIntoProto<server_manager::get::Req> for Request {
+    fn try_into_proto(self) -> Result<server_manager::get::Req> {
+        match self {
+            Self::ServersGet => Ok(server_manager::get::Req {}),
+            other => Err(InternalError::UnexpectedRequestType { request_type: format!("{other:?}") }.into()),
+        }
+    }
+}
+
+impl TryIntoProto<server::version::Req> for Request {
+    fn try_into_proto(self) -> Result<server::version::Req> {
+        match self {
+            Self::ServerVersion => Ok(server::version::Req {}),
             other => Err(InternalError::UnexpectedRequestType { request_type: format!("{other:?}") }.into()),
         }
     }
@@ -118,9 +140,7 @@ impl IntoProto<migration::import::Client> for DatabaseImportRequest {
             DatabaseImportRequest::ItemPart { items } => {
                 migration::import::client::Client::ReqPart(migration::import::client::ReqPart { items })
             }
-            DatabaseImportRequest::Done {} => {
-                migration::import::client::Client::Done(migration::import::client::Done {})
-            }
+            DatabaseImportRequest::Done => migration::import::client::Client::Done(migration::import::client::Done {}),
         };
         migration::import::Client { client: Some(req) }
     }
@@ -209,10 +229,51 @@ impl IntoProto<transaction::Req> for TransactionRequest {
 impl IntoProto<typedb_protocol::query::Req> for QueryRequest {
     fn into_proto(self) -> typedb_protocol::query::Req {
         match self {
-            QueryRequest::Query { query, options } => {
-                typedb_protocol::query::Req { query, options: Some(options.into_proto()) }
-            }
+            QueryRequest::Query { query, options, inputs } => typedb_protocol::query::Req {
+                query,
+                options: Some(options.into_proto()),
+                input: inputs.map(|i| i.into_proto()),
+            },
         }
+    }
+}
+
+impl IntoProto<typedb_protocol::query::req::QueryInput> for QueryInputs {
+    fn into_proto(self) -> typedb_protocol::query::req::QueryInput {
+        typedb_protocol::query::req::QueryInput { rows: self.0.into_iter().map(|row| row.into_proto()).collect() }
+    }
+}
+
+impl IntoProto<typedb_protocol::query::req::QueryInputRow> for QueryInputRow {
+    fn into_proto(self) -> typedb_protocol::query::req::QueryInputRow {
+        let entries = self.0.into_iter().map(|entry| entry.into_proto()).collect();
+        typedb_protocol::query::req::QueryInputRow { entries }
+    }
+}
+
+impl IntoProto<typedb_protocol::query::req::QueryInputEntry> for QueryInputEntry {
+    fn into_proto(self) -> typedb_protocol::query::req::QueryInputEntry {
+        use typedb_protocol::{
+            query::req::query_input_entry::Entry as EntryProto, thing::Thing as ThingProtoInner, Thing as ThingProto,
+        };
+
+        let inner = match self {
+            QueryInputEntry::Empty => EntryProto::Empty(typedb_protocol::query::req::QueryInputEmpty {}),
+            QueryInputEntry::Value(value) => EntryProto::Value(value.into_proto()),
+            QueryInputEntry::Entity(entity) => {
+                let thing = ThingProtoInner::Entity(entity.into_proto());
+                EntryProto::Thing(ThingProto { thing: Some(thing) })
+            }
+            QueryInputEntry::Relation(relation) => {
+                let thing = ThingProtoInner::Relation(relation.into_proto());
+                EntryProto::Thing(ThingProto { thing: Some(thing) })
+            }
+            QueryInputEntry::Attribute(attribute) => {
+                let thing = ThingProtoInner::Attribute(attribute.into_proto());
+                EntryProto::Thing(ThingProto { thing: Some(thing) })
+            }
+        };
+        typedb_protocol::query::req::QueryInputEntry { entry: Some(inner) }
     }
 }
 
@@ -290,15 +351,24 @@ impl TryIntoProto<authentication::token::create::Req> for Credentials {
 
 impl TryFromProto<connection::open::Res> for Response {
     fn try_from_proto(proto: connection::open::Res) -> Result<Self> {
-        let mut database_infos = Vec::new();
-        for database_info_proto in proto.databases_all.expect("Expected databases data").databases {
-            database_infos.push(DatabaseInfo::try_from_proto(database_info_proto)?);
-        }
+        let servers = proto
+            .servers_all
+            .ok_or(ConnectionError::MissingResponseField { field: "servers_all" })?
+            .servers
+            .into_iter()
+            .map(|server_proto| Server::try_from_proto(server_proto))
+            .try_collect()?;
         Ok(Self::ConnectionOpen {
-            connection_id: Uuid::from_slice(proto.connection_id.expect("Expected connection id").id.as_slice())
-                .unwrap(),
+            connection_id: Uuid::from_slice(
+                proto
+                    .connection_id
+                    .ok_or(ConnectionError::MissingResponseField { field: "connection_id" })?
+                    .id
+                    .as_slice(),
+            )
+            .expect("Expected connection id creation"),
             server_duration_millis: proto.server_duration_millis,
-            databases: database_infos,
+            servers,
         })
     }
 }
@@ -306,8 +376,23 @@ impl TryFromProto<connection::open::Res> for Response {
 impl TryFromProto<server_manager::all::Res> for Response {
     fn try_from_proto(proto: server_manager::all::Res) -> Result<Self> {
         let server_manager::all::Res { servers } = proto;
-        let servers = servers.into_iter().map(|server| server.address.parse()).try_collect()?;
+        let servers = servers.into_iter().map(|server| Server::try_from_proto(server)).try_collect()?;
         Ok(Self::ServersAll { servers })
+    }
+}
+
+impl TryFromProto<server_manager::get::Res> for Response {
+    fn try_from_proto(proto: server_manager::get::Res) -> Result<Self> {
+        let server_manager::get::Res { server } = proto;
+        let server = Server::try_from_proto(server.ok_or(ConnectionError::MissingResponseField { field: "server" })?)?;
+        Ok(Self::ServersGet { server })
+    }
+}
+
+impl TryFromProto<server::version::Res> for Response {
+    fn try_from_proto(proto: server::version::Res) -> Result<Self> {
+        let server::version::Res { distribution, version } = proto;
+        Ok(Self::ServerVersion { server_version: ServerVersion { distribution, version } })
     }
 }
 
@@ -336,7 +421,11 @@ impl FromProto<database_manager::contains::Res> for Response {
 
 impl TryFromProto<database_manager::create::Res> for Response {
     fn try_from_proto(proto: database_manager::create::Res) -> Result<Self> {
-        Ok(Self::DatabaseCreate { database: DatabaseInfo::try_from_proto(proto.database.unwrap())? })
+        Ok(Self::DatabaseCreate {
+            database: DatabaseInfo::try_from_proto(
+                proto.database.ok_or(ConnectionError::MissingResponseField { field: "database" })?,
+            )?,
+        })
     }
 }
 

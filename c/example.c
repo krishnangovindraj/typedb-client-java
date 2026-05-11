@@ -7,10 +7,12 @@
 int main() {
     // Open a driver connection
     Credentials* credentials = credentials_new("admin", "password");
-    DriverOptions* driver_options = driver_options_new(false, NULL);
-    TypeDBDriver* driver = driver_open("127.0.0.1:1729", credentials, driver_options);
+    DriverTlsConfig* tls_config = driver_tls_config_new_disabled();
+    DriverOptions* driver_options = driver_options_new(tls_config);
+    TypeDBDriver* driver = driver_new("127.0.0.1:1729", credentials, driver_options, NULL);
     credentials_drop(credentials);
     driver_options_drop(driver_options);
+    driver_tls_config_drop(tls_config);
 
     if (check_error()) {
         Error* error = get_last_error();
@@ -62,7 +64,7 @@ int main() {
         QueryAnswer* define_answer = query_answer_promise_resolve(define_promise);
         if (check_error()) {
             printf("Failed to define schema\n");
-            transaction_submit_close(transaction);
+            transaction_drop_sync(transaction);
             transaction_options_drop(tx_options);
             query_options_drop(query_options);
             goto cleanup;
@@ -95,7 +97,7 @@ int main() {
         QueryAnswer* match_answer = query_answer_promise_resolve(match_promise);
         if (check_error()) {
             printf("Failed to execute match query\n");
-            transaction_submit_close(transaction);
+            transaction_drop_sync(transaction);
             transaction_options_drop(tx_options);
             query_options_drop(query_options);
             goto cleanup;
@@ -128,7 +130,7 @@ int main() {
             query_answer_drop(match_answer);
         }
 
-        transaction_submit_close(transaction);
+        transaction_drop_sync(transaction);
     }
 
     // Open a write transaction to insert data
@@ -147,7 +149,7 @@ int main() {
         QueryAnswer* insert_answer = query_answer_promise_resolve(insert_promise);
         if (check_error()) {
             printf("Failed to insert data\n");
-            transaction_submit_close(transaction);
+            transaction_drop_sync(transaction);
             transaction_options_drop(tx_options);
             query_options_drop(query_options);
             goto cleanup;
@@ -199,7 +201,7 @@ int main() {
         QueryAnswer* query_answer = query_answer_promise_resolve(query_promise);
         if (check_error()) {
             printf("Failed to query data\n");
-            transaction_submit_close(transaction);
+            transaction_drop_sync(transaction);
             transaction_options_drop(tx_options);
             query_options_drop(query_options);
             goto cleanup;
@@ -237,7 +239,7 @@ int main() {
             query_answer_drop(query_answer);
         }
 
-        transaction_submit_close(transaction);
+        transaction_drop_sync(transaction);
     }
 
     transaction_options_drop(tx_options);

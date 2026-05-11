@@ -1,0 +1,239 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+module(
+    name = "typedb_driver",
+    version = "0.0.0",
+    compatibility_level = 1,
+)
+
+# Core BCR dependencies
+bazel_dep(name = "platforms", version = "0.0.10")
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "rules_cc", version = "0.0.17")
+bazel_dep(name = "rules_java", version = "8.6.2")
+bazel_dep(name = "rules_jvm_external", version = "6.6")
+bazel_dep(name = "rules_python", version = "1.0.0")
+bazel_dep(name = "rules_kotlin", version = "2.0.0", repo_name = "io_bazel_rules_kotlin")
+bazel_dep(name = "rules_pkg", version = "1.0.1")
+bazel_dep(name = "rules_proto", version = "7.1.0")
+bazel_dep(name = "protobuf", version = "29.3", repo_name = "com_google_protobuf")
+
+# gRPC dependencies
+bazel_dep(name = "grpc", version = "1.69.0")
+bazel_dep(name = "rules_proto_grpc", version = "5.0.1")
+
+# C++ test dependencies
+bazel_dep(name = "googletest", version = "1.14.0", repo_name = "gtest")
+
+# Node.js / TypeScript dependencies
+bazel_dep(name = "rules_nodejs", version = "6.3.2")
+bazel_dep(name = "aspect_rules_js", version = "2.1.2")
+bazel_dep(name = "aspect_rules_ts", version = "3.4.0")
+bazel_dep(name = "aspect_bazel_lib", version = "2.9.4")
+
+# typedb ecosystem dependencies
+bazel_dep(name = "typedb_bazel_distribution", version = "0.0.0")
+git_override(
+    module_name = "typedb_bazel_distribution",
+    remote = "https://github.com/typedb/bazel-distribution",
+    commit = "6c81a5180ed94a11c989e06a4ff8215df6da163e",
+)
+
+bazel_dep(name = "typedb_dependencies", version = "0.0.0")
+git_override(
+    module_name = "typedb_dependencies",
+    remote = "https://github.com/typedb/dependencies",
+    commit = "48ef6e41f9f0deadc0d59bb0e9d4a58efd0099af",
+)
+
+bazel_dep(name = "typedb_protocol", version = "0.0.0")
+git_override(
+    module_name = "typedb_protocol",
+    remote = "https://github.com/krishnangovindraj/typedb-protocol",
+    commit = "fc67229ec69f5b8908801fcb6f62cc52480c3460",
+)
+
+bazel_dep(name = "typedb_behaviour", version = "0.0.0")
+git_override(
+    module_name = "typedb_behaviour",
+    remote = "https://github.com/krishnangovindraj/typedb-behaviour",
+    commit = "01041e7874a016a8f6309faefdb06a993554f5ac",
+)
+
+# Rust rules need typedb_dependencies for patching
+bazel_dep(name = "rules_rust", version = "0.56.0")
+# Backport a bug fix from rules_rust 0.58 (bazelbuild/rules_rust#3251)
+git_override(
+    module_name = "rules_rust",
+    remote = "https://github.com/bazelbuild/rules_rust",
+    tag = "0.56.0",
+    patches = ["@@typedb_dependencies+//patches:rules_rust.patch"],
+)
+
+# Python multi-version toolchains (3.9-3.13)
+# Order matters! First python toolchain that is registered is used by Bazel's py_binary.
+# Default is 3.11 to match typedb_bazel_distribution pip dependencies.
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(python_version = "3.9", ignore_root_user_error = True)
+python.toolchain(python_version = "3.10", ignore_root_user_error = True)
+python.toolchain(
+    is_default = True,
+    python_version = "3.11",
+    ignore_root_user_error = True,
+)
+python.toolchain(python_version = "3.12", ignore_root_user_error = True)
+python.toolchain(python_version = "3.13", ignore_root_user_error = True)
+use_repo(python, "python_3_9", "python_3_10", "python_3_11", "python_3_12", "python_3_13")
+
+# Pip dependencies for driver development
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "typedb_driver_pip",
+    python_version = "3.11",
+    requirements_lock = "//python:requirements_dev.txt",
+)
+use_repo(pip, "typedb_driver_pip")
+
+# Rust toolchain
+rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
+rust.toolchain(
+    edition = "2024",
+    versions = ["1.93.0"],
+    extra_target_triples = [
+        "aarch64-apple-darwin",
+        "aarch64-unknown-linux-gnu",
+        "x86_64-apple-darwin",
+        "x86_64-pc-windows-msvc",
+        "x86_64-unknown-linux-gnu",
+    ],
+    rustfmt_version = "nightly/2026-04-15",
+)
+use_repo(rust, "rust_toolchains")
+register_toolchains("@rust_toolchains//:all")
+
+rust_host_tools = use_extension("@rules_rust//rust:extensions.bzl", "rust_host_tools")
+rust_host_tools.host_tools(version = "1.93.0")
+
+# Rust crates - import from typedb_dependencies' crate extension
+# This ensures type compatibility across all TypeDB modules
+crate = use_extension("@rules_rust//crate_universe:extensions.bzl", "crate")
+use_repo(crate, "crates")
+
+# Node.js toolchain
+# Note: node_repositories attribute is not supported in Bzlmod extension API
+node = use_extension("@rules_nodejs//nodejs:extensions.bzl", "node")
+node.toolchain(
+    name = "nodejs",
+    node_version = "22.11.0",  # LTS version with linux_arm64 support
+)
+use_repo(node, "nodejs")
+
+# NPM dependencies
+npm = use_extension("@aspect_rules_js//npm:extensions.bzl", "npm")
+
+
+# Node.js driver npm dependencies (2.x only, excluded from default build)
+npm.npm_translate_lock(
+    name = "nodejs_npm",
+    bins = {
+        "@cucumber/cucumber": ["cucumber-js=./bin/cucumber-js"],
+    },
+    pnpm_lock = "//nodejs:pnpm-lock.yaml",
+)
+
+# TypeScript HTTP driver npm dependencies
+npm.npm_translate_lock(
+    name = "http-ts_npm",
+    # Bzlmod format: list of "name=path" strings instead of dict-of-dicts
+    bins = {
+        "tsup": ["tsup=./dist/cli-default.js"],
+    },
+    pnpm_lock = "//http-ts:pnpm-lock.yaml",
+)
+
+use_repo(npm, "nodejs_npm", "http-ts_npm")
+
+# TypeScript toolchain
+rules_ts_ext = use_extension("@aspect_rules_ts//ts:extensions.bzl", "ext")
+rules_ts_ext.deps(ts_version = "5.7.2")
+use_repo(rules_ts_ext, "npm_typescript")
+
+# Maven dependencies - use typedb_dependencies' custom maven extension
+# which includes all versioned artifacts needed across TypeDB modules
+maven = use_extension("@typedb_dependencies//library/maven:maven_extension.bzl", "maven")
+use_repo(maven, "maven")
+
+# Register Kotlin toolchain
+register_toolchains("@io_bazel_rules_kotlin//kotlin/internal:default_toolchain")
+
+# google_bazel_common for javadoc generation (used by java/BUILD)
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+http_archive(
+    name = "google_bazel_common",
+    sha256 = "e982cc2e4c9a7d664e77d97a99debb3d18261e6ac6ea5bc4d8f453a521fdf1cf",
+    strip_prefix = "bazel-common-78cc73600ddfa62f953652625abd7c6f1656cfac",
+    urls = ["https://github.com/google/bazel-common/archive/78cc73600ddfa62f953652625abd7c6f1656cfac.zip"],
+)
+
+# workspace_refs for release validation
+# Creates a refs.json file with version information from dependencies
+workspace_refs = use_repo_rule("@typedb_bazel_distribution//common/workspace_refs:rules.bzl", "_workspace_refs")
+workspace_refs(
+    name = "typedb_driver_workspace_refs",
+    workspace_commit_dict = {
+        "typedb_protocol+": "fc67229ec69f5b8908801fcb6f62cc52480c3460",
+    },
+    workspace_tag_dict = {
+    },
+)
+
+# TypeDB server artifacts for testing
+# These download the TypeDB server binary for integration/behaviour tests
+native_artifact_files = use_extension("@typedb_dependencies//distribution/artifact:rules.bzl", "native_artifact_files")
+native_artifact_files.artifact(
+    name = "typedb_artifact",
+    group_name = "typedb-all-{platform}",
+    artifact_name = "typedb-all-{platform}-{version}.{ext}",
+    commit = "7cc4a3e9edcaaee2c8fa9cdce6ffef170eeed503",
+)
+# IMPORTANT: must be CLUSTERED typedb-cluster (with multi-node support)!
+native_artifact_files.artifact(
+    name = "typedb_cluster_artifact",
+    group_name = "typedb-cluster-all-{platform}",
+    artifact_name = "typedb-cluster-all-{platform}-{version}.{ext}",
+    tag = "3.10.0-alpha-1",
+    private = True,
+)
+
+use_repo(
+    native_artifact_files,
+    "typedb_artifact_linux-x86_64",
+    "typedb_artifact_linux-arm64",
+    "typedb_artifact_mac-x86_64",
+    "typedb_artifact_mac-arm64",
+    "typedb_artifact_windows-x86_64",
+)
+
+use_repo(
+    native_artifact_files,
+    "typedb_cluster_artifact_linux-x86_64",
+    "typedb_cluster_artifact_linux-arm64",
+    "typedb_cluster_artifact_mac-x86_64",
+    "typedb_cluster_artifact_mac-arm64",
+    "typedb_cluster_artifact_windows-x86_64",
+)

@@ -22,54 +22,53 @@ using System.Collections.Generic;
 using TypeDB.Driver;
 using TypeDB.Driver.Api;
 using TypeDB.Driver.Common;
+using TypeDB.Driver.Common.Validation;
 
 namespace TypeDB.Driver.User
 {
-    public class User : NativeObjectWrapper<Pinvoke.User>, IUser 
+    /// <summary>
+    /// TypeDB user information.
+    /// </summary>
+    public class User : NativeObjectWrapper<Pinvoke.User>, IUser
     {
-        private long? _passwordExpirySeconds;
-        private bool _passwordExpirySecondsFetched = false;
-
         private readonly UserManager _users;
 
         internal User(Pinvoke.User nativeUser, UserManager users)
-            : base(nativeUser) 
+            : base(nativeUser)
         {
             _users = users;
         }
 
-        public string Username 
+        /// <inheritdoc/>
+        public string Name
         {
-            get { return Pinvoke.typedb_driver.user_get_username(NativeObject); }
+            get { return Pinvoke.typedb_driver.user_get_name(NativeObject); }
         }
 
-        public long? PasswordExpirySeconds
+        /// <inheritdoc/>
+        public void UpdatePassword(string password)
         {
-            get
+            Validator.RequireNonNull(password, nameof(password));
+            try
             {
-                if (_passwordExpirySecondsFetched)
-                {
-                    return _passwordExpirySeconds;
-                }
-
-                long res = Pinvoke.typedb_driver.user_get_password_expiry_seconds(NativeObject);
-                _passwordExpirySecondsFetched = true;
-
-                if (res >= 0)
-                {
-                    _passwordExpirySeconds = res;
-                }
-
-                return _passwordExpirySeconds;
+                Pinvoke.typedb_driver.user_update_password(NativeObject, password);
+            }
+            catch (Pinvoke.Error e)
+            {
+                throw new TypeDBDriverException(e);
             }
         }
 
-        public void UpdatePassword(string passwordOld, string passwordNew)
+        /// <summary>
+        /// Deletes this user.
+        /// </summary>
+        public void Delete()
         {
             try
             {
-                Pinvoke.typedb_driver.user_password_update(
-                    NativeObject, _users.NativeObject, passwordOld, passwordNew);
+                // Released() transfers ownership to user_delete(), preventing double-free
+                // when GC later runs the destructor. This matches Java's pattern.
+                Pinvoke.typedb_driver.user_delete(NativeObject.Released());
             }
             catch (Pinvoke.Error e)
             {

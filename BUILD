@@ -27,23 +27,32 @@ exports_files([
 checkstyle_test(
     name = "checkstyle",
     size = "small",
-    include = glob([
-        "*",
-        ".circleci/**/*",
-        ".factory/*",
-        "tools/*",
-    ]),
-    exclude = glob([
-        "*.md",
-        ".bazelversion",
-        ".bazel-remote-cache.rc",
-        ".bazel-cache-credential.json",
-        ".circleci/windows/git.patch",
-        "LICENSE",
-        "VERSION",
-        "docs/**/*",
-        "Cargo.*",
-    ]),
+    include = glob(
+        [
+            "*",
+            ".circleci/**/*",
+            ".factory/*",
+            "tools/*",
+        ],
+        allow_empty = True,
+    ),
+    exclude = glob(
+        [
+            "*.md",
+            ".bazelversion",
+            ".bazel-remote-cache.rc",
+            ".bazel-cache-credential.json",
+            ".circleci/windows/git.patch",
+            "LICENSE",
+            "VERSION",
+            "docs/**/*",
+            "Cargo.*",
+            ".bazelignore",
+            ".claude/**/*",
+            "MODULE.bazel.lock",
+        ],
+        allow_empty = True,
+    ),
     license_type = "apache-header",
 )
 
@@ -58,7 +67,7 @@ release_validate_deps(
     name = "release-validate-deps",
     refs = "@typedb_driver_workspace_refs//:refs.json",
     tagged_deps = [
-        "@typedb_protocol",
+        "@typedb_protocol+",
     ],
     tags = ["manual"],  # in order for bazel test //... to not fail
     version_file = ":VERSION",
@@ -74,7 +83,6 @@ filegroup(
         "@typedb_dependencies//tool/ide:rust_sync",
         "@typedb_dependencies//tool/sonarcloud:code-analysis",
         "@typedb_dependencies//tool/unuseddeps:unused-deps",
-        "@rust_analyzer_toolchain_tools//lib/rustlib/src:rustc_srcs",
         "@typedb_dependencies//tool/sync:dependencies",
     ],
 )

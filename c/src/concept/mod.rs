@@ -19,44 +19,29 @@
 
 use std::ptr::addr_of_mut;
 
-use typedb_driver::{answer::ConceptRow, concept::Concept, BoxPromise, Promise, Result};
+use typedb_driver::{BoxPromise, Promise, Result, answer::ConceptRow, concept::Concept};
 
-use super::{iterator::iterator_try_next, memory::free};
-use crate::{error::try_release_optional, iterator::CIterator, memory::take_ownership};
+use crate::common::{
+    error::try_release_optional,
+    iterator::{CIterator, iterator_try_next},
+    memory::{free, take_ownership},
+};
 
 mod concept;
 mod instance;
-
-/// Promise object representing the result of an asynchronous operation.
-/// Use \ref concept_promise_resolve(ConceptPromise*) to wait for and retrieve the resulting boolean value.
-pub struct ConceptPromise(BoxPromise<'static, Result<Option<Concept>>>);
-
-/// Waits for and returns the result of the operation represented by the <code>ConceptPromise</code> object.
-/// In case the operation failed, the error flag will only be set when the promise is resolved.
-/// The native promise object is freed when it is resolved.
-#[no_mangle]
-pub extern "C" fn concept_promise_resolve(promise: *mut ConceptPromise) -> *mut Concept {
-    try_release_optional(take_ownership(promise).0.resolve().transpose())
-}
-
-/// Frees the native rust <code>ConceptPromise</code> object.
-#[no_mangle]
-pub extern "C" fn concept_promise_drop(promise: *mut ConceptPromise) {
-    drop(take_ownership(promise))
-}
 
 /// Iterator over the <code>ConceptRow</code>s returned by an API method or query.
 pub struct ConceptRowIterator(pub CIterator<Result<ConceptRow>>);
 
 /// Forwards the <code>ConceptRowIterator</code> and returns the next <code>ConceptRow</code> if it exists,
 /// or null if there are no more elements.
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn concept_row_iterator_next(it: *mut ConceptRowIterator) -> *mut ConceptRow {
     unsafe { iterator_try_next(addr_of_mut!((*it).0)) }
 }
 
 /// Frees the native rust <code>ConceptRowIterator</code> object
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn concept_row_iterator_drop(it: *mut ConceptRowIterator) {
     free(it);
 }
@@ -66,13 +51,13 @@ pub struct ConceptIterator(pub CIterator<Result<Concept>>);
 
 /// Forwards the <code>ConceptIterator</code> and returns the next <code>Concept</code> if it exists,
 /// or null if there are no more elements.
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn concept_iterator_next(it: *mut ConceptIterator) -> *mut Concept {
     unsafe { iterator_try_next(addr_of_mut!((*it).0)) }
 }
 
 /// Frees the native rust <code>ConceptIterator</code> object
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn concept_iterator_drop(it: *mut ConceptIterator) {
     free(it);
 }

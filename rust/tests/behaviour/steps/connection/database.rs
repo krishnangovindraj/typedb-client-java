@@ -17,25 +17,22 @@
  * under the License.
  */
 
-use std::io::Read;
-
-use cucumber::{gherkin::Step, given, then, when};
+use cucumber::gherkin::Step;
 use futures::{
+    TryFutureExt,
     future::{join_all, try_join_all},
-    stream, StreamExt, TryFutureExt,
 };
 use macro_rules_attribute::apply;
 use tokio::time::sleep;
-use typedb_driver::{Database, DatabaseManager, Result as TypeDBResult, TransactionType, TypeDBDriver};
+use typedb_driver::{Database, TransactionType, TypeDBDriver};
 use uuid::Uuid;
 
 use crate::{
-    assert_with_timeout,
+    Context, assert_with_timeout,
     connection::transaction::open_transaction_for_database,
     generic_step, in_oneshot_background, params,
     query::run_query,
     util::{iter_table, read_file_to_string},
-    Context,
 };
 
 async fn create_database(driver: &TypeDBDriver, name: String, may_error: params::MayError) {
@@ -54,10 +51,6 @@ async fn database_type_schema(driver: &TypeDBDriver, name: &str) -> String {
     driver.databases().get(name).await.expect("Expected database").type_schema().await.expect("Expected type schema")
 }
 
-async fn has_database(driver: &TypeDBDriver, name: &str) -> bool {
-    driver.databases().contains(name).await.unwrap()
-}
-
 async fn execute_and_retrieve_schema_for_comparison(driver: &TypeDBDriver, schema_query: String) -> String {
     let temp_database_name = create_temporary_database_with_schema(driver, schema_query).await;
     database_schema(driver, &temp_database_name).await
@@ -69,7 +62,7 @@ async fn create_temporary_database_with_schema(driver: &TypeDBDriver, schema_que
     let transaction = open_transaction_for_database(driver, &name, TransactionType::Schema, None)
         .await
         .expect("Expected transaction");
-    run_query(&transaction, &schema_query, None).await.expect("Expected successful query");
+    run_query(&transaction, &schema_query, None, None).await.expect("Expected successful query");
     transaction.commit().await.expect("Expected successful commit");
     name
 }
@@ -163,8 +156,9 @@ pub async fn in_background_connection_delete_database(
 #[apply(generic_step)]
 #[step(expr = "connection has database: {word}")]
 async fn connection_has_database(context: &mut Context, name: String) {
+    let driver = context.driver.as_ref().unwrap();
     assert_with_timeout!(
-        has_database(context.driver.as_ref().unwrap(), &name).await,
+        driver.databases().contains(&name).await.unwrap(),
         "Connection doesn't contain database {name}.",
     );
 }
@@ -172,9 +166,10 @@ async fn connection_has_database(context: &mut Context, name: String) {
 #[apply(generic_step)]
 #[step(expr = "connection has database(s):")]
 async fn connection_has_databases(context: &mut Context, step: &Step) {
+    let driver = context.driver.as_ref().unwrap();
     for name in iter_table(step).map(|name| name.to_owned()) {
         assert_with_timeout!(
-            has_database(context.driver.as_ref().unwrap(), &name).await,
+            driver.databases().contains(&name).await.unwrap(),
             "Connection doesn't contain at least one of the databases.",
         );
     }
@@ -183,18 +178,17 @@ async fn connection_has_databases(context: &mut Context, step: &Step) {
 #[apply(generic_step)]
 #[step(expr = "connection does not have database: {word}")]
 async fn connection_does_not_have_database(context: &mut Context, name: String) {
-    assert_with_timeout!(
-        !has_database(context.driver.as_ref().unwrap(), &name).await,
-        "Connection contains database {name}.",
-    );
+    let driver = context.driver.as_ref().unwrap();
+    assert_with_timeout!(!driver.databases().contains(&name).await.unwrap(), "Connection contains database {name}.",);
 }
 
 #[apply(generic_step)]
 #[step(expr = "connection does not have database(s):")]
 async fn connection_does_not_have_databases(context: &mut Context, step: &Step) {
+    let driver = context.driver.as_ref().unwrap();
     for name in iter_table(step).map(|name| name.to_owned()) {
         assert_with_timeout!(
-            !has_database(context.driver.as_ref().unwrap(), &name).await,
+            !driver.databases().contains(&name).await.unwrap(),
             "Connection doesn't contain at least one of the databases.",
         );
     }
