@@ -38,7 +38,6 @@ swig_native_csharp_library(
     target_frameworks = target_frameworks,
     targeting_packs = targeting_packs,
     visibility = ["//visibility:public"],
-    cfg = "target",
 )
 
 csharp_library(
