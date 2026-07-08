@@ -29,7 +29,7 @@ load("//tool/docs:examples/rules.bzl", "test_to_example", "update_markdown_examp
 swig_native_csharp_library(
     name = "typedb_driver_pinvoke",
     native_lib_name = "typedb_driver",
-    lib = "//c:typedb_driver_clib_headers",
+    lib = "//c:typedb_driver_clib",
     namespace = "TypeDB.Driver.Pinvoke",
     interface = "//c:typedb_driver.i",
     includes = ["//c:swig/typedb_driver_csharp.swg"],
